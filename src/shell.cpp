@@ -349,8 +349,11 @@ void Shell::process_completion() {
 
 	auto completion = commands_->complete_command(*this, context_, flags_, command_line);
 
+	bool redisplay = false;
+
 	if (!completion.help.empty()) {
 		println();
+		redisplay = true;
 
 		for (auto &help : completion.help) {
 			std::string help_line = unparse_line(help);
@@ -360,14 +363,17 @@ void Shell::process_completion() {
 	}
 
 	if (!completion.replacement.empty()) {
-		if (!completion.help.empty()) {
+		if (!redisplay) {
 			erase_current_line();
+			redisplay = true;
 		}
 
 		line_buffer_ = unparse_line(completion.replacement);
 	}
 
-	display_prompt();
+	if (redisplay) {
+		display_prompt();
+	}
 }
 
 std::list<std::string> Shell::parse_line(const std::string &line) {
