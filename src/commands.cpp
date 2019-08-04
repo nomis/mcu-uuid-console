@@ -202,11 +202,11 @@ std::list<std::shared_ptr<const Commands::Command>> Commands::find_command(unsig
 	for (auto& command : commands_) {
 		bool match = true;
 
-		if ((command->flags_ & flags) != flags) {
+		if ((command->flags_ & flags) != command->flags_) {
 			continue;
 		}
 
-		if (command->context_ != context) {
+		if (context != command->context_) {
 			continue;
 		}
 
