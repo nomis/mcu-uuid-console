@@ -153,10 +153,10 @@ private:
 	std::list<std::pair<unsigned long,std::shared_ptr<uuid::log::Message>>> log_messages_;
 };
 
-class StreamShell: public Shell {
+class StreamConsole: public Shell {
 public:
-	StreamShell(std::shared_ptr<Commands> commands, Stream *stream, int context, int flags = 0);
-	~StreamShell() override = default;
+	StreamConsole(std::shared_ptr<Commands> commands, Stream *stream, int context, int flags = 0);
+	~StreamConsole() override = default;
 
 	void print(char data) override;
 	void print(const char *data) override;
