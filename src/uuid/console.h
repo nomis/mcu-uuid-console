@@ -150,7 +150,7 @@ private:
 	std::shared_ptr<Commands> commands_;
 	std::string line_buffer_;
 	char previous_ = 0;
-	std::list<std::shared_ptr<uuid::log::Message>> log_messages_;
+	std::list<std::pair<unsigned long,std::shared_ptr<uuid::log::Message>>> log_messages_;
 };
 
 class StreamShell: public Shell {

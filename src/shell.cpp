@@ -52,11 +52,13 @@ void Shell::start() {
 };
 
 void Shell::add_log_message(std::shared_ptr<uuid::log::Message> message) {
+	static unsigned long id = 0;
+
 	if (log_messages_.size() >= maximum_log_messages()) {
 		log_messages_.pop_front();
 	}
 
-	log_messages_.emplace_back(message);
+	log_messages_.emplace_back(std::make_pair(id++, message));
 }
 
 uuid::log::Level Shell::get_log_level() {
@@ -311,11 +313,11 @@ void Shell::output_logs() {
 		while (!log_messages_.empty()) {
 			auto &message = log_messages_.front();
 
-			print(uuid::log::format_timestamp_ms(3, message->uptime_ms_));
-			printf(F(" %c %d: ["), uuid::log::format_level_char(message->level_), message->id_);
-			print(message->name_);
+			print(uuid::log::format_timestamp_ms(3, message.second->uptime_ms_));
+			printf(F(" %c %lu: ["), uuid::log::format_level_char(message.second->level_), message.first);
+			print(message.second->name_);
 			print("] ");
-			println(message->text_);
+			println(message.second->text_);
 
 			log_messages_.pop_front();
 		}
