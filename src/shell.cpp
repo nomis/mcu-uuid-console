@@ -48,7 +48,6 @@ void Shell::start() {
 	line_buffer_.reserve(maximum_command_line_length());
 	display_banner();
 	display_prompt();
-	flush();
 };
 
 void Shell::add_log_message(std::shared_ptr<uuid::log::Message> message) {
@@ -163,13 +162,11 @@ void Shell::process() {
 		}
 
 		previous_ = c;
-		flush();
 	}
 }
 
 void Shell::println() {
 	print("\r\n");
-	flush();
 }
 
 void Shell::println(const char *data) {
@@ -193,7 +190,6 @@ void Shell::printf(const char *format, ...) {
 	va_start(ap, format);
 	vprintf(format, ap);
 	va_end(ap);
-	flush();
 }
 
 void Shell::printf(const __FlashStringHelper *format, ...) {
@@ -202,7 +198,6 @@ void Shell::printf(const __FlashStringHelper *format, ...) {
 	va_start(ap, format);
 	vprintf(format, ap);
 	va_end(ap);
-	flush();
 }
 
 void Shell::printfln(const char *format, ...) {
@@ -241,10 +236,6 @@ void Shell::vprintf(const __FlashStringHelper *format, va_list ap) {
 		vsnprintf_P(&text[0], text.capacity() + 1, reinterpret_cast<PGM_P>(format), ap);
 		print(text);
 	}
-}
-
-void Shell::flush() {
-
 }
 
 size_t Shell::maximum_command_line_length() const {
@@ -323,7 +314,6 @@ void Shell::output_logs() {
 		}
 
 		display_prompt();
-		flush();
 	}
 }
 

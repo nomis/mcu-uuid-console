@@ -96,7 +96,7 @@ public:
 	static constexpr size_t MAX_LOG_MESSAGES = 10;
 
 	Shell(std::shared_ptr<Commands> commands, int context, int flags = 0);
-	virtual ~Shell();
+	~Shell() override;
 
 	void start();
 	virtual void add_log_message(std::shared_ptr<uuid::log::Message> message);
@@ -116,7 +116,6 @@ public:
 	void printf(const __FlashStringHelper *format, ...) /* __attribute__((format(printf, 2, 3))) */;
 	void printfln(const char *format, ...) /* __attribute__((format (printf, 2, 3))) */;
 	void printfln(const __FlashStringHelper *format, ...) /* __attribute__((format(printf, 2, 3))) */;
-	virtual void flush();
 
 	static uuid::log::Logger logger_;
 	int context_;
