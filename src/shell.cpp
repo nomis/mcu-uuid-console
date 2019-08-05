@@ -311,6 +311,7 @@ void Shell::output_logs() {
 			println(message.second->text_);
 
 			log_messages_.pop_front();
+			yield();
 		}
 
 		display_prompt();
@@ -332,6 +333,7 @@ void Shell::process_command() {
 	}
 
 	display_prompt();
+	yield();
 }
 
 void Shell::process_completion() {
@@ -364,6 +366,8 @@ void Shell::process_completion() {
 	if (redisplay) {
 		display_prompt();
 	}
+
+	yield();
 }
 
 std::list<std::string> Shell::parse_line(const std::string &line) {
