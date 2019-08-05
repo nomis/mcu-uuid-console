@@ -305,9 +305,7 @@ void Shell::output_logs() {
 			auto &message = log_messages_.front();
 
 			print(uuid::log::format_timestamp_ms(3, message.second->uptime_ms_));
-			printf(F(" %c %lu: ["), uuid::log::format_level_char(message.second->level_), message.first);
-			print(message.second->name_);
-			print("] ");
+			printf(F(" %c %lu: [%S] "), uuid::log::format_level_char(message.second->level_), message.first, message.second->name_);
 			println(message.second->text_);
 
 			log_messages_.pop_front();
