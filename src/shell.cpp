@@ -329,21 +329,21 @@ void Shell::printfln(const __FlashStringHelper *format, ...) {
 }
 
 void Shell::vprintf(const char *format, va_list ap) {
-	int len = vsnprintf(nullptr, 0, format, ap);
+	int len = ::vsnprintf(nullptr, 0, format, ap);
 	if (len > 0) {
 		std::string text(static_cast<std::string::size_type>(len), '\0');
 
-		vsnprintf(&text[0], text.capacity() + 1, format, ap);
+		::vsnprintf(&text[0], text.capacity() + 1, format, ap);
 		print(text);
 	}
 }
 
 void Shell::vprintf(const __FlashStringHelper *format, va_list ap) {
-	int len = vsnprintf_P(nullptr, 0, reinterpret_cast<PGM_P>(format), ap);
+	int len = ::vsnprintf_P(nullptr, 0, reinterpret_cast<PGM_P>(format), ap);
 	if (len > 0) {
 		std::string text(static_cast<std::string::size_type>(len), '\0');
 
-		vsnprintf_P(&text[0], text.capacity() + 1, reinterpret_cast<PGM_P>(format), ap);
+		::vsnprintf_P(&text[0], text.capacity() + 1, reinterpret_cast<PGM_P>(format), ap);
 		print(text);
 	}
 }
@@ -432,7 +432,7 @@ void Shell::output_logs() {
 			println(message.second->text_);
 
 			log_messages_.pop_front();
-			yield();
+			::yield();
 		}
 
 		display_prompt();
@@ -454,7 +454,7 @@ void Shell::process_command() {
 	}
 
 	display_prompt();
-	yield();
+	::yield();
 }
 
 void Shell::process_completion() {
@@ -486,7 +486,7 @@ void Shell::process_completion() {
 		display_prompt();
 	}
 
-	yield();
+	::yield();
 }
 
 void Shell::process_password(bool completed) {
