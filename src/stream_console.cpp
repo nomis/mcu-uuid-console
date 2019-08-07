@@ -32,16 +32,12 @@ StreamConsole::StreamConsole(std::shared_ptr<Commands> commands, Stream *stream,
 
 }
 
-const std::string StreamConsole::read() {
+int StreamConsole::read() {
 	if (stream_->available()) {
-		int value = stream_->read();
-
-		if (value != -1) {
-			return std::string{(char)value};
-		}
+		return stream_->read();
 	}
 
-	return std::string{};
+	return -1;
 }
 
 void StreamConsole::print(char data) {

@@ -68,100 +68,210 @@ void Shell::set_log_level(uuid::log::Level level) {
 	uuid::log::Logger::register_receiver(this, level);
 }
 
-void Shell::process() {
+void Shell::loop() {
 	output_logs();
 
-	const std::string input = read();
+	switch (mode_) {
+	case Mode::NORMAL:
+		loop_normal();
+		break;
 
-	if (input.empty()) {
+	case Mode::PASSWORD:
+		loop_password();
+		break;
+
+	case Mode::DELAY:
+		loop_delay();
+		break;
+	}
+}
+
+void Shell::loop_normal() {
+	const int input = read();
+
+	if (input < 0) {
 		return;
 	}
 
-	for (char c : input) {
-		switch (c) {
-		case '\x03':
-			// Interrupt (^C)
-			line_buffer_.clear();
+	const unsigned char c = input;
+
+	switch (c) {
+	case '\x03':
+		// Interrupt (^C)
+		line_buffer_.clear();
+		println();
+		display_prompt();
+		break;
+
+	case '\x04':
+		// End of transmission (^D)
+		if (line_buffer_.empty()) {
+			end_of_transmission();
 			println();
 			display_prompt();
-			break;
+		}
+		break;
 
-		case '\x04':
-			// End of transmission (^D)
-			if (line_buffer_.empty()) {
-				end_of_transmission();
-				println();
-				display_prompt();
-			}
-			break;
+	case '\x08':
+	case '\x7F':
+		// Backspace (^H)
+		// Delete (^?)
+		if (!line_buffer_.empty()) {
+			erase_characters(1);
+			line_buffer_.pop_back();
+		}
+		break;
 
-		case '\x08':
-		case '\x7F':
-			// Backspace (^H)
-			// Delete (^?)
-			if (!line_buffer_.empty()) {
-				erase_characters(1);
-				line_buffer_.pop_back();
-			}
-			break;
-
-		case '\x0A':
-			// Line feed (^J)
-			if (previous_ != '\x0D') {
-				process_command();
-			}
-			break;
-
-		case '\x0C':
-			// New page (^L)
-			erase_current_line();
-			display_prompt();
-			break;
-
-		case '\x0D':
-			// Carriage return (^M)
+	case '\x0A':
+		// Line feed (^J)
+		if (previous_ != '\x0D') {
 			process_command();
-			break;
+		}
+		break;
 
-		case '\x0F':
-			// Delete line (^U)
+	case '\x0C':
+		// New page (^L)
+		erase_current_line();
+		display_prompt();
+		break;
+
+	case '\x0D':
+		// Carriage return (^M)
+		process_command();
+		break;
+
+	case '\x0F':
+		// Delete line (^U)
+		erase_current_line();
+		line_buffer_.clear();
+		display_prompt();
+		break;
+
+	case '\x09':
+		// Tab (^I)
+		process_completion();
+		break;
+
+	case '\x11': {
+		// Delete word (^W)
+		size_t pos = line_buffer_.find_last_of(' ');
+
+		if (pos == std::string::npos) {
 			erase_current_line();
 			line_buffer_.clear();
 			display_prompt();
-			break;
-
-		case '\x09':
-			// Tab (^I)
-			process_completion();
-			break;
-
-		case '\x11': {
-				// Delete word (^W)
-				size_t pos = line_buffer_.find_last_of(' ');
-
-				if (pos == std::string::npos) {
-					erase_current_line();
-					line_buffer_.clear();
-					display_prompt();
-				} else {
-					erase_characters(line_buffer_.length() - pos);
-					line_buffer_.resize(pos);
-				}
-			}
-			break;
-
-		default:
-			if (c >= '\x20' && c <= '\x7E') {
-				// ASCII text
-				if (line_buffer_.length() < maximum_command_line_length()) {
-					line_buffer_.push_back(c);
-					print(c);
-				}
-			}
-			break;
+		} else {
+			erase_characters(line_buffer_.length() - pos);
+			line_buffer_.resize(pos);
 		}
+	}
+	break;
 
-		previous_ = c;
+	default:
+		if (c >= '\x20' && c <= '\x7E') {
+			// ASCII text
+			if (line_buffer_.length() < maximum_command_line_length()) {
+				line_buffer_.push_back(c);
+				print(c);
+			}
+		}
+		break;
+	}
+
+	previous_ = c;
+}
+
+void Shell::loop_password() {
+	const int input = read();
+
+	if (input < 0) {
+		return;
+	}
+
+	const unsigned char c = input;
+
+	switch (c) {
+	case '\x03':
+		// Interrupt (^C)
+		process_password(false);
+		break;
+
+	case '\x08':
+	case '\x7F':
+		// Backspace (^H)
+		// Delete (^?)
+		if (!line_buffer_.empty()) {
+			line_buffer_.pop_back();
+		}
+		break;
+
+	case '\x0A':
+		// Line feed (^J)
+		if (previous_ != '\x0D') {
+			process_password(true);
+		}
+		break;
+
+	case '\x0C':
+		// New page (^L)
+		erase_current_line();
+		display_prompt();
+		break;
+
+	case '\x0D':
+		// Carriage return (^M)
+		process_password(true);
+		break;
+
+	case '\x0F':
+		// Delete line (^U)
+		line_buffer_.clear();
+		break;
+
+	default:
+		if (c >= '\x20' && c <= '\x7E') {
+			// ASCII text
+			if (line_buffer_.length() < maximum_command_line_length()) {
+				line_buffer_.push_back(c);
+			}
+		}
+		break;
+	}
+
+	previous_ = c;
+}
+
+void Shell::loop_delay() {
+	if (uuid::get_uptime_ms() >= delay_time_) {
+		auto function_copy = delay_function_;
+
+		delay_time_ = 0;
+		delay_function_ = nullptr;
+		mode_ = Mode::NORMAL;
+
+		function_copy(*this);
+
+		display_prompt();
+	}
+}
+
+void Shell::enter_password(const __FlashStringHelper *prompt, password_function function) {
+	if (mode_ == Mode::NORMAL) {
+		password_prompt_ = prompt;
+		password_function_ = function;
+		mode_ = Mode::PASSWORD;
+	}
+}
+
+void Shell::delay_for(unsigned long ms, delay_function function) {
+	delay_until(uuid::get_uptime_ms() + ms, function);
+}
+
+void Shell::delay_until(uint64_t ms, delay_function function) {
+	if (mode_ == Mode::NORMAL) {
+		delay_time_ = ms;
+		delay_function_ = function;
+		mode_ = Mode::DELAY;
 	}
 }
 
@@ -280,26 +390,39 @@ void Shell::end_of_transmission() {
 };
 
 void Shell::display_prompt() {
-	std::string hostname = hostname_text();
-	std::string context = context_text();
+	switch (mode_) {
+	case Mode::DELAY:
+		break;
 
-	print(prompt_prefix());
-	if (!hostname.empty()) {
-		print(hostname);
+	case Mode::PASSWORD:
+		print(password_prompt_);
+		break;
+
+	case Mode::NORMAL:
+		std::string hostname = hostname_text();
+		std::string context = context_text();
+
+		print(prompt_prefix());
+		if (!hostname.empty()) {
+			print(hostname);
+			print(' ');
+		}
+		if (!context.empty()) {
+			print(context);
+			print(' ');
+		}
+		print(prompt_suffix());
 		print(' ');
+		print(line_buffer_);
+		break;
 	}
-	if (!context.empty()) {
-		print(context);
-		print(' ');
-	}
-	print(prompt_suffix());
-	print(' ');
-	print(line_buffer_);
 }
 
 void Shell::output_logs() {
 	if (!log_messages_.empty()) {
-		erase_current_line();
+		if (mode_ != Mode::DELAY) {
+			erase_current_line();
+		}
 
 		while (!log_messages_.empty()) {
 			auto &message = log_messages_.front();
@@ -336,9 +459,7 @@ void Shell::process_command() {
 
 void Shell::process_completion() {
 	std::list<std::string> command_line = parse_line(line_buffer_);
-
 	auto completion = commands_->complete_command(*this, context_, flags_, command_line);
-
 	bool redisplay = false;
 
 	if (!completion.help.empty()) {
@@ -366,6 +487,20 @@ void Shell::process_completion() {
 	}
 
 	yield();
+}
+
+void Shell::process_password(bool completed) {
+	println();
+
+	auto function_copy = password_function_;
+
+	password_prompt_ = nullptr;
+	password_function_ = nullptr;
+	mode_ = Mode::NORMAL;
+
+	function_copy(*this, completed, line_buffer_);
+	line_buffer_.clear();
+	display_prompt();
 }
 
 std::list<std::string> Shell::parse_line(const std::string &line) {

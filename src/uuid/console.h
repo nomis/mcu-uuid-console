@@ -94,6 +94,8 @@ class Shell: public uuid::log::Receiver {
 public:
 	static constexpr size_t MAX_COMMAND_LINE_LENGTH = 80;
 	static constexpr size_t MAX_LOG_MESSAGES = 10;
+	using password_function = std::function<void(Shell &shell, bool completed, const std::string &password)>;
+	using delay_function = std::function<void(Shell &shell)>;
 
 	Shell(std::shared_ptr<Commands> commands, int context, int flags = 0);
 	~Shell() override;
@@ -102,7 +104,11 @@ public:
 	virtual void add_log_message(std::shared_ptr<uuid::log::Message> message);
 	uuid::log::Level get_log_level();
 	void set_log_level(uuid::log::Level level);
-	void process();
+	void loop();
+
+	void enter_password(const __FlashStringHelper *prompt, password_function function);
+	void delay_for(unsigned long ms, delay_function function);
+	void delay_until(uint64_t ms, delay_function function);
 
 	virtual void print(char data) = 0;
 	virtual void print(const char *data) = 0;
@@ -124,7 +130,7 @@ public:
 protected:
 	virtual size_t maximum_command_line_length() const;
 	virtual size_t maximum_log_messages() const;
-	virtual const std::string read() = 0;
+	virtual int read() = 0;
 	virtual void erase_current_line();
 	virtual void erase_characters(size_t count);
 
@@ -136,10 +142,21 @@ protected:
 	virtual void end_of_transmission();
 
 private:
+	enum class Mode {
+		NORMAL,
+		PASSWORD,
+		DELAY,
+	};
+
+	void loop_normal();
+	void loop_password();
+	void loop_delay();
+
 	void display_prompt();
 	void output_logs();
 	void process_command();
 	void process_completion();
+	void process_password(bool completed);
 	std::list<std::string> parse_line(const std::string &line);
 	std::string unparse_line(const std::list<std::string> &items);
 
@@ -147,9 +164,14 @@ private:
 	void vprintf(const __FlashStringHelper *format, va_list ap);
 
 	std::shared_ptr<Commands> commands_;
+	Mode mode_ = Mode::NORMAL;
 	std::string line_buffer_;
 	char previous_ = 0;
 	std::list<std::pair<unsigned long,std::shared_ptr<uuid::log::Message>>> log_messages_;
+	const __FlashStringHelper *password_prompt_;
+	password_function password_function_;
+	uint64_t delay_time_;
+	delay_function delay_function_;
 };
 
 class StreamConsole: public Shell {
@@ -163,7 +185,7 @@ public:
 	void print(const __FlashStringHelper *data) override;
 
 protected:
-	const std::string read() override;
+	int read() override;
 
 private:
 	Stream *stream_;
