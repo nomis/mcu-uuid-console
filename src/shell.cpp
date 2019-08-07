@@ -382,7 +382,7 @@ std::list<std::string> Shell::parse_line(const std::string &line) {
 			if (escape) {
 				items.back().push_back(' ');
 				escape = false;
-			} else {
+			} else if (!items.back().empty()) {
 				items.emplace_back("");
 			}
 			break;
