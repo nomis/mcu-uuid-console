@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <list>
 #include <memory>
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -44,22 +45,23 @@ void Commands::add_command(unsigned int context, unsigned int flags,
 }
 
 Commands::Execution Commands::execute_command(Shell &shell __attribute__((unused)), unsigned int context, unsigned int flags, const std::list<std::string> &command_line) {
-	auto commands = find_command(context, flags, command_line, false);
+	auto commands = find_command(context, flags, command_line);
+	auto longest = commands.exact.crbegin();
 	Execution result;
 
 	result.error = nullptr;
 
-	if (commands.size() == 0) {
+	if (commands.exact.empty()) {
 		result.error = F("Command not found");
-	} else if (commands.size() == 1) {
-		auto command = commands.front();
+	} else if (commands.exact.count(longest->first) == 1) {
+		auto &command = longest->second;
 		std::vector<std::string> arguments{std::next(command_line.cbegin(), command->name_.size()), command_line.cend()};
 
-		// FIXME modify find_command() to do this
-		std::list<std::string> command_line2{command_line.cbegin(), std::next(command_line.cbegin(), command->name_.size())};
-		auto commands2 = find_command(context, flags, command_line2, true);
+		while (!arguments.empty() && arguments.back().empty()) {
+			arguments.pop_back();
+		}
 
-		if (commands2.size() > 1 && !arguments.empty()) {
+		if (commands.partial.upper_bound(longest->first) != commands.partial.end() && !arguments.empty()) {
 			result.error = F("Command not found");
 		} else if (arguments.size() < command->minimum_arguments()) {
 			result.error = F("Not enough arguments for command");
@@ -76,40 +78,89 @@ Commands::Execution Commands::execute_command(Shell &shell __attribute__((unused
 }
 
 Commands::Completion Commands::complete_command(Shell &shell, unsigned int context, unsigned int flags, const std::list<std::string> &command_line) {
-	auto commands = find_command(context, flags, command_line, false);
+	auto commands = find_command(context, flags, command_line);
 	Completion result;
 
-	if (commands.size() == 1) {
-		auto &matching_command = commands.front();
+	auto shortest_match = commands.partial.begin();
+	size_t shortest_count;
+	bool exact;
+	if (shortest_match != commands.partial.end()) {
+		shortest_count = commands.partial.count(shortest_match->first);
+		exact = false;
+	} else {
+		shortest_match = commands.exact.begin();
+		if (shortest_match != commands.exact.end()) {
+			shortest_count = commands.exact.count(shortest_match->first);
+			exact = true;
+		} else {
+			return result;
+		}
+	}
+
+	bool longer_matches = commands.exact.upper_bound(shortest_match->first) != commands.exact.end()
+			|| commands.partial.upper_bound(shortest_match->first) != commands.partial.end();
+	bool add_space = false;
+
+	if (commands.exact.empty() && shortest_count > 1) {
+		// There are no exact matches and there are multiple commands with the same shortest partial match length
+		size_t longest_common = 0;
+		auto &shortest_first = commands.partial.find(shortest_match->first)->second->name_;
+
+		// Check if any of the commands have a common substring
+		for (size_t length = 1; shortest_match->first; length++) {
+			bool all_match = true;
+
+			for (auto command_it = std::next(commands.partial.find(shortest_match->first)); command_it != commands.partial.end(); command_it++) {
+				if (read_flash_string(*std::next(shortest_first.begin(), length - 1)) != read_flash_string(*std::next(command_it->second->name_.begin(), length - 1))) {
+					all_match = false;
+					break;
+				}
+			}
+
+			if (all_match) {
+				longest_common = length;
+			} else {
+				break;
+			}
+		}
+
+		if (longest_common > 0 && command_line.size() <= longest_common) {
+			// Is this now an exact match for the command line?
+			if (command_line.size() == longest_common) {
+				exact = true;
+
+				auto name_it = shortest_first.cbegin();
+				auto line_it = command_line.cbegin();
+
+				for (size_t i = 0; i < longest_common && name_it != shortest_first.cend() && line_it != command_line.cend(); name_it++, line_it++) {
+					if (*line_it != read_flash_string(*name_it)) {
+						exact = false;
+					}
+				}
+			}
+
+			// Create a temporary command that represents the longest common substring
+			auto &target = exact ? commands.exact : commands.partial;
+
+			target.emplace(longest_common, std::make_shared<Command>(0, 0,
+					std::vector<const __FlashStringHelper *>{shortest_first.begin(), std::next(shortest_first.begin(), longest_common)}, no_arguments,
+					[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {}, no_argument_completion));
+			shortest_count = 1;
+			shortest_match = target.find(longest_common);
+			longer_matches = true;
+			add_space = true;
+		}
+	}
+
+	if (shortest_count == 1) {
+		// Construct a replacement string for a single matching command
+		auto &matching_command = shortest_match->second;
 
 		for (auto &name : matching_command->name_) {
 			result.replacement.emplace_back(read_flash_string(name));
 		}
 
-		// If there are no arguments then search again for more longer commands
-		bool more_commands = false;
-
-		if (command_line.size() <= result.replacement.size()) {
-			std::list<std::string> command_line2;
-
-			for (auto &name : result.replacement) {
-				command_line2.emplace_back(name.c_str());
-			}
-
-			auto commands2 = find_command(context, flags, command_line2, true);
-
-			if (commands2.size() == 1) {
-				if (commands2.front()->name_.size() > command_line2.size()) {
-					more_commands = true;
-				}
-			} else if (commands2.size() > 1) {
-				more_commands = true;
-			}
-		}
-
-		if (more_commands) {
-			result.replacement.emplace_back("");
-		} else if (command_line.size() > result.replacement.size()) {
+		if (command_line.size() > result.replacement.size()) {
 			// Try to auto-complete arguments
 			std::vector<std::string> arguments{std::next(command_line.cbegin(), result.replacement.size()), command_line.cend()};
 			result.replacement.insert(result.replacement.end(), arguments.cbegin(), arguments.cend());
@@ -137,6 +188,11 @@ Commands::Completion Commands::complete_command(Shell &shell, unsigned int conte
 			if (potential_arguments.size() == 1 && !last_argument.empty()) {
 				// Auto-complete if there's something present in the last argument
 				result.replacement.emplace_back(*potential_arguments.begin());
+
+				if (result.replacement.size() < matching_command->name_.size() + matching_command->arguments_.size()) {
+					result.replacement.emplace_back("");
+				}
+
 				potential_arguments.clear();
 			} else {
 				// Put the last argument back
@@ -148,26 +204,30 @@ Commands::Completion Commands::complete_command(Shell &shell, unsigned int conte
 
 				help.emplace_back(potential_argument);
 
-				// FIXME "help" is no longer a full command line
-				if (help.size() < matching_command->name_.size() + matching_command->arguments_.size()) {
-					for (auto it = std::next(matching_command->arguments_.cbegin(), help.size() - matching_command->name_.size()); it != matching_command->arguments_.cend(); it++) {
+				auto current_arguments = arguments.size() + 1;
+				if (current_arguments < matching_command->arguments_.size()) {
+					for (auto it = std::next(matching_command->arguments_.cbegin(), current_arguments); it != matching_command->arguments_.cend(); it++) {
 						help.emplace_back(read_flash_string(*it));
 					}
 				}
 
 				result.help.emplace_back(help);
 			}
-		} else if (command_line.size() < commands.front()->name_.size() + commands.front()->arguments_.size()) {
-			result.replacement.emplace_back("");
+		} else if (command_line.size() < matching_command->name_.size() + matching_command->arguments_.size()) {
+			// Add a space because the are more arguments for this command
+			add_space = true;
+		} else if (exact && longer_matches) {
+			// Add a space because the are sub-commands for this command that has just matched exactly
+			add_space = true;
 		}
-
-	} else if (commands.size() > 1) {
-		for (auto &command : commands) {
+	} else {
+		// Provide help for all of the potential commands
+		for (auto command_it = commands.partial.begin(); command_it != commands.partial.end(); command_it++) {
 			std::list<std::string> help;
 
 			auto line_it = command_line.cbegin();
 
-			for (auto flash_name : command->name_) {
+			for (auto flash_name : command_it->second->name_) {
 				std::string name = read_flash_string(flash_name);
 
 				if (line_it != command_line.cend()) {
@@ -179,7 +239,7 @@ Commands::Completion Commands::complete_command(Shell &shell, unsigned int conte
 				help.emplace_back(name);
 			}
 
-			for (auto argument : command->arguments_) {
+			for (auto argument : command_it->second->arguments_) {
 				if (line_it != command_line.cend()) {
 					line_it++;
 					continue;
@@ -190,17 +250,41 @@ Commands::Completion Commands::complete_command(Shell &shell, unsigned int conte
 
 			result.help.emplace_back(help);
 		}
+
+		if (!commands.exact.empty()) {
+			auto longest = commands.exact.crbegin();
+
+			if (commands.exact.count(longest->first) == 1) {
+				for (auto &name : longest->second->name_) {
+					result.replacement.emplace_back(read_flash_string(name));
+				}
+
+				// Add a space because there are sub-commands for a command that has matched exactly
+				add_space = true;
+			}
+		}
+	}
+
+	if (add_space) {
+		if (command_line.size() <= result.replacement.size()) {
+			result.replacement.emplace_back("");
+		}
+	}
+
+	// Don't try to shorten the command lines or offer an identical replacement
+	if (command_line.size() > result.replacement.size() || result.replacement == command_line) {
+		result.replacement.clear();
 	}
 
 	return result;
 }
 
-std::list<std::shared_ptr<const Commands::Command>> Commands::find_command(unsigned int context, unsigned int flags, const std::list<std::string> &command_line, bool partial) {
-	std::list<std::shared_ptr<const Command>> commands;
-	size_t longest = 0;
+Commands::Match Commands::find_command(unsigned int context, unsigned int flags, const std::list<std::string> &command_line) {
+	Match commands;
 
 	for (auto& command : commands_) {
 		bool match = true;
+		bool exact = true;
 
 		if ((command->flags_ & flags) != command->flags_) {
 			continue;
@@ -210,55 +294,39 @@ std::list<std::shared_ptr<const Commands::Command>> Commands::find_command(unsig
 			continue;
 		}
 
-		if (partial) {
-			auto name_it = command->name_.cbegin();
-			auto line_it = command_line.cbegin();
+		auto name_it = command->name_.cbegin();
+		auto line_it = command_line.cbegin();
 
-			for (; name_it != command->name_.cend() && line_it != command_line.cend(); name_it++, line_it++) {
-				std::string name = read_flash_string(*name_it);
-				size_t found = name.rfind(*line_it, 0);
+		for (; name_it != command->name_.cend() && line_it != command_line.cend(); name_it++, line_it++) {
+			std::string name = read_flash_string(*name_it);
+			size_t found = name.rfind(*line_it, 0);
 
-				if (found == std::string::npos) {
-					match = false;
-					break;
-				} else if (*line_it != name) {
-					if (std::next(line_it) != command_line.cend()) {
+			if (found == std::string::npos) {
+				match = false;
+				break;
+			} else if (line_it->length() != name.length()) {
+				for (auto line_check_it = std::next(line_it); line_check_it != command_line.cend(); line_check_it++) {
+					if (!line_check_it->empty()) {
 						// If there's more in the command line then this can't match
 						match = false;
 					}
-
-					// Don't check the rest of the command if this is only a partial match
-					break;
 				}
-			}
-		} else {
-			if (command->name_.size() > command_line.size()) {
-				continue;
-			}
 
-			auto name_it = command->name_.cbegin();
-			auto line_it = command_line.cbegin();
-
-			for (; name_it != command->name_.cend() && line_it != command_line.cend(); name_it++, line_it++) {
-				if (strcmp_P(line_it->c_str(), (PGM_P)*name_it)) {
-					match = false;
-					break;
-				}
+				// Don't check the rest of the command if this is only a partial match
+				break;
 			}
 		}
 
-		if (match && command->name_.size() >= longest) {
-			commands.emplace_back(command);
-			longest = std::max(longest, command->name_.size());
+		if (name_it != command->name_.cend()) {
+			exact = false;
 		}
-	}
 
-	// Only keep the longest matches
-	for (auto command = commands.begin(); command != commands.end(); ) {
-		if (command->get()->name_.size() < longest) {
-			command = commands.erase(command);
-		} else {
-			command++;
+		if (match) {
+			if (exact) {
+				commands.exact.emplace(command->name_.size(), command);
+			} else {
+				commands.partial.emplace(command->name_.size(), command);
+			}
 		}
 	}
 

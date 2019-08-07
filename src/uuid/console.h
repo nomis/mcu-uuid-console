@@ -25,9 +25,9 @@
 #include <functional>
 #include <list>
 #include <memory>
+#include <map>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -85,7 +85,16 @@ private:
 		argument_completion_function arg_function_;
 	};
 
-	std::list<std::shared_ptr<const Command>> find_command(unsigned int context, unsigned int flags, const std::list<std::string> &command_line, bool partial);
+	struct Match {
+		std::multimap<size_t,std::shared_ptr<const Command>> exact;
+		std::multimap<size_t,std::shared_ptr<const Command>> partial;
+	};
+
+	/**
+	 * Find commands by matching them against the command line.
+	 * Each matching command is returned in a map grouped by size.
+	 */
+	Match find_command(unsigned int context, unsigned int flags, const std::list<std::string> &command_line);
 
 	std::list<std::shared_ptr<Command>> commands_;
 };
@@ -94,6 +103,7 @@ class Shell: public uuid::log::Receiver {
 public:
 	static constexpr size_t MAX_COMMAND_LINE_LENGTH = 80;
 	static constexpr size_t MAX_LOG_MESSAGES = 10;
+
 	using password_function = std::function<void(Shell &shell, bool completed, const std::string &password)>;
 	using delay_function = std::function<void(Shell &shell)>;
 
@@ -141,6 +151,9 @@ protected:
 	virtual std::string prompt_suffix();
 	virtual void end_of_transmission();
 
+	std::list<std::string> parse_line(const std::string &line);
+	std::string unparse_line(const std::list<std::string> &items);
+
 private:
 	enum class Mode {
 		NORMAL,
@@ -157,8 +170,6 @@ private:
 	void process_command();
 	void process_completion();
 	void process_password(bool completed);
-	std::list<std::string> parse_line(const std::string &line);
-	std::string unparse_line(const std::list<std::string> &items);
 
 	void vprintf(const char *format, va_list ap);
 	void vprintf(const __FlashStringHelper *format, va_list ap);
