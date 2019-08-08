@@ -459,31 +459,34 @@ void Shell::process_command() {
 
 void Shell::process_completion() {
 	std::list<std::string> command_line = parse_line(line_buffer_);
-	auto completion = commands_->complete_command(*this, context_, flags_, command_line);
-	bool redisplay = false;
 
-	if (!completion.help.empty()) {
-		println();
-		redisplay = true;
+	if (!command_line.empty()) {
+		auto completion = commands_->complete_command(*this, context_, flags_, command_line);
+		bool redisplay = false;
 
-		for (auto &help : completion.help) {
-			std::string help_line = unparse_line(help);
-
-			println(help_line);
-		}
-	}
-
-	if (!completion.replacement.empty()) {
-		if (!redisplay) {
-			erase_current_line();
+		if (!completion.help.empty()) {
+			println();
 			redisplay = true;
+
+			for (auto &help : completion.help) {
+				std::string help_line = unparse_line(help);
+
+				println(help_line);
+			}
 		}
 
-		line_buffer_ = unparse_line(completion.replacement);
-	}
+		if (!completion.replacement.empty()) {
+			if (!redisplay) {
+				erase_current_line();
+				redisplay = true;
+			}
 
-	if (redisplay) {
-		display_prompt();
+			line_buffer_ = unparse_line(completion.replacement);
+		}
+
+		if (redisplay) {
+			display_prompt();
+		}
 	}
 
 	::yield();
