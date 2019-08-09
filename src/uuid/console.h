@@ -178,6 +178,7 @@ private:
 	Mode mode_ = Mode::NORMAL;
 	std::string line_buffer_;
 	char previous_ = 0;
+	unsigned long log_message_id_ = 0;
 	std::list<std::pair<unsigned long,std::shared_ptr<uuid::log::Message>>> log_messages_;
 	const __FlashStringHelper *password_prompt_;
 	password_function password_function_;

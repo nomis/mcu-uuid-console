@@ -51,13 +51,12 @@ void Shell::start() {
 };
 
 void Shell::add_log_message(std::shared_ptr<uuid::log::Message> message) {
-	static unsigned long id = 0;
 
 	if (log_messages_.size() >= maximum_log_messages()) {
 		log_messages_.pop_front();
 	}
 
-	log_messages_.emplace_back(std::make_pair(id++, message));
+	log_messages_.emplace_back(std::make_pair(log_message_id_++, message));
 }
 
 uuid::log::Level Shell::get_log_level() {
