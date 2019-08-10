@@ -163,7 +163,7 @@ void Shell::loop_normal() {
 		process_command();
 		break;
 
-	case '\x0F':
+	case '\x15':
 		// Delete line (^U)
 		erase_current_line();
 		line_buffer_.clear();
@@ -175,7 +175,7 @@ void Shell::loop_normal() {
 		process_completion();
 		break;
 
-	case '\x11': {
+	case '\x17': {
 		// Delete word (^W)
 		size_t pos = line_buffer_.find_last_of(' ');
 
