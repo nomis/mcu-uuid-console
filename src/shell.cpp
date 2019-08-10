@@ -145,6 +145,11 @@ void Shell::loop_normal() {
 		}
 		break;
 
+	case '\x09':
+		// Tab (^I)
+		process_completion();
+		break;
+
 	case '\x0A':
 		// Line feed (^J)
 		if (previous_ != '\x0D') {
@@ -170,25 +175,10 @@ void Shell::loop_normal() {
 		display_prompt();
 		break;
 
-	case '\x09':
-		// Tab (^I)
-		process_completion();
-		break;
-
-	case '\x17': {
+	case '\x17':
 		// Delete word (^W)
-		size_t pos = line_buffer_.find_last_of(' ');
-
-		if (pos == std::string::npos) {
-			erase_current_line();
-			line_buffer_.clear();
-			display_prompt();
-		} else {
-			erase_characters(line_buffer_.length() - pos);
-			line_buffer_.resize(pos);
-		}
-	}
-	break;
+		delete_buffer_word(true);
+		break;
 
 	default:
 		if (c >= '\x20' && c <= '\x7E') {
@@ -246,9 +236,14 @@ void Shell::loop_password() {
 		process_password(true);
 		break;
 
-	case '\x0F':
+	case '\x15':
 		// Delete line (^U)
 		line_buffer_.clear();
+		break;
+
+	case '\x17':
+		// Delete word (^W)
+		delete_buffer_word(false);
 		break;
 
 	default:
@@ -297,6 +292,23 @@ void Shell::delay_until(uint64_t ms, delay_function function) {
 		delay_time_ = ms;
 		delay_function_ = function;
 		mode_ = Mode::DELAY;
+	}
+}
+
+void Shell::delete_buffer_word(bool display) {
+	size_t pos = line_buffer_.find_last_of(' ');
+
+	if (pos == std::string::npos) {
+		line_buffer_.clear();
+		if (display) {
+			erase_current_line();
+			display_prompt();
+		}
+	} else {
+		if (display) {
+			erase_characters(line_buffer_.length() - pos);
+		}
+		line_buffer_.resize(pos);
 	}
 }
 

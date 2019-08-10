@@ -181,6 +181,8 @@ private:
 	void process_completion();
 	void process_password(bool completed);
 
+	void delete_buffer_word(bool display);
+
 	void vprintf(const char *format, va_list ap);
 	void vprintf(const __FlashStringHelper *format, va_list ap);
 
