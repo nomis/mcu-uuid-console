@@ -562,7 +562,9 @@ void Shell::invoke_command(std::string line) {
 
 std::list<std::string> Shell::parse_line(const std::string &line) {
 	std::list<std::string> items;
-	bool escape = false;
+	bool string_escape_double = false;
+	bool string_escape_single = false;
+	bool char_escape = false;
 
 	if (!line.empty()) {
 		items.emplace_back("");
@@ -571,24 +573,52 @@ std::list<std::string> Shell::parse_line(const std::string &line) {
 	for (char c : line) {
 		switch (c) {
 		case ' ':
-			if (escape) {
+			if (string_escape_double || string_escape_single) {
+				if (char_escape) {
+					items.back().push_back('\\');
+					char_escape = false;
+				}
 				items.back().push_back(' ');
-				escape = false;
+			} else if (char_escape) {
+				items.back().push_back(' ');
+				char_escape = false;
 			} else if (!items.back().empty()) {
 				items.emplace_back("");
 			}
 			break;
 
-		case '\\':
-			if (escape) {
-				items.back().push_back('\\');
-				escape = false;
+		case '"':
+			if (char_escape || string_escape_single) {
+				items.back().push_back('"');
+				char_escape = false;
 			} else {
-				escape = true;
+				string_escape_double = !string_escape_double;
+			}
+			break;
+
+		case '\'':
+			if (char_escape || string_escape_double) {
+				items.back().push_back('\'');
+				char_escape = false;
+			} else {
+				string_escape_single = !string_escape_single;
+			}
+			break;
+
+		case '\\':
+			if (char_escape) {
+				items.back().push_back('\\');
+				char_escape = false;
+			} else {
+				char_escape = true;
 			}
 			break;
 
 		default:
+			if (char_escape) {
+				items.back().push_back('\\');
+				char_escape = false;
+			}
 			items.back().push_back(c);
 			break;
 		}
