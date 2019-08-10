@@ -27,33 +27,34 @@ namespace uuid {
 
 namespace console {
 
-StreamConsole::StreamConsole(std::shared_ptr<Commands> commands, Stream *stream, int context, int flags)
+StreamConsole::StreamConsole(Stream &stream)
+		: Shell(), stream_(stream) {
+
+}
+
+StreamConsole::StreamConsole(std::shared_ptr<Commands> commands, Stream &stream, int context, int flags)
 		: Shell(commands, context, flags), stream_(stream) {
 
 }
 
 int StreamConsole::read() {
-	if (stream_->available()) {
-		return stream_->read();
-	}
-
-	return -1;
+	return stream_.read();
 }
 
 void StreamConsole::print(char data) {
-	stream_->write(data);
+	stream_.write(data);
 }
 
 void StreamConsole::print(const char *data) {
-	stream_->write(data);
+	stream_.write(data);
 }
 
 void StreamConsole::print(const std::string &data) {
-	stream_->write(data.data(), data.length());
+	stream_.write(data.data(), data.length());
 }
 
 void StreamConsole::print(const __FlashStringHelper *data) {
-	stream_->print(data);
+	stream_.print(data);
 }
 
 } // namespace console

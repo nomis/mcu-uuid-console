@@ -23,6 +23,7 @@
 
 #include <memory>
 #include <list>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -34,6 +35,7 @@ namespace console {
 
 static const char __pstr__logger_name[] __attribute__((__aligned__(sizeof(int)))) PROGMEM = "shell";
 uuid::log::Logger Shell::logger_{FPSTR(__pstr__logger_name), uuid::log::Facility::LPR};
+std::set<std::shared_ptr<Shell>> Shell::shells_;
 
 Shell::Shell(std::shared_ptr<Commands> commands, int context, int flags)
 		: context_(context), flags_(flags), commands_(commands) {
@@ -48,10 +50,20 @@ void Shell::start() {
 	line_buffer_.reserve(maximum_command_line_length());
 	display_banner();
 	display_prompt();
+	shells_.insert(shared_from_this());
+	started();
 };
 
-void Shell::add_log_message(std::shared_ptr<uuid::log::Message> message) {
+bool Shell::running() {
+	return !stopped_;
+}
 
+void Shell::stop() {
+	stopped_ = true;
+	stopped();
+}
+
+void Shell::add_log_message(std::shared_ptr<uuid::log::Message> message) {
 	if (log_messages_.size() >= maximum_log_messages()) {
 		log_messages_.pop_front();
 	}
@@ -67,7 +79,20 @@ void Shell::set_log_level(uuid::log::Level level) {
 	uuid::log::Logger::register_receiver(this, level);
 }
 
-void Shell::loop() {
+void Shell::loop_all() {
+	for (auto shell = shells_.begin(); shell != shells_.end(); ) {
+		shell->get()->loop_one();
+
+		// This avoids copying the shared_ptr every time loop_one() is called
+		if (!shell->get()->running()) {
+			shell = shells_.erase(shell);
+		} else {
+			shell++;
+		}
+	}
+}
+
+void Shell::loop_one() {
 	output_logs();
 
 	switch (mode_) {
@@ -99,6 +124,7 @@ void Shell::loop_normal() {
 		// Interrupt (^C)
 		line_buffer_.clear();
 		println();
+		prompt_displayed_ = false;
 		display_prompt();
 		break;
 
@@ -106,8 +132,6 @@ void Shell::loop_normal() {
 		// End of transmission (^D)
 		if (line_buffer_.empty()) {
 			end_of_transmission();
-			println();
-			display_prompt();
 		}
 		break;
 
@@ -250,7 +274,9 @@ void Shell::loop_delay() {
 
 		function_copy(*this);
 
-		display_prompt();
+		if (running()) {
+			display_prompt();
+		}
 	}
 }
 
@@ -357,11 +383,16 @@ size_t Shell::maximum_log_messages() const {
 
 void Shell::erase_current_line() {
 	print(F("\033[0G\033[K"));
+	prompt_displayed_ = false;
 }
 
 void Shell::erase_characters(size_t count) {
 	print(std::string(count, '\x08'));
 	print(F("\033[K"));
+}
+
+void Shell::started() {
+
 }
 
 void Shell::display_banner() {
@@ -386,7 +417,11 @@ std::string Shell::prompt_suffix() {
 
 void Shell::end_of_transmission() {
 
-};
+}
+
+void Shell::stopped() {
+
+}
 
 void Shell::display_prompt() {
 	switch (mode_) {
@@ -413,6 +448,7 @@ void Shell::display_prompt() {
 		print(prompt_suffix());
 		print(' ');
 		print(line_buffer_);
+		prompt_displayed_ = true;
 		break;
 	}
 }
@@ -443,6 +479,7 @@ void Shell::process_command() {
 
 	line_buffer_.clear();
 	println();
+	prompt_displayed_ = false;
 
 	if (!command_line.empty()) {
 		auto execution = commands_->execute_command(*this, context_, flags_, command_line);
@@ -452,7 +489,9 @@ void Shell::process_command() {
 		}
 	}
 
-	display_prompt();
+	if (running()) {
+		display_prompt();
+	}
 	::yield();
 }
 
@@ -502,7 +541,23 @@ void Shell::process_password(bool completed) {
 
 	function_copy(*this, completed, line_buffer_);
 	line_buffer_.clear();
-	display_prompt();
+
+	if (running()) {
+		display_prompt();
+	}
+}
+
+void Shell::invoke_command(std::string line) {
+	if (!line_buffer_.empty()) {
+		println();
+		prompt_displayed_ = false;
+	}
+	if (!prompt_displayed_) {
+		display_prompt();
+	}
+	line_buffer_ = line;
+	print(line_buffer_);
+	process_command();
 }
 
 std::list<std::string> Shell::parse_line(const std::string &line) {
