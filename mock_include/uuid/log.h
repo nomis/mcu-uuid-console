@@ -45,7 +45,7 @@ enum class Facility {
 	LPR,
 };
 
-static __attribute__((unused)) std::string format_timestamp_ms(int days_width, uint64_t timestamp_ms) { return ""; }
+static __attribute__((unused)) std::string format_timestamp_ms(uint64_t timestamp_ms, unsigned int days_width = 1) { return ""; }
 static __attribute__((unused)) char format_level_char(Level level) { return ' '; }
 static __attribute__((unused)) const __FlashStringHelper *format_level_uppercase(Level level) { return F(""); }
 static __attribute__((unused)) const __FlashStringHelper *format_level_lowercase(Level level) { return F(""); }
