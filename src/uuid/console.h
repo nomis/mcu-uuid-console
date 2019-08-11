@@ -146,7 +146,7 @@ protected:
 
 	virtual size_t maximum_command_line_length() const;
 	virtual size_t maximum_log_messages() const;
-	virtual int read() = 0;
+	virtual int read_one_char() = 0;
 	virtual void erase_current_line();
 	virtual void erase_characters(size_t count);
 
@@ -218,7 +218,7 @@ public:
 protected:
 	StreamConsole(Stream &stream);
 
-	int read() override;
+	int read_one_char() override;
 
 private:
 	StreamConsole(const StreamConsole&) = delete;

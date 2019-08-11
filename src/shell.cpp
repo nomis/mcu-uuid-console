@@ -112,7 +112,7 @@ void Shell::loop_one() {
 }
 
 void Shell::loop_normal() {
-	const int input = read();
+	const int input = read_one_char();
 
 	if (input < 0) {
 		return;
@@ -196,7 +196,7 @@ void Shell::loop_normal() {
 }
 
 void Shell::loop_password() {
-	const int input = read();
+	const int input = read_one_char();
 
 	if (input < 0) {
 		return;

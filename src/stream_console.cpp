@@ -37,7 +37,7 @@ StreamConsole::StreamConsole(std::shared_ptr<Commands> commands, Stream &stream,
 
 }
 
-int StreamConsole::read() {
+int StreamConsole::read_one_char() {
 	return stream_.read();
 }
 
