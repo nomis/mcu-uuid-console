@@ -171,6 +171,9 @@ private:
 		DELAY,
 	};
 
+	Shell(const Shell&) = delete;
+	Shell& operator=(const Shell&) = delete;
+
 	void loop_normal();
 	void loop_password();
 	void loop_delay();
@@ -218,6 +221,9 @@ protected:
 	int read() override;
 
 private:
+	StreamConsole(const StreamConsole&) = delete;
+	StreamConsole& operator=(const StreamConsole&) = delete;
+
 	Stream &stream_;
 };
 
