@@ -39,7 +39,7 @@ std::set<std::shared_ptr<Shell>> Shell::shells_;
 
 Shell::Shell(std::shared_ptr<Commands> commands, int context, int flags)
 		: context_(context), flags_(flags), commands_(commands) {
-	uuid::log::Logger::register_receiver(this, uuid::log::Level::NOTICE);
+
 }
 
 Shell::~Shell() {
@@ -47,6 +47,7 @@ Shell::~Shell() {
 }
 
 void Shell::start() {
+	uuid::log::Logger::register_receiver(this, uuid::log::Level::NOTICE);
 	line_buffer_.reserve(maximum_command_line_length());
 	display_banner();
 	display_prompt();
