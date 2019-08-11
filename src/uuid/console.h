@@ -120,7 +120,33 @@ public:
 	void stop();
 
 	void enter_password(const __FlashStringHelper *prompt, password_function function);
+
+	/**
+	 * Stop executing anything on this shell for a period of time.
+	 *
+	 * There is an assumption that 2^64 milliseconds uptime will always
+	 * be enough time for this delay process.
+	 *
+	 * @param[in] ms Time in milliseconds to delay execution for.
+	 * @param[in] function Function to be executed at a future time,
+	 *                     prior to resuming normal execution.
+	 */
 	void delay_for(unsigned long ms, delay_function function);
+
+	/**
+	 * Stop executing anything on this shell until a future time is
+	 * reached.
+	 *
+	 * There is an assumption that 2^64 milliseconds uptime will always
+	 * be enough time for this delay process.
+	 *
+	 * The reference time is uuid::get_uptime_ms().
+	 *
+	 * @param[in] ms Uptime in the future (in milliseconds) when the
+	 *               function should be executed.
+	 * @param[in] function Function to be executed at a future time,
+	 *                     prior to resuming normal execution.
+	 */
 	void delay_until(uint64_t ms, delay_function function);
 
 	virtual void print(char data) = 0;
