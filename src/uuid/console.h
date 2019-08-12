@@ -28,7 +28,6 @@
 #include <map>
 #include <set>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include <uuid/common.h>
@@ -197,6 +196,15 @@ private:
 		DELAY,
 	};
 
+	class QueuedLogMessage {
+	public:
+		QueuedLogMessage(unsigned long id, std::shared_ptr<uuid::log::Message> content);
+		~QueuedLogMessage() = default;
+
+		const unsigned long id_;
+		const std::shared_ptr<const uuid::log::Message> content_;
+	};
+
 	Shell(const Shell&) = delete;
 	Shell& operator=(const Shell&) = delete;
 
@@ -224,7 +232,7 @@ private:
 	char previous_ = 0;
 	bool prompt_displayed_ = false;
 	unsigned long log_message_id_ = 0;
-	std::list<std::pair<unsigned long,std::shared_ptr<uuid::log::Message>>> log_messages_;
+	std::list<QueuedLogMessage> log_messages_;
 	const __FlashStringHelper *password_prompt_ = nullptr;
 	password_function password_function_;
 	uint64_t delay_time_ = 0;

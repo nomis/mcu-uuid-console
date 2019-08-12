@@ -64,12 +64,17 @@ void Shell::stop() {
 	stopped();
 }
 
+Shell::QueuedLogMessage::QueuedLogMessage(unsigned long id, std::shared_ptr<uuid::log::Message> content)
+		: id_(id), content_(content) {
+
+}
+
 void Shell::add_log_message(std::shared_ptr<uuid::log::Message> message) {
 	if (log_messages_.size() >= maximum_log_messages()) {
 		log_messages_.pop_front();
 	}
 
-	log_messages_.emplace_back(std::make_pair(log_message_id_++, message));
+	log_messages_.emplace_back(log_message_id_++, message);
 }
 
 uuid::log::Level Shell::get_log_level() {
@@ -475,9 +480,9 @@ void Shell::output_logs() {
 		while (!log_messages_.empty()) {
 			auto &message = log_messages_.front();
 
-			print(uuid::log::format_timestamp_ms(message.second->uptime_ms_, 3));
-			printf(F(" %c %lu: [%S] "), uuid::log::format_level_char(message.second->level_), message.first, message.second->name_);
-			println(message.second->text_);
+			print(uuid::log::format_timestamp_ms(message.content_->uptime_ms_, 3));
+			printf(F(" %c %lu: [%S] "), uuid::log::format_level_char(message.content_->level_), message.id_, message.content_->name_);
+			println(message.content_->text_);
 
 			log_messages_.pop_front();
 			::yield();
