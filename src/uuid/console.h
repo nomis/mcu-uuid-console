@@ -20,8 +20,9 @@
 #define UUID_CONSOLE_H_
 
 #include <Arduino.h>
-#include <stdarg.h>
 
+#include <cstdarg>
+#include <cstdint>
 #include <functional>
 #include <list>
 #include <memory>
@@ -98,7 +99,7 @@ private:
 	std::list<std::shared_ptr<Command>> commands_;
 };
 
-class Shell: public std::enable_shared_from_this<Shell>, public uuid::log::Receiver {
+class Shell: public std::enable_shared_from_this<Shell>, public uuid::log::Handler {
 public:
 	static constexpr size_t MAX_COMMAND_LINE_LENGTH = 80;
 	static constexpr size_t MAX_LOG_MESSAGES = 20;
@@ -111,7 +112,7 @@ public:
 	static void loop_all();
 
 	void start();
-	virtual void add_log_message(std::shared_ptr<uuid::log::Message> message);
+	virtual void operator<<(std::shared_ptr<uuid::log::Message> message);
 	uuid::log::Level get_log_level();
 	void set_log_level(uuid::log::Level level);
 	void loop_one();

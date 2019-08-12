@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UUID_COMMON_H_
-#define UUID_COMMON_H_
+#ifndef MOCK_UUID_COMMON_H_
+#define MOCK_UUID_COMMON_H_
 
 namespace uuid {
 

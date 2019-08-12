@@ -43,11 +43,11 @@ Shell::Shell(std::shared_ptr<Commands> commands, int context, int flags)
 }
 
 Shell::~Shell() {
-	uuid::log::Logger::unregister_receiver(this);
+	uuid::log::Logger::unregister_handler(this);
 }
 
 void Shell::start() {
-	uuid::log::Logger::register_receiver(this, uuid::log::Level::NOTICE);
+	uuid::log::Logger::register_handler(this, uuid::log::Level::NOTICE);
 	line_buffer_.reserve(maximum_command_line_length());
 	display_banner();
 	display_prompt();
@@ -69,7 +69,7 @@ Shell::QueuedLogMessage::QueuedLogMessage(unsigned long id, std::shared_ptr<uuid
 
 }
 
-void Shell::add_log_message(std::shared_ptr<uuid::log::Message> message) {
+void Shell::operator<<(std::shared_ptr<uuid::log::Message> message) {
 	if (log_messages_.size() >= maximum_log_messages()) {
 		log_messages_.pop_front();
 	}
@@ -82,7 +82,7 @@ uuid::log::Level Shell::get_log_level() {
 }
 
 void Shell::set_log_level(uuid::log::Level level) {
-	uuid::log::Logger::register_receiver(this, level);
+	uuid::log::Logger::register_handler(this, level);
 }
 
 void Shell::loop_all() {
@@ -480,9 +480,9 @@ void Shell::output_logs() {
 		while (!log_messages_.empty()) {
 			auto &message = log_messages_.front();
 
-			print(uuid::log::format_timestamp_ms(message.content_->uptime_ms_, 3));
-			printf(F(" %c %lu: [%S] "), uuid::log::format_level_char(message.content_->level_), message.id_, message.content_->name_);
-			println(message.content_->text_);
+			print(uuid::log::format_timestamp_ms(message.content_->uptime_ms, 3));
+			printf(F(" %c %lu: [%S] "), uuid::log::format_level_char(message.content_->level), message.id_, message.content_->name);
+			println(message.content_->text);
 
 			log_messages_.pop_front();
 			::yield();

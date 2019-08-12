@@ -16,18 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UUID_LOG_H_
-#define UUID_LOG_H_
+#ifndef MOCK_UUID_LOG_H_
+#define MOCK_UUID_LOG_H_
 
-#include <stdarg.h>
-
+#include <cstdarg>
+#include <cstdint>
 #include <string>
 
 namespace uuid {
 
 namespace log {
 
-enum class Level {
+enum class Level : int8_t {
 	OFF = -1,
 	EMERG = 0,
 	ALERT,
@@ -41,7 +41,7 @@ enum class Level {
 	ALL,
 };
 
-enum class Facility {
+enum class Facility : uint8_t {
 	LPR,
 };
 
@@ -50,26 +50,25 @@ static __attribute__((unused)) char format_level_char(Level level) { return ' ';
 static __attribute__((unused)) const __FlashStringHelper *format_level_uppercase(Level level) { return F(""); }
 static __attribute__((unused)) const __FlashStringHelper *format_level_lowercase(Level level) { return F(""); }
 
-class Message {
-public:
+struct Message {
 	Message(uint64_t uptime_ms, Level level, Facility facility, const __FlashStringHelper *name, const std::string &&text);
 	~Message() = default;
 
-	const uint64_t uptime_ms_;
-	const Level level_;
-	const Facility facility_;
-	const __FlashStringHelper *name_;
-	const std::string text_;
+	const uint64_t uptime_ms;
+	const Level level;
+	const Facility facility;
+	const __FlashStringHelper *name;
+	const std::string text;
 };
 
-class Receiver {
+class Handler {
 public:
-	virtual ~Receiver() = default;
+	virtual ~Handler() = default;
 
-	virtual void add_log_message(std::shared_ptr<Message> message) = 0;
+	virtual void operator<<(std::shared_ptr<Message> message) = 0;
 
 protected:
-	Receiver() = default;
+	Handler() = default;
 };
 
 class Logger {
@@ -77,10 +76,10 @@ public:
 	Logger(const __FlashStringHelper *name __attribute__((unused)), Facility facility __attribute__((unused))) {};
 	~Logger() = default;
 
-	static void register_receiver(Receiver *receiver __attribute__((unused)), Level level __attribute__((unused))) {}
-	static void unregister_receiver(Receiver *receiver __attribute__((unused))) {}
+	static void register_handler(Handler *handler __attribute__((unused)), Level level __attribute__((unused))) {}
+	static void unregister_handler(Handler *handler __attribute__((unused))) {}
 
-	static Level get_log_level(Receiver *receiver) { return Level::ALL; }
+	static Level get_log_level(Handler *handler) { return Level::ALL; }
 
 	static inline bool enabled(Level level) { return true; }
 	void emerg(const char *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
