@@ -39,7 +39,7 @@ public:
 	using Shell::unparse_line;
 
 protected:
-	int read() { return '\n'; };
+	int read_one_char() { return '\n'; };
 	void print(char data __attribute__((unused))) {};
 	void print(const char *data __attribute__((unused))) {};
 	void print(const std::string &data __attribute__((unused))) {};
