@@ -191,10 +191,36 @@ protected:
 	std::string unparse_line(const std::list<std::string> &items);
 
 private:
-	enum class Mode {
+	enum class Mode : uint8_t {
 		NORMAL,
 		PASSWORD,
 		DELAY,
+	};
+
+	class ModeData {
+	public:
+		virtual ~ModeData() = default;
+
+	protected:
+		ModeData() = default;
+	};
+
+	class PasswordData: public ModeData {
+	public:
+		PasswordData(const __FlashStringHelper *password_prompt, password_function password_function);
+		~PasswordData() override = default;
+
+		const __FlashStringHelper *password_prompt_;
+		password_function password_function_;
+	};
+
+	class DelayData: public ModeData {
+	public:
+		DelayData(uint64_t delay_time, delay_function delay_function);
+		~DelayData() override = default;
+
+		uint64_t delay_time_;
+		delay_function delay_function_;
 	};
 
 	class QueuedLogMessage {
@@ -227,17 +253,14 @@ private:
 	static std::set<std::shared_ptr<Shell>> shells_;
 
 	std::shared_ptr<Commands> commands_;
-	bool stopped_ = false;
-	Mode mode_ = Mode::NORMAL;
-	std::string line_buffer_;
-	char previous_ = 0;
-	bool prompt_displayed_ = false;
 	unsigned long log_message_id_ = 0;
 	std::list<QueuedLogMessage> log_messages_;
-	const __FlashStringHelper *password_prompt_ = nullptr;
-	password_function password_function_;
-	uint64_t delay_time_ = 0;
-	delay_function delay_function_;
+	std::string line_buffer_;
+	Mode mode_ = Mode::NORMAL;
+	char previous_ = 0;
+	bool stopped_ = false;
+	bool prompt_displayed_ = false;
+	std::unique_ptr<ModeData> mode_data_ = nullptr;
 };
 
 class StreamConsole: virtual public Shell {

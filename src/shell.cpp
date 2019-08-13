@@ -29,6 +29,17 @@
 
 #include <uuid/log.h>
 
+#ifndef __cpp_lib_make_unique
+namespace std {
+
+template<typename _Tp, typename... _Args>
+inline unique_ptr<_Tp> make_unique(_Args&&... __args) {
+	return unique_ptr<_Tp>(new _Tp(std::forward<_Args>(__args)...));
+}
+
+} // namespace std
+#endif
+
 namespace uuid {
 
 namespace console {
@@ -200,6 +211,11 @@ void Shell::loop_normal() {
 	previous_ = c;
 }
 
+Shell::PasswordData::PasswordData(const __FlashStringHelper *password_prompt, password_function password_function)
+		: password_prompt_(password_prompt), password_function_(password_function) {
+
+}
+
 void Shell::loop_password() {
 	const int input = read_one_char();
 
@@ -265,13 +281,19 @@ void Shell::loop_password() {
 	previous_ = c;
 }
 
-void Shell::loop_delay() {
-	if (uuid::get_uptime_ms() >= delay_time_) {
-		auto function_copy = delay_function_;
+Shell::DelayData::DelayData(uint64_t delay_time, delay_function delay_function)
+		: delay_time_(delay_time), delay_function_(delay_function) {
 
-		delay_time_ = 0;
-		delay_function_ = nullptr;
+}
+
+void Shell::loop_delay() {
+	auto *delay_data = reinterpret_cast<Shell::DelayData*>(mode_data_.get());
+
+	if (uuid::get_uptime_ms() >= delay_data->delay_time_) {
+		auto function_copy = delay_data->delay_function_;
+
 		mode_ = Mode::NORMAL;
+		mode_data_.reset();
 
 		function_copy(*this);
 
@@ -283,9 +305,8 @@ void Shell::loop_delay() {
 
 void Shell::enter_password(const __FlashStringHelper *prompt, password_function function) {
 	if (mode_ == Mode::NORMAL) {
-		password_prompt_ = prompt;
-		password_function_ = function;
 		mode_ = Mode::PASSWORD;
+		mode_data_ = std::make_unique<Shell::PasswordData>(prompt, function);
 	}
 }
 
@@ -295,9 +316,8 @@ void Shell::delay_for(unsigned long ms, delay_function function) {
 
 void Shell::delay_until(uint64_t ms, delay_function function) {
 	if (mode_ == Mode::NORMAL) {
-		delay_time_ = ms;
-		delay_function_ = function;
 		mode_ = Mode::DELAY;
+		mode_data_ = std::make_unique<Shell::DelayData>(ms, function);
 	}
 }
 
@@ -447,7 +467,7 @@ void Shell::display_prompt() {
 		break;
 
 	case Mode::PASSWORD:
-		print(password_prompt_);
+		print(reinterpret_cast<Shell::PasswordData*>(mode_data_.get())->password_prompt_);
 		break;
 
 	case Mode::NORMAL:
@@ -551,11 +571,11 @@ void Shell::process_completion() {
 void Shell::process_password(bool completed) {
 	println();
 
-	auto function_copy = password_function_;
+	auto *password_data = reinterpret_cast<Shell::PasswordData*>(mode_data_.get());
+	auto function_copy = password_data->password_function_;
 
-	password_prompt_ = nullptr;
-	password_function_ = nullptr;
 	mode_ = Mode::NORMAL;
+	mode_data_.reset();
 
 	function_copy(*this, completed, line_buffer_);
 	line_buffer_.clear();
