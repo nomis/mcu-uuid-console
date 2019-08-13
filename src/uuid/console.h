@@ -99,7 +99,7 @@ private:
 	std::list<std::shared_ptr<Command>> commands_;
 };
 
-class Shell: public std::enable_shared_from_this<Shell>, public uuid::log::Handler {
+class Shell: public std::enable_shared_from_this<Shell>, public uuid::log::Handler, public ::Print {
 public:
 	static constexpr size_t MAX_COMMAND_LINE_LENGTH = 80;
 	static constexpr size_t MAX_LOG_MESSAGES = 20;
@@ -149,18 +149,14 @@ public:
 	 */
 	void delay_until(uint64_t ms, delay_function function);
 
-	virtual void print(char data) = 0;
-	virtual void print(const char *data) = 0;
-	virtual void print(const std::string &data) = 0;
-	virtual void print(const __FlashStringHelper *data) = 0;
-	void println();
-	void println(const char *data);
-	void println(const std::string &data);
-	void println(const __FlashStringHelper *data);
-	void printf(const char *format, ...) /* __attribute__((format (printf, 2, 3))) */;
-	void printf(const __FlashStringHelper *format, ...) /* __attribute__((format(printf, 2, 3))) */;
-	void printfln(const char *format, ...) /* __attribute__((format (printf, 2, 3))) */;
-	void printfln(const __FlashStringHelper *format, ...) /* __attribute__((format(printf, 2, 3))) */;
+	using ::Print::print;
+	size_t print(const std::string &data);
+	using ::Print::println;
+	size_t println(const std::string &data);
+	using ::Print::printf;
+	size_t printf(const __FlashStringHelper *format, ...) /* __attribute__((format(printf, 2, 3))) */;
+	size_t printfln(const char *format, ...) /* __attribute__((format (printf, 2, 3))) */;
+	size_t printfln(const __FlashStringHelper *format, ...) /* __attribute__((format(printf, 2, 3))) */;
 
 	static uuid::log::Logger logger_;
 	unsigned int context_ = 0;
@@ -247,8 +243,8 @@ private:
 
 	void delete_buffer_word(bool display);
 
-	void vprintf(const char *format, va_list ap);
-	void vprintf(const __FlashStringHelper *format, va_list ap);
+	size_t vprintf(const char *format, va_list ap);
+	size_t vprintf(const __FlashStringHelper *format, va_list ap);
 
 	static std::set<std::shared_ptr<Shell>> shells_;
 
@@ -268,10 +264,8 @@ public:
 	StreamConsole(std::shared_ptr<Commands> commands, Stream &stream, int context, int flags = 0);
 	~StreamConsole() override = default;
 
-	void print(char data) override;
-	void print(const char *data) override;
-	void print(const std::string &data) override;
-	void print(const __FlashStringHelper *data) override;
+	size_t write(uint8_t data) override;
+	size_t write(const uint8_t *buffer, size_t size) override;
 
 protected:
 	StreamConsole(Stream &stream);

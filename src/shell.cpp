@@ -202,7 +202,7 @@ void Shell::loop_normal() {
 			// ASCII text
 			if (line_buffer_.length() < maximum_command_line_length()) {
 				line_buffer_.push_back(c);
-				print(c);
+				write((uint8_t)c);
 			}
 		}
 		break;
@@ -338,76 +338,69 @@ void Shell::delete_buffer_word(bool display) {
 	}
 }
 
-void Shell::println() {
-	print("\r\n");
+size_t Shell::print(const std::string &data) {
+	return write(reinterpret_cast<const uint8_t*>(data.c_str()), data.length());
 }
 
-void Shell::println(const char *data) {
-	print(data);
-	println();
+size_t Shell::println(const std::string &data) {
+	size_t len = print(data);
+	len += println();
+	return len;
 }
 
-void Shell::println(const std::string &data) {
-	print(data);
-	println();
-}
-
-void Shell::println(const __FlashStringHelper *data) {
-	print(data);
-	println();
-}
-
-void Shell::printf(const char *format, ...) {
+size_t Shell::printf(const __FlashStringHelper *format, ...) {
 	va_list ap;
 
 	va_start(ap, format);
-	vprintf(format, ap);
+	size_t len = vprintf(format, ap);
 	va_end(ap);
+
+	return len;
 }
 
-void Shell::printf(const __FlashStringHelper *format, ...) {
+size_t Shell::printfln(const char *format, ...) {
 	va_list ap;
 
 	va_start(ap, format);
-	vprintf(format, ap);
+	size_t len = vprintf(format, ap);
 	va_end(ap);
+
+	len += println();
+	return len;
 }
 
-void Shell::printfln(const char *format, ...) {
+size_t Shell::printfln(const __FlashStringHelper *format, ...) {
 	va_list ap;
 
 	va_start(ap, format);
-	vprintf(format, ap);
+	size_t len = vprintf(format, ap);
 	va_end(ap);
-	println();
+
+	len += println();
+	return len;
 }
 
-void Shell::printfln(const __FlashStringHelper *format, ...) {
-	va_list ap;
-
-	va_start(ap, format);
-	vprintf(format, ap);
-	va_end(ap);
-	println();
-}
-
-void Shell::vprintf(const char *format, va_list ap) {
+size_t Shell::vprintf(const char *format, va_list ap) {
 	int len = ::vsnprintf(nullptr, 0, format, ap);
 	if (len > 0) {
 		std::string text(static_cast<std::string::size_type>(len), '\0');
 
 		::vsnprintf(&text[0], text.capacity() + 1, format, ap);
-		print(text);
+		return print(text);
+	} else {
+		return 0;
 	}
 }
 
-void Shell::vprintf(const __FlashStringHelper *format, va_list ap) {
+size_t Shell::vprintf(const __FlashStringHelper *format, va_list ap) {
 	int len = ::vsnprintf_P(nullptr, 0, reinterpret_cast<PGM_P>(format), ap);
 	if (len > 0) {
 		std::string text(static_cast<std::string::size_type>(len), '\0');
 
 		::vsnprintf_P(&text[0], text.capacity() + 1, reinterpret_cast<PGM_P>(format), ap);
-		print(text);
+		return print(text);
+	} else {
+		return 0;
 	}
 }
 

@@ -37,24 +37,16 @@ StreamConsole::StreamConsole(std::shared_ptr<Commands> commands, Stream &stream,
 
 }
 
+size_t StreamConsole::write(uint8_t data) {
+	return stream_.write(data);
+}
+
+size_t StreamConsole::write(const uint8_t *buffer, size_t size) {
+	return stream_.write(buffer, size);
+}
+
 int StreamConsole::read_one_char() {
 	return stream_.read();
-}
-
-void StreamConsole::print(char data) {
-	stream_.write(data);
-}
-
-void StreamConsole::print(const char *data) {
-	stream_.write(data);
-}
-
-void StreamConsole::print(const std::string &data) {
-	stream_.write(data.data(), data.length());
-}
-
-void StreamConsole::print(const __FlashStringHelper *data) {
-	stream_.print(data);
 }
 
 } // namespace console
