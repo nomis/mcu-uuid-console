@@ -40,10 +40,8 @@ public:
 
 protected:
 	int read_one_char() { return '\n'; };
-	void print(char data __attribute__((unused))) {};
-	void print(const char *data __attribute__((unused))) {};
-	void print(const std::string &data __attribute__((unused))) {};
-	void print(const __FlashStringHelper *data __attribute__((unused))) {};
+	size_t write(uint8_t data __attribute__((unused))) override { return 1; }
+	size_t write(const uint8_t *buffer __attribute__((unused)), size_t size) override { return size; }
 };
 
 namespace uuid {
@@ -61,14 +59,14 @@ static std::string run;
 
 static void test_execution0() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line(""));
+	auto execution = commands.execute_command(shell, shell.parse_line(""));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 static void test_completion1a() {
-	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("sh"));
+	auto completion = commands.complete_command(shell, shell.parse_line("sh"));
 
 	TEST_ASSERT_EQUAL_STRING("show", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
@@ -76,14 +74,14 @@ static void test_completion1a() {
 
 static void test_execution1a() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line("sh"));
+	auto execution = commands.execute_command(shell, shell.parse_line("sh"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 static void test_completion1b() {
-	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("show"));
+	auto completion = commands.complete_command(shell, shell.parse_line("show"));
 
 	TEST_ASSERT_EQUAL_STRING("show ", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
@@ -97,14 +95,14 @@ static void test_completion1b() {
 
 static void test_execution1b() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line("show"));
+	auto execution = commands.execute_command(shell, shell.parse_line("show"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("show", run.c_str());
 }
 
 static void test_completion1c() {
-	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("show "));
+	auto completion = commands.complete_command(shell, shell.parse_line("show "));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
@@ -118,14 +116,14 @@ static void test_completion1c() {
 
 static void test_execution1c() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line("show "));
+	auto execution = commands.execute_command(shell, shell.parse_line("show "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("show", run.c_str());
 }
 
 static void test_completion1d() {
-	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("show th"));
+	auto completion = commands.complete_command(shell, shell.parse_line("show th"));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
@@ -139,14 +137,14 @@ static void test_completion1d() {
 
 static void test_execution1d() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line("show th"));
+	auto execution = commands.execute_command(shell, shell.parse_line("show th"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 static void test_completion1e() {
-	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("show thing"));
+	auto completion = commands.complete_command(shell, shell.parse_line("show thing"));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
@@ -160,14 +158,14 @@ static void test_completion1e() {
 
 static void test_execution1e() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line("show thing"));
+	auto execution = commands.execute_command(shell, shell.parse_line("show thing"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 static void test_completion1f() {
-	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("show thing1"));
+	auto completion = commands.complete_command(shell, shell.parse_line("show thing1"));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
@@ -175,14 +173,14 @@ static void test_completion1f() {
 
 static void test_execution1f() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line("show thing1"));
+	auto execution = commands.execute_command(shell, shell.parse_line("show thing1"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("show thing1", run.c_str());
 }
 
 static void test_completion2a() {
-	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("cons"));
+	auto completion = commands.complete_command(shell, shell.parse_line("cons"));
 
 	TEST_ASSERT_EQUAL_STRING("console log ", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
@@ -190,14 +188,14 @@ static void test_completion2a() {
 
 static void test_execution2a() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line("cons"));
+	auto execution = commands.execute_command(shell, shell.parse_line("cons"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 static void test_completion2b() {
-	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("console"));
+	auto completion = commands.complete_command(shell, shell.parse_line("console"));
 
 	TEST_ASSERT_EQUAL_STRING("console log ", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
@@ -205,14 +203,14 @@ static void test_completion2b() {
 
 static void test_execution2b() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line("console"));
+	auto execution = commands.execute_command(shell, shell.parse_line("console"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 static void test_completion2c() {
-	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("console "));
+	auto completion = commands.complete_command(shell, shell.parse_line("console "));
 
 	TEST_ASSERT_EQUAL_STRING("console log ", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
@@ -220,14 +218,14 @@ static void test_completion2c() {
 
 static void test_execution2c() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line("console "));
+	auto execution = commands.execute_command(shell, shell.parse_line("console "));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 static void test_completion2d() {
-	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("console l"));
+	auto completion = commands.complete_command(shell, shell.parse_line("console l"));
 
 	TEST_ASSERT_EQUAL_STRING("console log ", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
@@ -235,14 +233,14 @@ static void test_completion2d() {
 
 static void test_execution2d() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line("console l"));
+	auto execution = commands.execute_command(shell, shell.parse_line("console l"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 static void test_completion2e() {
-	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("console log"));
+	auto completion = commands.complete_command(shell, shell.parse_line("console log"));
 
 	TEST_ASSERT_EQUAL_STRING("console log ", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
@@ -250,14 +248,14 @@ static void test_completion2e() {
 
 static void test_execution2e() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line("console log"));
+	auto execution = commands.execute_command(shell, shell.parse_line("console log"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 static void test_completion2f() {
-	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("console log "));
+	auto completion = commands.complete_command(shell, shell.parse_line("console log "));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
@@ -271,14 +269,14 @@ static void test_completion2f() {
 
 static void test_execution2f() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line("console log "));
+	auto execution = commands.execute_command(shell, shell.parse_line("console log "));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 static void test_completion2g() {
-	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("console log a"));
+	auto completion = commands.complete_command(shell, shell.parse_line("console log a"));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
@@ -286,14 +284,14 @@ static void test_completion2g() {
 
 static void test_execution2g() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line("console log a"));
+	auto execution = commands.execute_command(shell, shell.parse_line("console log a"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 static void test_completion2h() {
-	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("console log in"));
+	auto completion = commands.complete_command(shell, shell.parse_line("console log in"));
 
 	TEST_ASSERT_EQUAL_STRING("console log info", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
@@ -301,14 +299,14 @@ static void test_completion2h() {
 
 static void test_execution2h() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line("console log in"));
+	auto execution = commands.execute_command(shell, shell.parse_line("console log in"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 static void test_completion2i() {
-	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("console log info"));
+	auto completion = commands.complete_command(shell, shell.parse_line("console log info"));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
@@ -316,14 +314,14 @@ static void test_completion2i() {
 
 static void test_execution2i() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line("console log info"));
+	auto execution = commands.execute_command(shell, shell.parse_line("console log info"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("console log info", run.c_str());
 }
 
 static void test_completion3a() {
-	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("h"));
+	auto completion = commands.complete_command(shell, shell.parse_line("h"));
 
 	TEST_ASSERT_EQUAL_STRING("help", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
@@ -331,14 +329,14 @@ static void test_completion3a() {
 
 static void test_execution3a() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line("h"));
+	auto execution = commands.execute_command(shell, shell.parse_line("h"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 static void test_completion3b() {
-	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("help"));
+	auto completion = commands.complete_command(shell, shell.parse_line("help"));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
@@ -346,52 +344,52 @@ static void test_completion3b() {
 
 static void test_execution3b() {
 	run = "";
-	auto execution = commands.execute_command(shell, 0, 0, shell.parse_line("help"));
+	auto execution = commands.execute_command(shell, shell.parse_line("help"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("help", run.c_str());
 }
 
 int main(int argc, char *argv[]) {
-	commands.add_command(0, 0, flash_string_vector{F("help")}, Commands::no_arguments,
+	commands.add_command(0, 0, flash_string_vector{F("help")}, Commands::no_arguments(),
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "help";
-	}, Commands::no_argument_completion);
+	}, Commands::no_argument_completion());
 
-	commands.add_command(0, 0, flash_string_vector{F("show")}, Commands::no_arguments,
+	commands.add_command(0, 0, flash_string_vector{F("show")}, Commands::no_arguments(),
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "show";
-	}, Commands::no_argument_completion);
+	}, Commands::no_argument_completion());
 
-	commands.add_command(0, 0, flash_string_vector{F("show"), F("thing1")}, Commands::no_arguments,
+	commands.add_command(0, 0, flash_string_vector{F("show"), F("thing1")}, Commands::no_arguments(),
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "show thing1";
-	}, Commands::no_argument_completion);
+	}, Commands::no_argument_completion());
 
-	commands.add_command(0, 0, flash_string_vector{F("show"), F("thing2")}, Commands::no_arguments,
+	commands.add_command(0, 0, flash_string_vector{F("show"), F("thing2")}, Commands::no_arguments(),
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "show thing2";
-	}, Commands::no_argument_completion);
+	}, Commands::no_argument_completion());
 
-	commands.add_command(0, 0, flash_string_vector{F("show"), F("thing3")}, Commands::no_arguments,
+	commands.add_command(0, 0, flash_string_vector{F("show"), F("thing3")}, Commands::no_arguments(),
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "show thing3";
-	}, Commands::no_argument_completion);
+	}, Commands::no_argument_completion());
 
-	commands.add_command(0, 0, flash_string_vector{F("console"), F("log"), F("err")}, Commands::no_arguments,
+	commands.add_command(0, 0, flash_string_vector{F("console"), F("log"), F("err")}, Commands::no_arguments(),
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "console log err";
-	}, Commands::no_argument_completion);
+	}, Commands::no_argument_completion());
 
-	commands.add_command(0, 0, flash_string_vector{F("console"), F("log"), F("warning")}, Commands::no_arguments,
+	commands.add_command(0, 0, flash_string_vector{F("console"), F("log"), F("warning")}, Commands::no_arguments(),
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "console log warning";
-	}, Commands::no_argument_completion);
+	}, Commands::no_argument_completion());
 
-	commands.add_command(0, 0, flash_string_vector{F("console"), F("log"), F("info")}, Commands::no_arguments,
+	commands.add_command(0, 0, flash_string_vector{F("console"), F("log"), F("info")}, Commands::no_arguments(),
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "console log info";
-	}, Commands::no_argument_completion);
+	}, Commands::no_argument_completion());
 
 	UNITY_BEGIN();
 	RUN_TEST(test_execution0);

@@ -20,6 +20,7 @@
 #define ARDUINO_H_
 
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 
 #define PROGMEM
@@ -36,14 +37,24 @@ class __FlashStringHelper;
 
 static __attribute__((unused)) void yield(void) {}
 
-class Stream {
+class Print {
+public:
+	virtual ~Print() = default;
+	virtual size_t write(uint8_t c __attribute__((unused))) { return 1; }
+	virtual size_t write(const uint8_t *buffer __attribute__((unused)), size_t size) { return size; }
+	size_t print(char c __attribute__((unused))) { return 1; }
+	size_t print(const char *data) { return strlen(data); }
+	size_t print(const __FlashStringHelper *data) { return strlen(reinterpret_cast<const char *>(data)); }
+	size_t printf(const char *format, ...) { return strlen(format); }
+	size_t println() { return 2; }
+	size_t println(const char *data) { return strlen(data) + println(); }
+	size_t println(const __FlashStringHelper *data) { return strlen(reinterpret_cast<const char *>(data)) + println(); }
+};
+
+class Stream: public Print {
 public:
 	bool available() { return true; }
 	int read() { return '\n'; }
-	size_t write(char c) { return 1; }
-	size_t write(const char *data) { return strlen(data); }
-	size_t write(const char *buffer __attribute__((unused)), size_t size) { return size; }
-	size_t print(const __FlashStringHelper *data) { return strlen(reinterpret_cast<const char *>(data)); }
 };
 
 #endif
