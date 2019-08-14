@@ -348,6 +348,16 @@ size_t Shell::println(const std::string &data) {
 	return len;
 }
 
+size_t Shell::printf(const char *format, ...) {
+	va_list ap;
+
+	va_start(ap, format);
+	size_t len = vprintf(format, ap);
+	va_end(ap);
+
+	return len;
+}
+
 size_t Shell::printf(const __FlashStringHelper *format, ...) {
 	va_list ap;
 

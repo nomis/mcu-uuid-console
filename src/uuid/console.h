@@ -284,7 +284,7 @@ public:
 	size_t print(const std::string &data);
 	using ::Print::println;
 	size_t println(const std::string &data);
-	using ::Print::printf;
+	size_t printf(const char *format, ...) /* __attribute__((format(printf, 2, 3))) */;
 	size_t printf(const __FlashStringHelper *format, ...) /* __attribute__((format(printf, 2, 3))) */;
 	size_t printfln(const char *format, ...) /* __attribute__((format (printf, 2, 3))) */;
 	size_t printfln(const __FlashStringHelper *format, ...) /* __attribute__((format(printf, 2, 3))) */;
