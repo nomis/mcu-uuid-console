@@ -57,8 +57,12 @@ public:
 	Commands() = default;
 	~Commands() = default;
 
-	static flash_string_vector no_arguments;
-	static argument_completion_function no_argument_completion;
+	static inline flash_string_vector no_arguments() { return flash_string_vector{}; }
+	static inline argument_completion_function no_argument_completion() {
+		return [] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) -> const std::set<std::string> {
+			return std::set<std::string>{};
+		};
+	}
 
 	void add_command(unsigned int context, unsigned int flags,
 			const flash_string_vector &name, const flash_string_vector &arguments,

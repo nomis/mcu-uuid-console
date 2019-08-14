@@ -32,12 +32,6 @@ namespace uuid {
 
 namespace console {
 
-flash_string_vector Commands::no_arguments;
-
-Commands::argument_completion_function Commands::no_argument_completion = [] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) -> const std::set<std::string> {
-	return std::set<std::string>{};
-};
-
 void Commands::add_command(unsigned int context, unsigned int flags,
 		const flash_string_vector &name, const flash_string_vector &arguments,
 		command_function function, argument_completion_function arg_function) {
@@ -143,8 +137,8 @@ Commands::Completion Commands::complete_command(Shell &shell, unsigned int conte
 			auto &target = exact ? commands.exact : commands.partial;
 
 			target.emplace(longest_common, std::make_shared<Command>(0, 0,
-					std::vector<const __FlashStringHelper *>{shortest_first.begin(), std::next(shortest_first.begin(), longest_common)}, no_arguments,
-					[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {}, no_argument_completion));
+					std::vector<const __FlashStringHelper *>{shortest_first.begin(), std::next(shortest_first.begin(), longest_common)}, no_arguments(),
+					[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {}, no_argument_completion()));
 			shortest_count = 1;
 			shortest_match = target.find(longest_common);
 			longer_matches = true;
