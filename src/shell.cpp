@@ -538,7 +538,7 @@ void Shell::process_completion() {
 			redisplay = true;
 
 			for (auto &help : completion.help) {
-				std::string help_line = unparse_line(help);
+				std::string help_line = format_line(help);
 
 				println(help_line);
 			}
@@ -550,7 +550,7 @@ void Shell::process_completion() {
 				redisplay = true;
 			}
 
-			line_buffer_ = unparse_line(completion.replacement);
+			line_buffer_ = format_line(completion.replacement);
 		}
 
 		if (redisplay) {
@@ -658,7 +658,7 @@ std::list<std::string> Shell::parse_line(const std::string &line) {
 	return items;
 }
 
-std::string Shell::unparse_line(const std::list<std::string> &items) {
+std::string Shell::format_line(const std::list<std::string> &items) {
 	std::string line;
 
 	line.reserve(maximum_command_line_length());

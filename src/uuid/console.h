@@ -315,7 +315,7 @@ protected:
 	void invoke_command(std::string line);
 
 	std::list<std::string> parse_line(const std::string &line);
-	std::string unparse_line(const std::list<std::string> &items);
+	std::string format_line(const std::list<std::string> &items);
 
 private:
 	enum class Mode : uint8_t {

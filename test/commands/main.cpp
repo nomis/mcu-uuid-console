@@ -36,7 +36,7 @@ public:
 	~DummyShell() override = default;
 
 	using Shell::parse_line;
-	using Shell::unparse_line;
+	using Shell::format_line;
 
 protected:
 	int read_one_char() { return '\n'; };
@@ -70,7 +70,7 @@ static void test_execution0() {
 static void test_completion1a() {
 	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("sh"));
 
-	TEST_ASSERT_EQUAL_STRING("show", shell.unparse_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("show", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
@@ -85,13 +85,13 @@ static void test_execution1a() {
 static void test_completion1b() {
 	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("show"));
 
-	TEST_ASSERT_EQUAL_STRING("show ", shell.unparse_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("show ", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
 	if (completion.help.size() == 3) {
 		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("thing1", shell.unparse_line(*it++).c_str());
-		TEST_ASSERT_EQUAL_STRING("thing2", shell.unparse_line(*it++).c_str());
-		TEST_ASSERT_EQUAL_STRING("thing3", shell.unparse_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("thing1", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("thing2", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("thing3", shell.format_line(*it++).c_str());
 	}
 }
 
@@ -106,13 +106,13 @@ static void test_execution1b() {
 static void test_completion1c() {
 	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("show "));
 
-	TEST_ASSERT_EQUAL_STRING("", shell.unparse_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
 	if (completion.help.size() == 3) {
 		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("thing1", shell.unparse_line(*it++).c_str());
-		TEST_ASSERT_EQUAL_STRING("thing2", shell.unparse_line(*it++).c_str());
-		TEST_ASSERT_EQUAL_STRING("thing3", shell.unparse_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("thing1", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("thing2", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("thing3", shell.format_line(*it++).c_str());
 	}
 }
 
@@ -127,13 +127,13 @@ static void test_execution1c() {
 static void test_completion1d() {
 	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("show th"));
 
-	TEST_ASSERT_EQUAL_STRING("", shell.unparse_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
 	if (completion.help.size() == 3) {
 		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("thing1", shell.unparse_line(*it++).c_str());
-		TEST_ASSERT_EQUAL_STRING("thing2", shell.unparse_line(*it++).c_str());
-		TEST_ASSERT_EQUAL_STRING("thing3", shell.unparse_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("thing1", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("thing2", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("thing3", shell.format_line(*it++).c_str());
 	}
 }
 
@@ -148,13 +148,13 @@ static void test_execution1d() {
 static void test_completion1e() {
 	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("show thing"));
 
-	TEST_ASSERT_EQUAL_STRING("", shell.unparse_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
 	if (completion.help.size() == 3) {
 		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("thing1", shell.unparse_line(*it++).c_str());
-		TEST_ASSERT_EQUAL_STRING("thing2", shell.unparse_line(*it++).c_str());
-		TEST_ASSERT_EQUAL_STRING("thing3", shell.unparse_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("thing1", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("thing2", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("thing3", shell.format_line(*it++).c_str());
 	}
 }
 
@@ -169,7 +169,7 @@ static void test_execution1e() {
 static void test_completion1f() {
 	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("show thing1"));
 
-	TEST_ASSERT_EQUAL_STRING("", shell.unparse_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
@@ -184,7 +184,7 @@ static void test_execution1f() {
 static void test_completion2a() {
 	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("cons"));
 
-	TEST_ASSERT_EQUAL_STRING("console log ", shell.unparse_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("console log ", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
@@ -199,7 +199,7 @@ static void test_execution2a() {
 static void test_completion2b() {
 	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("console"));
 
-	TEST_ASSERT_EQUAL_STRING("console log ", shell.unparse_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("console log ", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
@@ -214,7 +214,7 @@ static void test_execution2b() {
 static void test_completion2c() {
 	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("console "));
 
-	TEST_ASSERT_EQUAL_STRING("console log ", shell.unparse_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("console log ", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
@@ -229,7 +229,7 @@ static void test_execution2c() {
 static void test_completion2d() {
 	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("console l"));
 
-	TEST_ASSERT_EQUAL_STRING("console log ", shell.unparse_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("console log ", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
@@ -244,7 +244,7 @@ static void test_execution2d() {
 static void test_completion2e() {
 	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("console log"));
 
-	TEST_ASSERT_EQUAL_STRING("console log ", shell.unparse_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("console log ", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
@@ -259,13 +259,13 @@ static void test_execution2e() {
 static void test_completion2f() {
 	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("console log "));
 
-	TEST_ASSERT_EQUAL_STRING("", shell.unparse_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
 	if (completion.help.size() == 3) {
 		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("err", shell.unparse_line(*it++).c_str());
-		TEST_ASSERT_EQUAL_STRING("warning", shell.unparse_line(*it++).c_str());
-		TEST_ASSERT_EQUAL_STRING("info", shell.unparse_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("err", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("warning", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("info", shell.format_line(*it++).c_str());
 	}
 }
 
@@ -280,7 +280,7 @@ static void test_execution2f() {
 static void test_completion2g() {
 	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("console log a"));
 
-	TEST_ASSERT_EQUAL_STRING("", shell.unparse_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
@@ -295,7 +295,7 @@ static void test_execution2g() {
 static void test_completion2h() {
 	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("console log in"));
 
-	TEST_ASSERT_EQUAL_STRING("console log info", shell.unparse_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("console log info", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
@@ -310,7 +310,7 @@ static void test_execution2h() {
 static void test_completion2i() {
 	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("console log info"));
 
-	TEST_ASSERT_EQUAL_STRING("", shell.unparse_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
@@ -325,7 +325,7 @@ static void test_execution2i() {
 static void test_completion3a() {
 	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("h"));
 
-	TEST_ASSERT_EQUAL_STRING("help", shell.unparse_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("help", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
@@ -340,7 +340,7 @@ static void test_execution3a() {
 static void test_completion3b() {
 	auto completion = commands.complete_command(shell, 0, 0, shell.parse_line("help"));
 
-	TEST_ASSERT_EQUAL_STRING("", shell.unparse_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
