@@ -67,8 +67,8 @@ public:
 	void add_command(unsigned int context, unsigned int flags,
 			const flash_string_vector &name, const flash_string_vector &arguments,
 			command_function function, argument_completion_function arg_function);
-	Execution execute_command(Shell &shell, unsigned int context, unsigned int flags, const std::list<std::string> &command_line);
-	Completion complete_command(Shell &shell, unsigned int context, unsigned int flags, const std::list<std::string> &command_line);
+	Execution execute_command(Shell &shell, const std::list<std::string> &command_line);
+	Completion complete_command(Shell &shell, const std::list<std::string> &command_line);
 
 private:
 	class Command {

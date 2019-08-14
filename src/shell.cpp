@@ -513,7 +513,7 @@ void Shell::process_command() {
 	prompt_displayed_ = false;
 
 	if (!command_line.empty()) {
-		auto execution = commands_->execute_command(*this, context_, flags_, command_line);
+		auto execution = commands_->execute_command(*this, command_line);
 
 		if (execution.error != nullptr) {
 			println(execution.error);
@@ -530,7 +530,7 @@ void Shell::process_completion() {
 	std::list<std::string> command_line = parse_line(line_buffer_);
 
 	if (!command_line.empty()) {
-		auto completion = commands_->complete_command(*this, context_, flags_, command_line);
+		auto completion = commands_->complete_command(*this, command_line);
 		bool redisplay = false;
 
 		if (!completion.help.empty()) {

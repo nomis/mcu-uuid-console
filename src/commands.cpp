@@ -38,8 +38,8 @@ void Commands::add_command(unsigned int context, unsigned int flags,
 	commands_.emplace_back(std::make_shared<Command>(context, flags, name, arguments, function, arg_function));
 }
 
-Commands::Execution Commands::execute_command(Shell &shell __attribute__((unused)), unsigned int context, unsigned int flags, const std::list<std::string> &command_line) {
-	auto commands = find_command(context, flags, command_line);
+Commands::Execution Commands::execute_command(Shell &shell, const std::list<std::string> &command_line) {
+	auto commands = find_command(shell.context_, shell.flags_, command_line);
 	auto longest = commands.exact.crbegin();
 	Execution result;
 
@@ -71,8 +71,8 @@ Commands::Execution Commands::execute_command(Shell &shell __attribute__((unused
 	return result;
 }
 
-Commands::Completion Commands::complete_command(Shell &shell, unsigned int context, unsigned int flags, const std::list<std::string> &command_line) {
-	auto commands = find_command(context, flags, command_line);
+Commands::Completion Commands::complete_command(Shell &shell, const std::list<std::string> &command_line) {
+	auto commands = find_command(shell.context_, shell.flags_, command_line);
 	Completion result;
 
 	auto shortest_match = commands.partial.begin();
