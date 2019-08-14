@@ -671,17 +671,14 @@ std::string Shell::format_line(const std::list<std::string> &items) {
 		for (char c : item) {
 			switch (c) {
 			case ' ':
-				line += "\\ ";
-				break;
-
+			case '\"':
+			case '\'':
 			case '\\':
-				line += "\\\\";
-				break;
-
-			default:
-				line += c;
+				line += '\\';
 				break;
 			}
+
+			line += c;
 		}
 	}
 
