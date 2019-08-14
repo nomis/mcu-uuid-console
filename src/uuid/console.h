@@ -212,8 +212,8 @@ private:
 	 * Each matching command is returned in a map grouped by size.
 	 */
 	struct Match {
-		std::multimap<size_t,std::shared_ptr<const Command>> exact; /*!< Commands that match the command line exactly, grouped by the size of the command names. */
-		std::multimap<size_t,std::shared_ptr<const Command>> partial; /*!< Commands that the command line partially matches, grouped by the size of the command names. */
+		std::multimap<size_t,const Command*> exact; /*!< Commands that match the command line exactly, grouped by the size of the command names. */
+		std::multimap<size_t,const Command*> partial; /*!< Commands that the command line partially matches, grouped by the size of the command names. */
 	};
 
 	/**
@@ -227,7 +227,7 @@ private:
 	 */
 	Match find_command(unsigned int context, unsigned int flags, const std::list<std::string> &command_line);
 
-	std::list<std::shared_ptr<Command>> commands_; /*!< Commands stored in this container. */
+	std::list<Command> commands_; /*!< Commands stored in this container. */
 };
 
 class Shell: public std::enable_shared_from_this<Shell>, public uuid::log::Handler, public ::Print {

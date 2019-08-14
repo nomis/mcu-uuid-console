@@ -28,6 +28,17 @@
 #include <string>
 #include <vector>
 
+#ifndef __cpp_lib_make_unique
+namespace std {
+
+template<typename _Tp, typename... _Args>
+inline unique_ptr<_Tp> make_unique(_Args&&... __args) {
+	return unique_ptr<_Tp>(new _Tp(std::forward<_Args>(__args)...));
+}
+
+} // namespace std
+#endif
+
 namespace uuid {
 
 namespace console {
@@ -35,7 +46,7 @@ namespace console {
 void Commands::add_command(unsigned int context, unsigned int flags,
 		const flash_string_vector &name, const flash_string_vector &arguments,
 		command_function function, argument_completion_function arg_function) {
-	commands_.emplace_back(std::make_shared<Command>(context, flags, name, arguments, function, arg_function));
+	commands_.emplace_back(context, flags, name, arguments, function, arg_function);
 }
 
 Commands::Execution Commands::execute_command(Shell &shell, const std::list<std::string> &command_line) {
@@ -94,6 +105,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 	bool longer_matches = commands.exact.upper_bound(shortest_match->first) != commands.exact.end()
 			|| commands.partial.upper_bound(shortest_match->first) != commands.partial.end();
 	bool add_space = false;
+	std::unique_ptr<Command> temp_command;
 
 	if (commands.exact.empty() && shortest_count > 1) {
 		// There are no exact matches and there are multiple commands with the same shortest partial match length
@@ -136,9 +148,10 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 			// Create a temporary command that represents the longest common substring
 			auto &target = exact ? commands.exact : commands.partial;
 
-			target.emplace(longest_common, std::make_shared<Command>(0, 0,
+			temp_command = std::make_unique<Command>(0, 0,
 					std::vector<const __FlashStringHelper *>{shortest_first.begin(), std::next(shortest_first.begin(), longest_common)}, no_arguments(),
-					[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {}, no_argument_completion()));
+					[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {}, no_argument_completion());
+			target.emplace(longest_common, temp_command.get());
 			shortest_count = 1;
 			shortest_match = target.find(longest_common);
 			longer_matches = true;
@@ -280,18 +293,18 @@ Commands::Match Commands::find_command(unsigned int context, unsigned int flags,
 		bool match = true;
 		bool exact = true;
 
-		if ((command->flags_ & flags) != command->flags_) {
+		if ((command.flags_ & flags) != command.flags_) {
 			continue;
 		}
 
-		if (context != command->context_) {
+		if (context != command.context_) {
 			continue;
 		}
 
-		auto name_it = command->name_.cbegin();
+		auto name_it = command.name_.cbegin();
 		auto line_it = command_line.cbegin();
 
-		for (; name_it != command->name_.cend() && line_it != command_line.cend(); name_it++, line_it++) {
+		for (; name_it != command.name_.cend() && line_it != command_line.cend(); name_it++, line_it++) {
 			std::string name = read_flash_string(*name_it);
 			size_t found = name.rfind(*line_it, 0);
 
@@ -311,15 +324,15 @@ Commands::Match Commands::find_command(unsigned int context, unsigned int flags,
 			}
 		}
 
-		if (name_it != command->name_.cend()) {
+		if (name_it != command.name_.cend()) {
 			exact = false;
 		}
 
 		if (match) {
 			if (exact) {
-				commands.exact.emplace(command->name_.size(), command);
+				commands.exact.emplace(command.name_.size(), &command);
 			} else {
-				commands.partial.emplace(command->name_.size(), command);
+				commands.partial.emplace(command.name_.size(), &command);
 			}
 		}
 	}
