@@ -48,9 +48,9 @@ static const char __pstr__logger_name[] __attribute__((__aligned__(sizeof(int)))
 uuid::log::Logger Shell::logger_{FPSTR(__pstr__logger_name), uuid::log::Facility::LPR};
 std::set<std::shared_ptr<Shell>> Shell::shells_;
 
-Shell::Shell(std::shared_ptr<Commands> commands, int context, int flags)
-		: context_(context), flags_(flags), commands_(commands) {
-
+Shell::Shell(std::shared_ptr<Commands> commands, unsigned int context, unsigned int flags)
+		: commands_(commands), flags_(flags) {
+	enter_context(context);
 }
 
 Shell::~Shell() {

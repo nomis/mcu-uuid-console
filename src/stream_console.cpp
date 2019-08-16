@@ -32,7 +32,7 @@ StreamConsole::StreamConsole(Stream &stream)
 
 }
 
-StreamConsole::StreamConsole(std::shared_ptr<Commands> commands, Stream &stream, int context, int flags)
+StreamConsole::StreamConsole(std::shared_ptr<Commands> commands, Stream &stream, unsigned int context, unsigned int flags)
 		: Shell(commands, context, flags), stream_(stream) {
 
 }

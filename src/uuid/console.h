@@ -23,6 +23,7 @@
 
 #include <cstdarg>
 #include <cstdint>
+#include <deque>
 #include <functional>
 #include <list>
 #include <memory>
@@ -219,13 +220,12 @@ private:
 	/**
 	 * Find commands by matching them against the command line.
 	 *
-	 * @param[in] context Shell context to find matching command in.
-	 * @param[in] flags Shell flags for commands to match against.
+	 * @param[in] shell Shell that is accessing commands.
 	 * @param[in] command_line Command line as a space-delimited list
 	 *                         of strings.
 	 * @return An object describing the result of the command find operation.
 	 */
-	Match find_command(unsigned int context, unsigned int flags, const std::list<std::string> &command_line);
+	Match find_command(Shell &shell, const std::list<std::string> &command_line);
 
 	std::list<Command> commands_; /*!< Commands stored in this container. */
 };
@@ -249,6 +249,31 @@ public:
 	void loop_one();
 	bool running();
 	void stop();
+
+	static inline uuid::log::Logger& logger() { return logger_; }
+
+	inline unsigned int context() const {
+		if (!context_.empty()) {
+			return context_.back();
+		} else {
+			return 0;
+		}
+	}
+	inline void enter_context(unsigned int context) {
+		context_.emplace_back(context);
+	}
+	virtual bool exit_context() {
+		if (context_.size() > 1) {
+			context_.pop_back();
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	inline void add_flags(unsigned int flags) { flags_ |= flags; }
+	inline bool has_flags(unsigned int flags) const { return (flags_ & flags) == flags; }
+	inline void remove_flags(unsigned int flags) { flags_ &= ~flags; }
 
 	void enter_password(const __FlashStringHelper *prompt, password_function function);
 
@@ -289,13 +314,9 @@ public:
 	size_t printfln(const char *format, ...) /* __attribute__((format (printf, 2, 3))) */;
 	size_t printfln(const __FlashStringHelper *format, ...) /* __attribute__((format(printf, 2, 3))) */;
 
-	static uuid::log::Logger logger_;
-	unsigned int context_ = 0;
-	unsigned int flags_ = 0;
-
 protected:
 	Shell() = default;
-	Shell(std::shared_ptr<Commands> commands, int context, int flags = 0);
+	Shell(std::shared_ptr<Commands> commands, unsigned int context, unsigned int flags = 0);
 
 	virtual size_t maximum_command_line_length() const;
 	virtual size_t maximum_log_messages() const;
@@ -377,9 +398,12 @@ private:
 	size_t vprintf(const char *format, va_list ap);
 	size_t vprintf(const __FlashStringHelper *format, va_list ap);
 
+	static uuid::log::Logger logger_;
 	static std::set<std::shared_ptr<Shell>> shells_;
 
 	std::shared_ptr<Commands> commands_;
+	std::deque<unsigned int> context_;
+	unsigned int flags_ = 0;
 	unsigned long log_message_id_ = 0;
 	std::list<QueuedLogMessage> log_messages_;
 	std::string line_buffer_;
@@ -392,7 +416,7 @@ private:
 
 class StreamConsole: virtual public Shell {
 public:
-	StreamConsole(std::shared_ptr<Commands> commands, Stream &stream, int context, int flags = 0);
+	StreamConsole(std::shared_ptr<Commands> commands, Stream &stream, unsigned int context, unsigned int flags = 0);
 	~StreamConsole() override = default;
 
 	size_t write(uint8_t data) override;

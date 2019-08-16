@@ -50,7 +50,7 @@ void Commands::add_command(unsigned int context, unsigned int flags,
 }
 
 Commands::Execution Commands::execute_command(Shell &shell, const std::list<std::string> &command_line) {
-	auto commands = find_command(shell.context_, shell.flags_, command_line);
+	auto commands = find_command(shell, command_line);
 	auto longest = commands.exact.crbegin();
 	Execution result;
 
@@ -83,7 +83,7 @@ Commands::Execution Commands::execute_command(Shell &shell, const std::list<std:
 }
 
 Commands::Completion Commands::complete_command(Shell &shell, const std::list<std::string> &command_line) {
-	auto commands = find_command(shell.context_, shell.flags_, command_line);
+	auto commands = find_command(shell, command_line);
 	Completion result;
 
 	auto shortest_match = commands.partial.begin();
@@ -286,18 +286,18 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 	return result;
 }
 
-Commands::Match Commands::find_command(unsigned int context, unsigned int flags, const std::list<std::string> &command_line) {
+Commands::Match Commands::find_command(Shell &shell, const std::list<std::string> &command_line) {
 	Match commands;
 
 	for (auto& command : commands_) {
 		bool match = true;
 		bool exact = true;
 
-		if ((command.flags_ & flags) != command.flags_) {
+		if (!shell.has_flags(command.flags_)) {
 			continue;
 		}
 
-		if (context != command.context_) {
+		if (shell.context() != command.context_) {
 			continue;
 		}
 
