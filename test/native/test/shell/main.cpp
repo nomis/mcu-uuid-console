@@ -54,6 +54,9 @@ uint64_t get_uptime_ms() {
 
 static DummyShell shell;
 
+/**
+ * No escape characters or characters needing to be escaped.
+ */
 static void test_simple1() {
 	auto command_line = shell.parse_line("Hello World!");
 
@@ -149,6 +152,9 @@ static void test_space2c() {
 	TEST_ASSERT_EQUAL_STRING("Hello World!", shell.format_line(command_line).c_str());
 }
 
+/**
+ * Spaces can be escaped with a backslash.
+ */
 static void test_backslash_escaped1() {
 	auto command_line = shell.parse_line("Hello Escaped\\ World!");
 
@@ -162,6 +168,9 @@ static void test_backslash_escaped1() {
 	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ World!", shell.format_line(command_line).c_str());
 }
 
+/**
+ * Double quotes can be escaped with a backslash.
+ */
 static void test_backslash_escaped2() {
 	auto command_line = shell.parse_line("Hello Escaped\\\" World!");
 
@@ -176,6 +185,9 @@ static void test_backslash_escaped2() {
 	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\\" World!", shell.format_line(command_line).c_str());
 }
 
+/**
+ * Single quotes can be escaped with a backslash.
+ */
 static void test_backslash_escaped3() {
 	auto command_line = shell.parse_line("Hello Escaped\\' World!");
 
@@ -190,6 +202,9 @@ static void test_backslash_escaped3() {
 	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\' World!", shell.format_line(command_line).c_str());
 }
 
+/**
+ * Trailing backslashes are ignored.
+ */
 static void test_backslash_escaped4() {
 	auto command_line = shell.parse_line("Hello World!\\");
 
@@ -203,6 +218,9 @@ static void test_backslash_escaped4() {
 	TEST_ASSERT_EQUAL_STRING("Hello World!", shell.format_line(command_line).c_str());
 }
 
+/**
+ * Backslash escapes of characters other than space or quotes are interpreted literally.
+ */
 static void test_backslash_escaped5() {
 	auto command_line = shell.parse_line("\\H\\e\\l\\l\\o\\ \\n\\e\\w\\l\\i\\n\\e\\ \\W\\o\\r\\l\\d\\!");
 
@@ -215,6 +233,9 @@ static void test_backslash_escaped5() {
 	TEST_ASSERT_EQUAL_STRING("\\\\H\\\\e\\\\l\\\\l\\\\o\\ \\\\n\\\\e\\\\w\\\\l\\\\i\\\\n\\\\e\\ \\\\W\\\\o\\\\r\\\\l\\\\d\\\\!", shell.format_line(command_line).c_str());
 }
 
+/**
+ * Spaces can be escaped by double quotes.
+ */
 static void test_double_quote_escaped1() {
 	auto command_line = shell.parse_line("Hello \"Escaped World!\"");
 
@@ -228,6 +249,9 @@ static void test_double_quote_escaped1() {
 	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ World!", shell.format_line(command_line).c_str());
 }
 
+/**
+ * Single quotes can be escaped by double quotes.
+ */
 static void test_double_quote_escaped2() {
 	auto command_line = shell.parse_line("Hello \"Escaped 'World'!\"");
 
@@ -241,7 +265,10 @@ static void test_double_quote_escaped2() {
 	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\'World\\'!", shell.format_line(command_line).c_str());
 }
 
-static void test_double_quote_escaped3() {
+/**
+ * Double quote escapes are implicitly ended at the end of the command line.
+ */
+static void test_double_quote_escaped3a() {
 	auto command_line = shell.parse_line("Hello \"Escaped 'World'!");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
@@ -254,6 +281,25 @@ static void test_double_quote_escaped3() {
 	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\'World\\'!", shell.format_line(command_line).c_str());
 }
 
+/**
+ * Double quote escapes are implicitly ended at the end of the command line, even if there are trailing spaces.
+ */
+static void test_double_quote_escaped3b() {
+	auto command_line = shell.parse_line("Hello \"Escaped 'World'!     ");
+
+	TEST_ASSERT_EQUAL_INT(2, command_line.size());
+	if (command_line.size() == 2) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("Hello", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("Escaped 'World'!     ", (*it++).c_str());
+	}
+
+	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\'World\\'!\\ \\ \\ \\ \\ ", shell.format_line(command_line).c_str());
+}
+
+/**
+ * Backslash escapes of characters other than space or quotes are interpreted literally, even inside double quotes.
+ */
 static void test_double_quote_escaped4() {
 	auto command_line = shell.parse_line("Hello \"\\E\\s\\c\\a\\p\\e\\d\\ \\'\\W\\o\\r\\l\\d\\'\\!");
 
@@ -267,6 +313,9 @@ static void test_double_quote_escaped4() {
 	TEST_ASSERT_EQUAL_STRING("Hello \\\\E\\\\s\\\\c\\\\a\\\\p\\\\e\\\\d\\\\\\ \\'\\\\W\\\\o\\\\r\\\\l\\\\d\\'\\\\!", shell.format_line(command_line).c_str());
 }
 
+/**
+ * Double quotes can be escaped with backslashes inside double quotes.
+ */
 static void test_double_quote_escaped5() {
 	auto command_line = shell.parse_line("Hello \"Escaped \\\"World\\\"!\"");
 
@@ -280,6 +329,9 @@ static void test_double_quote_escaped5() {
 	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\\"World\\\"!", shell.format_line(command_line).c_str());
 }
 
+/**
+ * Spaces can be escaped by single quotes.
+ */
 static void test_single_quote_escaped1() {
 	auto command_line = shell.parse_line("Hello 'Escaped World!'");
 
@@ -293,6 +345,9 @@ static void test_single_quote_escaped1() {
 	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ World!", shell.format_line(command_line).c_str());
 }
 
+/**
+ * Double quotes can be escaped by single quotes.
+ */
 static void test_single_quote_escaped2() {
 	auto command_line = shell.parse_line("Hello 'Escaped \"World\"!'");
 
@@ -306,7 +361,10 @@ static void test_single_quote_escaped2() {
 	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\\"World\\\"!", shell.format_line(command_line).c_str());
 }
 
-static void test_single_quote_escaped3() {
+/**
+ * Single quote escapes are implicitly ended at the end of the command line.
+ */
+static void test_single_quote_escaped3a() {
 	auto command_line = shell.parse_line("Hello 'Escaped \"World\"!");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
@@ -319,6 +377,25 @@ static void test_single_quote_escaped3() {
 	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\\"World\\\"!", shell.format_line(command_line).c_str());
 }
 
+/**
+ * Single quote escapes are implicitly ended at the end of the command line, even if there are trailing spaces.
+ */
+static void test_single_quote_escaped3b() {
+	auto command_line = shell.parse_line("Hello 'Escaped \"World\"!     ");
+
+	TEST_ASSERT_EQUAL_INT(2, command_line.size());
+	if (command_line.size() == 2) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("Hello", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("Escaped \"World\"!     ", (*it++).c_str());
+	}
+
+	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\\"World\\\"!\\ \\ \\ \\ \\ ", shell.format_line(command_line).c_str());
+}
+
+/**
+ * Backslash escapes of characters other than space or quotes are interpreted literally, even inside single quotes.
+ */
 static void test_single_quote_escaped4() {
 	auto command_line = shell.parse_line("Hello '\\E\\s\\c\\a\\p\\e\\d\\ \\\"\\W\\o\\r\\l\\d\\\"\\!");
 
@@ -332,6 +409,9 @@ static void test_single_quote_escaped4() {
 	TEST_ASSERT_EQUAL_STRING("Hello \\\\E\\\\s\\\\c\\\\a\\\\p\\\\e\\\\d\\\\\\ \\\"\\\\W\\\\o\\\\r\\\\l\\\\d\\\"\\\\!", shell.format_line(command_line).c_str());
 }
 
+/**
+ * Single quotes can be escaped with backslashes inside single quotes.
+ */
 static void test_single_quote_escaped5() {
 	auto command_line = shell.parse_line("Hello 'Escaped \\'World\\'!'");
 
@@ -362,13 +442,15 @@ int main(int argc, char *argv[]) {
 
 	RUN_TEST(test_double_quote_escaped1);
 	RUN_TEST(test_double_quote_escaped2);
-	RUN_TEST(test_double_quote_escaped3);
+	RUN_TEST(test_double_quote_escaped3a);
+	RUN_TEST(test_double_quote_escaped3b);
 	RUN_TEST(test_double_quote_escaped4);
 	RUN_TEST(test_double_quote_escaped5);
 
 	RUN_TEST(test_single_quote_escaped1);
 	RUN_TEST(test_single_quote_escaped2);
-	RUN_TEST(test_single_quote_escaped3);
+	RUN_TEST(test_single_quote_escaped3a);
+	RUN_TEST(test_single_quote_escaped3b);
 	RUN_TEST(test_single_quote_escaped4);
 	RUN_TEST(test_single_quote_escaped5);
 
