@@ -352,7 +352,7 @@ Commands::Command::~Command() {
 }
 
 size_t Commands::Command::minimum_arguments() const {
-	return std::count_if(arguments_.cbegin(), arguments_.cend(), [] (const __FlashStringHelper *argument) { return ::pgm_read_byte(argument) == '<'; });
+	return std::count_if(arguments_.cbegin(), arguments_.cend(), [] (const __FlashStringHelper *argument) { return pgm_read_byte(argument) == '<'; });
 }
 
 size_t Commands::Command::maximum_arguments() const {
