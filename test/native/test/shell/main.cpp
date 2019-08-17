@@ -67,6 +67,88 @@ static void test_simple1() {
 	TEST_ASSERT_EQUAL_STRING("Hello World!", shell.format_line(command_line).c_str());
 }
 
+/**
+ * Preceding spaces are ignored.
+ */
+static void test_space1a() {
+	auto command_line = shell.parse_line(" Hello World!");
+
+	TEST_ASSERT_EQUAL_INT(2, command_line.size());
+	if (command_line.size() == 2) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("Hello", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("World!", (*it++).c_str());
+	}
+
+	TEST_ASSERT_EQUAL_STRING("Hello World!", shell.format_line(command_line).c_str());
+}
+
+/**
+ * Trailing spaces are considered another parameter.
+ */
+static void test_space1b() {
+	auto command_line = shell.parse_line("Hello World! ");
+
+	TEST_ASSERT_EQUAL_INT(3, command_line.size());
+	if (command_line.size() == 3) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("Hello", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("World!", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+	}
+
+	TEST_ASSERT_EQUAL_STRING("Hello World! ", shell.format_line(command_line).c_str());
+}
+
+/**
+ * Multiple preceding spaces are ignored.
+ */
+static void test_space2a() {
+	auto command_line = shell.parse_line("  Hello World!");
+
+	TEST_ASSERT_EQUAL_INT(2, command_line.size());
+	if (command_line.size() == 2) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("Hello", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("World!", (*it++).c_str());
+	}
+
+	TEST_ASSERT_EQUAL_STRING("Hello World!", shell.format_line(command_line).c_str());
+}
+
+/**
+ * Multiple spaces are collapsed to one.
+ */
+static void test_space2b() {
+	auto command_line = shell.parse_line("Hello World!  ");
+
+	TEST_ASSERT_EQUAL_INT(3, command_line.size());
+	if (command_line.size() == 3) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("Hello", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("World!", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+	}
+
+	TEST_ASSERT_EQUAL_STRING("Hello World! ", shell.format_line(command_line).c_str());
+}
+
+/**
+ * Multiple spaces are collapsed to one.
+ */
+static void test_space2c() {
+	auto command_line = shell.parse_line("Hello  World!");
+
+	TEST_ASSERT_EQUAL_INT(2, command_line.size());
+	if (command_line.size() == 2) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("Hello", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("World!", (*it++).c_str());
+	}
+
+	TEST_ASSERT_EQUAL_STRING("Hello World!", shell.format_line(command_line).c_str());
+}
+
 static void test_backslash_escaped1() {
 	auto command_line = shell.parse_line("Hello Escaped\\ World!");
 
@@ -266,6 +348,12 @@ static void test_single_quote_escaped5() {
 int main(int argc, char *argv[]) {
 	UNITY_BEGIN();
 	RUN_TEST(test_simple1);
+	RUN_TEST(test_space1a);
+	RUN_TEST(test_space1b);
+	RUN_TEST(test_space2a);
+	RUN_TEST(test_space2b);
+	RUN_TEST(test_space2c);
+
 	RUN_TEST(test_backslash_escaped1);
 	RUN_TEST(test_backslash_escaped2);
 	RUN_TEST(test_backslash_escaped3);
