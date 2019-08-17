@@ -168,15 +168,21 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 			result.replacement.emplace_back(read_flash_string(name));
 		}
 
-		if (command_line.size() > result.replacement.size()) {
+		if (command_line.size() >= result.replacement.size()) {
 			// Try to auto-complete arguments
 			std::vector<std::string> arguments{std::next(command_line.cbegin(), result.replacement.size()), command_line.cend()};
 			result.replacement.insert(result.replacement.end(), arguments.cbegin(), arguments.cend());
+
+			auto current_args_count = arguments.size();
 
 			// Remove the last argument so that it can be auto-completed
 			std::string last_argument = result.replacement.back();
 			result.replacement.pop_back();
 			if (!arguments.empty()) {
+				if (arguments.back().empty()) {
+					current_args_count--;
+				}
+
 				arguments.pop_back();
 			}
 
@@ -196,6 +202,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 			if (potential_arguments.size() == 1 && !last_argument.empty()) {
 				// Auto-complete if there's something present in the last argument
 				result.replacement.emplace_back(*potential_arguments.begin());
+				current_args_count++;
 
 				if (result.replacement.size() < matching_command->name_.size() + matching_command->arguments_.size()) {
 					result.replacement.emplace_back("");
@@ -207,25 +214,40 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 				result.replacement.emplace_back(last_argument);
 			}
 
-			for (auto potential_argument : potential_arguments) {
-				std::list<std::string> help;
-
-				help.emplace_back(potential_argument);
-
-				auto current_arguments = arguments.size() + 1;
-				if (current_arguments < matching_command->arguments_.size()) {
-					for (auto it = std::next(matching_command->arguments_.cbegin(), current_arguments); it != matching_command->arguments_.cend(); it++) {
-						help.emplace_back(read_flash_string(*it));
-					}
-				}
-
-				result.help.emplace_back(help);
+			std::list<std::string> remaining_help;
+			if (!potential_arguments.empty()) {
+				// Remaining help should skip the suggested argument
+				current_args_count++;
 			}
-		} else if (result.replacement.size() < matching_command->name_.size() + matching_command->arguments_.size()) {
-			// Add a space because the are more arguments for this command
-			add_space = true;
+			if (current_args_count < matching_command->arguments_.size()) {
+				for (auto it = std::next(matching_command->arguments_.cbegin(), current_args_count); it != matching_command->arguments_.cend(); it++) {
+					remaining_help.emplace_back(read_flash_string(*it));
+				}
+			}
+
+			if (potential_arguments.empty()) {
+				if (!remaining_help.empty()) {
+					result.help.emplace_back(remaining_help);
+				}
+			} else {
+				for (auto potential_argument : potential_arguments) {
+					std::list<std::string> help;
+
+					help.emplace_back(potential_argument);
+					if (!remaining_help.empty()) {
+						help.insert(help.end(), remaining_help.begin(), remaining_help.end());
+					}
+
+					result.help.emplace_back(help);
+				}
+			}
+
+			if (result.replacement.size() < matching_command->name_.size() + matching_command->arguments_.size()) {
+				// Add a space because there are more arguments for this command
+				add_space = true;
+			}
 		} else if (exact && longer_matches) {
-			// Add a space because the are sub-commands for this command that has just matched exactly
+			// Add a space because there are sub-commands for this command that has just matched exactly
 			add_space = true;
 		}
 	} else {
@@ -275,7 +297,9 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 
 	if (add_space) {
 		if (command_line.size() <= result.replacement.size()) {
-			result.replacement.emplace_back("");
+			if (result.replacement.empty() || !result.replacement.back().empty()) {
+				result.replacement.emplace_back("");
+			}
 		}
 	}
 

@@ -65,7 +65,7 @@ static void test_completion0() {
 	auto completion = commands.complete_command(shell, shell.parse_line(""));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
-	TEST_ASSERT_EQUAL_INT(10, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(14, completion.help.size());
 }
 
 /**
@@ -609,6 +609,375 @@ static void test_execution4c() {
 	TEST_ASSERT_EQUAL_STRING("set", run.c_str());
 }
 
+/**
+ * Partial matches of commands with arguments should complete the command,
+ * add a space and provide a list of all the remaining command line arguments.
+ *
+ * The type of arguments (required/optional) is irrelevant.
+ */
+static void test_completion5a() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_a"));
+
+	TEST_ASSERT_EQUAL_STRING("test_a0 ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_b"));
+
+	TEST_ASSERT_EQUAL_STRING("test_b1 ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("<one> [two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_c"));
+
+	TEST_ASSERT_EQUAL_STRING("test_c2 ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("<one> <two> [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_d"));
+
+	TEST_ASSERT_EQUAL_STRING("test_d3 ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("<one> <two> <three>", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact matches of commands (without a space) with arguments should add a space
+ * and provide a list of all the remaining command line arguments, appending a
+ * space if there are arguments remaining.
+ *
+ * The type of arguments (required/optional) is irrelevant.
+ */
+static void test_completion5b() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_a0"));
+
+	TEST_ASSERT_EQUAL_STRING("test_a0 ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_b1"));
+
+	TEST_ASSERT_EQUAL_STRING("test_b1 ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("<one> [two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_c2"));
+
+	TEST_ASSERT_EQUAL_STRING("test_c2 ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("<one> <two> [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_d3"));
+
+	TEST_ASSERT_EQUAL_STRING("test_d3 ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("<one> <two> <three>", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact matches of commands (with a space) with arguments should provide a list of
+ * all the remaining command line arguments, appending a space if there are arguments
+ * remaining.
+ *
+ * The type of arguments (required/optional) is irrelevant.
+ */
+static void test_completion5c() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_a0 "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_b1 "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("<one> [two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_c2 "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("<one> <two> [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_d3 "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("<one> <two> <three>", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact matches of commands (with a space) with arguments should provide a list of
+ * all the remaining command line arguments, appending a space if there are arguments
+ * remaining.
+ *
+ * The type of arguments (required/optional) is irrelevant.
+ */
+static void test_completion5d() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_a0 un"));
+
+	TEST_ASSERT_EQUAL_STRING("test_a0 un ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_b1 un"));
+
+	TEST_ASSERT_EQUAL_STRING("test_b1 un ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_c2 un"));
+
+	TEST_ASSERT_EQUAL_STRING("test_c2 un ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("<two> [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_d3 un"));
+
+	TEST_ASSERT_EQUAL_STRING("test_d3 un ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("<two> <three>", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact matches of commands (with a space) with arguments should provide a list of
+ * all the remaining command line arguments, appending a space if there are arguments
+ * remaining.
+ *
+ * The type of arguments (required/optional) is irrelevant.
+ */
+static void test_completion5e() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_a0 un "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_b1 un "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_c2 un "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("<two> [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_d3 un "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("<two> <three>", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact matches of commands (with a space) with arguments should provide a list of
+ * all the remaining command line arguments, appending a space if there are arguments
+ * remaining.
+ *
+ * The type of arguments (required/optional) is irrelevant.
+ */
+static void test_completion5f() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_a0 un deux"));
+
+	TEST_ASSERT_EQUAL_STRING("test_a0 un deux ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_b1 un deux"));
+
+	TEST_ASSERT_EQUAL_STRING("test_b1 un deux ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_c2 un deux"));
+
+	TEST_ASSERT_EQUAL_STRING("test_c2 un deux ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_d3 un deux"));
+
+	TEST_ASSERT_EQUAL_STRING("test_d3 un deux ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("<three>", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact matches of commands (with a space) with arguments should provide a list of
+ * all the remaining command line arguments, appending a space if there are arguments
+ * remaining.
+ *
+ * The type of arguments (required/optional) is irrelevant.
+ */
+static void test_completion5g() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_a0 un deux "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_b1 un deux "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_c2 un deux "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_d3 un deux "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("<three>", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact matches of commands (with a space) with maximum arguments should do nothing.
+ *
+ * The type of arguments (required/optional) is irrelevant.
+ */
+static void test_completion5h() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_a0 un deux trois"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_b1 un deux trois"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_c2 un deux trois"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_d3 un deux trois"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
+/**
+ * Exact matches of commands (with a space) with maximum arguments should do nothing,
+ * even if there's a space at the end.
+ *
+ * The type of arguments (required/optional) is irrelevant.
+ */
+static void test_completion5i() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_a0 un deux trois "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_b1 un deux trois "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_c2 un deux trois "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_d3 un deux trois "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
 int main(int argc, char *argv[]) {
 	commands.add_command(0, 0, flash_string_vector{F("help")}, Commands::no_arguments(),
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
@@ -660,6 +1029,38 @@ int main(int argc, char *argv[]) {
 		run = "console log info";
 	}, Commands::no_argument_completion());
 
+	commands.add_command(0, 0, flash_string_vector{F("test_a0")}, flash_string_vector{F("[one]"), F("[two]"), F("[three]")},
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
+		run = "test";
+		for (auto& argument : arguments) {
+			run += " " + argument;
+		}
+	}, Commands::no_argument_completion());
+
+	commands.add_command(0, 0, flash_string_vector{F("test_b1")}, flash_string_vector{F("<one>"), F("[two]"), F("[three]")},
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
+		run = "test";
+		for (auto& argument : arguments) {
+			run += " " + argument;
+		}
+	}, Commands::no_argument_completion());
+
+	commands.add_command(0, 0, flash_string_vector{F("test_c2")}, flash_string_vector{F("<one>"), F("<two>"), F("[three]")},
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
+		run = "test";
+		for (auto& argument : arguments) {
+			run += " " + argument;
+		}
+	}, Commands::no_argument_completion());
+
+	commands.add_command(0, 0, flash_string_vector{F("test_d3")}, flash_string_vector{F("<one>"), F("<two>"), F("<three>")},
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
+		run = "test";
+		for (auto& argument : arguments) {
+			run += " " + argument;
+		}
+	}, Commands::no_argument_completion());
+
 	UNITY_BEGIN();
 	RUN_TEST(test_completion0);
 	RUN_TEST(test_execution0);
@@ -707,13 +1108,22 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_execution3b);
 	RUN_TEST(test_execution3c);
 
-	// FIXME test arguments
 	RUN_TEST(test_completion4a);
 	RUN_TEST(test_completion4b);
 	RUN_TEST(test_completion4c);
 	RUN_TEST(test_execution4a);
 	RUN_TEST(test_execution4b);
 	RUN_TEST(test_execution4c);
+
+	RUN_TEST(test_completion5a);
+	RUN_TEST(test_completion5b);
+	RUN_TEST(test_completion5c);
+	RUN_TEST(test_completion5d);
+	RUN_TEST(test_completion5e);
+	RUN_TEST(test_completion5f);
+	RUN_TEST(test_completion5g);
+	RUN_TEST(test_completion5h);
+	RUN_TEST(test_completion5i);
 
 	return UNITY_END();
 }
