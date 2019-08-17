@@ -543,12 +543,6 @@ protected:
 	 */
 	virtual size_t maximum_log_messages() const;
 	/**
-	 * Read one character from the available input.
-	 *
-	 * @return An unsigned char if input is available, otherwise -1.
-	 */
-	virtual int read_one_char() = 0;
-	/**
 	 * Output ANSI escape sequence to erase the current line.
 	 */
 	virtual void erase_current_line();
@@ -768,6 +762,13 @@ private:
 	void loop_delay();
 
 	/**
+	 * Read one character from the available input.
+	 *
+	 * @return An unsigned char if input is available, otherwise -1.
+	 */
+	virtual int read_one_char() = 0;
+
+	/**
 	 * Output a prompt on the shell.
 	 *
 	 * Based on the current mode this will output the appropriate text,
@@ -886,16 +887,16 @@ protected:
 	 */
 	StreamConsole(Stream &stream);
 
+private:
+	StreamConsole(const StreamConsole&) = delete;
+	StreamConsole& operator=(const StreamConsole&) = delete;
+
 	/**
 	 * Read one character from the input stream.
 	 *
 	 * @return An unsigned char if input is available, otherwise -1.
 	 */
 	int read_one_char() override;
-
-private:
-	StreamConsole(const StreamConsole&) = delete;
-	StreamConsole& operator=(const StreamConsole&) = delete;
 
 	Stream &stream_; /*!< Stream used for the input/output of this shell. */
 };
