@@ -510,7 +510,7 @@ protected:
 	 * multiple inheritance.
 	 *
 	 * This does not initialise the shell completely so the outer
-	 * derived class must call the normal constructor or there will be
+	 * derived class must call the public constructor or there will be
 	 * no commands. Does not put any default context on the stack.
 	 */
 	Shell() = default;
@@ -838,24 +838,66 @@ private:
 	bool prompt_displayed_ = false; /*!< Indicates that a command prompt has been displayed, so that the output of invoke_command() is correct. */
 };
 
+/**
+ * A command shell console using a Stream for input/output.
+ *
+ * Must be constructed within a std::shared_ptr.
+ */
 class StreamConsole: virtual public Shell {
 public:
+	/**
+	 * Create a new StreamConsole shell with the given commands,
+	 * default context and initial flags.
+	 *
+	 * The default context is put on the stack and cannot be removed.
+	 *
+	 * @param[in] commands Commands available for execution in this shell.
+	 * @param[in] stream Stream used for the input/output of this shell.
+	 * @param[in] context Default context for the shell.
+	 * @param[in] flags Initial flags for the shell.
+	 */
 	StreamConsole(std::shared_ptr<Commands> commands, Stream &stream, unsigned int context, unsigned int flags = 0);
 	~StreamConsole() override = default;
 
+	/**
+	 * Write one byte to the output stream.
+	 *
+	 * @param[in] data Data to be output.
+	 * @return The number of bytes that were output.
+	 */
 	size_t write(uint8_t data) override;
+	/**
+	 * Write an array of bytes to the output stream.
+	 *
+	 * @param[in] buffer Buffer to be output.
+	 * @param[in] size Length of the buffer.
+	 * @return The number of bytes that were output.
+	 */
 	size_t write(const uint8_t *buffer, size_t size) override;
 
 protected:
+	/**
+	 * Constructor used by intermediate derived classes for multiple
+	 * inheritance.
+	 *
+	 * This does not initialise the shell completely so the outer
+	 * derived class must call the public constructor or there will be
+	 * no commands. Does not put any default context on the stack.
+	 */
 	StreamConsole(Stream &stream);
 
+	/**
+	 * Read one character from the input stream.
+	 *
+	 * @return An unsigned char if input is available, otherwise -1.
+	 */
 	int read_one_char() override;
 
 private:
 	StreamConsole(const StreamConsole&) = delete;
 	StreamConsole& operator=(const StreamConsole&) = delete;
 
-	Stream &stream_;
+	Stream &stream_; /*!< Stream used for the input/output of this shell. */
 };
 
 } // namespace console
