@@ -57,6 +57,20 @@ static Commands commands;
 static DummyShell shell;
 static std::string run;
 
+/**
+ * Completion with an empty command line returns all commands (but the shell does not allow this).
+ */
+static void test_completion0() {
+	run = "";
+	auto completion = commands.complete_command(shell, shell.parse_line(""));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(8, completion.help.size());
+}
+
+/**
+ * An empty command line is not executed.
+ */
 static void test_execution0() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line(""));
@@ -65,6 +79,10 @@ static void test_execution0() {
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
+/**
+ * A partial command with only one potential match (that is a prefix for multiple longer commands)
+ * should be completed up to that point and no further.
+ */
 static void test_completion1a() {
 	auto completion = commands.complete_command(shell, shell.parse_line("sh"));
 
@@ -72,6 +90,9 @@ static void test_completion1a() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * Commands are not completed before being executed.
+ */
 static void test_execution1a() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("sh"));
@@ -80,6 +101,10 @@ static void test_execution1a() {
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
+/**
+ * An exact matching command that is a prefix for multiple longer commands should
+ * append a space and return them.
+ */
 static void test_completion1b() {
 	auto completion = commands.complete_command(shell, shell.parse_line("show"));
 
@@ -93,6 +118,9 @@ static void test_completion1b() {
 	}
 }
 
+/**
+ * Exact match commands are executed.
+ */
 static void test_execution1b() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("show"));
@@ -101,6 +129,10 @@ static void test_execution1b() {
 	TEST_ASSERT_EQUAL_STRING("show", run.c_str());
 }
 
+/**
+ * An exact matching command that is a prefix (with a space) for multiple longer
+ * commands should return the longer commands.
+ */
 static void test_completion1c() {
 	auto completion = commands.complete_command(shell, shell.parse_line("show "));
 
@@ -114,6 +146,9 @@ static void test_completion1c() {
 	}
 }
 
+/**
+ * Exact match commands with a trailing space are executed.
+ */
 static void test_execution1c() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("show "));
@@ -122,6 +157,10 @@ static void test_execution1c() {
 	TEST_ASSERT_EQUAL_STRING("show", run.c_str());
 }
 
+/**
+ * A partial matching command that is a prefix for multiple longer commands
+ * should complete as far as possible (FIXME) and return the longer commands.
+ */
 static void test_completion1d() {
 	auto completion = commands.complete_command(shell, shell.parse_line("show th"));
 
@@ -135,6 +174,9 @@ static void test_completion1d() {
 	}
 }
 
+/**
+ * Commands are not completed before being executed.
+ */
 static void test_execution1d() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("show th"));
@@ -143,6 +185,10 @@ static void test_execution1d() {
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
+/**
+ * A partial matching command that is a prefix for multiple longer commands
+ * and is already complete as far as possible will return the longer commands.
+ */
 static void test_completion1e() {
 	auto completion = commands.complete_command(shell, shell.parse_line("show thing"));
 
@@ -156,6 +202,9 @@ static void test_completion1e() {
 	}
 }
 
+/**
+ * Commands are not completed before being executed.
+ */
 static void test_execution1e() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("show thing"));
@@ -164,6 +213,9 @@ static void test_execution1e() {
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
+/**
+ * Exact matching commands with nothing longer return no replacements or help.
+ */
 static void test_completion1f() {
 	auto completion = commands.complete_command(shell, shell.parse_line("show thing1"));
 
@@ -171,6 +223,9 @@ static void test_completion1f() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * Exact match commands are executed.
+ */
 static void test_execution1f() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("show thing1"));
@@ -179,13 +234,18 @@ static void test_execution1f() {
 	TEST_ASSERT_EQUAL_STRING("show thing1", run.c_str());
 }
 
+/**
+ * Exact matching commands with nothing longer return no replacements or help.
+ */
 static void test_completion1g() {
 	auto completion = commands.complete_command(shell, shell.parse_line("show thing1 "));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
-
+/**
+ * Exact match commands with a trailing space are executed.
+ */
 static void test_execution1g() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("show thing1 "));
@@ -194,6 +254,10 @@ static void test_execution1g() {
 	TEST_ASSERT_EQUAL_STRING("show thing1", run.c_str());
 }
 
+/**
+ * A partial command with multiple potential matches with a common prefix (that is not
+ * itself a command) should be completed up to that point with a trailing space.
+ */
 static void test_completion2a() {
 	auto completion = commands.complete_command(shell, shell.parse_line("cons"));
 
@@ -201,6 +265,9 @@ static void test_completion2a() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * Commands are not completed before being executed.
+ */
 static void test_execution2a() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("cons"));
@@ -209,6 +276,10 @@ static void test_execution2a() {
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
+/**
+ * A partial command with multiple potential matches with a common prefix (that is not
+ * itself a command) should be completed up to that point with a trailing space.
+ */
 static void test_completion2b() {
 	auto completion = commands.complete_command(shell, shell.parse_line("console"));
 
@@ -216,6 +287,9 @@ static void test_completion2b() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * Commands are not completed before being executed.
+ */
 static void test_execution2b() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("console"));
@@ -224,6 +298,10 @@ static void test_execution2b() {
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
+/**
+ * A partial command with multiple potential matches with a common prefix (that is not
+ * itself a command) should be completed up to that point with a trailing space.
+ */
 static void test_completion2c() {
 	auto completion = commands.complete_command(shell, shell.parse_line("console "));
 
@@ -231,6 +309,9 @@ static void test_completion2c() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * Commands are not completed before being executed.
+ */
 static void test_execution2c() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("console "));
@@ -239,6 +320,10 @@ static void test_execution2c() {
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
+/**
+ * A partial command with multiple potential matches with a common prefix (that is not
+ * itself a command) should be completed up to that point with a trailing space.
+ */
 static void test_completion2d() {
 	auto completion = commands.complete_command(shell, shell.parse_line("console l"));
 
@@ -246,6 +331,9 @@ static void test_completion2d() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * Commands are not completed before being executed.
+ */
 static void test_execution2d() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("console l"));
@@ -254,6 +342,10 @@ static void test_execution2d() {
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
+/**
+ * A partial command with multiple potential matches with a common prefix (that is not
+ * itself a command) should be completed up to that point with a trailing space.
+ */
 static void test_completion2e() {
 	auto completion = commands.complete_command(shell, shell.parse_line("console log"));
 
@@ -261,6 +353,9 @@ static void test_completion2e() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * Commands are not completed before being executed.
+ */
 static void test_execution2e() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("console log"));
@@ -269,6 +364,11 @@ static void test_execution2e() {
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
+/**
+ * A partial command (with a trailing space) and multiple potential longer matches
+ * where the command line is the common prefix (and is not itself a command) should
+ * return the other longer commands.
+ */
 static void test_completion2f() {
 	auto completion = commands.complete_command(shell, shell.parse_line("console log "));
 
@@ -282,6 +382,9 @@ static void test_completion2f() {
 	}
 }
 
+/**
+ * Commands are not completed before being executed.
+ */
 static void test_execution2f() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("console log "));
@@ -290,6 +393,9 @@ static void test_execution2f() {
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
+/**
+ * A partial command that doesn't match anything returns no replacements or help.
+ */
 static void test_completion2g() {
 	auto completion = commands.complete_command(shell, shell.parse_line("console log a"));
 
@@ -297,6 +403,9 @@ static void test_completion2g() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * Commands are not completed before being executed.
+ */
 static void test_execution2g() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("console log a"));
@@ -305,6 +414,10 @@ static void test_execution2g() {
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
+/**
+ * A single partial match should be auto-completed to the end of the command
+ * (with no trailing space).
+ */
 static void test_completion2h() {
 	auto completion = commands.complete_command(shell, shell.parse_line("console log in"));
 
@@ -312,6 +425,9 @@ static void test_completion2h() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * Commands are not completed before being executed.
+ */
 static void test_execution2h() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("console log in"));
@@ -320,6 +436,9 @@ static void test_execution2h() {
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
+/**
+ * Exact matching commands with nothing longer return no replacements or help.
+ */
 static void test_completion2i() {
 	auto completion = commands.complete_command(shell, shell.parse_line("console log info"));
 
@@ -327,6 +446,9 @@ static void test_completion2i() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * Exact match commands are executed.
+ */
 static void test_execution2i() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("console log info"));
@@ -335,6 +457,9 @@ static void test_execution2i() {
 	TEST_ASSERT_EQUAL_STRING("console log info", run.c_str());
 }
 
+/**
+ * Exact matching commands with nothing longer return no replacements or help.
+ */
 static void test_completion2j() {
 	auto completion = commands.complete_command(shell, shell.parse_line("console log info "));
 
@@ -342,6 +467,9 @@ static void test_completion2j() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * Exact match commands with a trailing space are executed.
+ */
 static void test_execution2j() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("console log info "));
@@ -350,6 +478,10 @@ static void test_execution2j() {
 	TEST_ASSERT_EQUAL_STRING("console log info", run.c_str());
 }
 
+/**
+ * A single partial match should be auto-completed to the end of the command
+ * (with no trailing space).
+ */
 static void test_completion3a() {
 	auto completion = commands.complete_command(shell, shell.parse_line("h"));
 
@@ -357,6 +489,9 @@ static void test_completion3a() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * Commands are not completed before being executed.
+ */
 static void test_execution3a() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("h"));
@@ -365,6 +500,9 @@ static void test_execution3a() {
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
+/**
+ * Exact matching commands with nothing longer return no replacements or help.
+ */
 static void test_completion3b() {
 	auto completion = commands.complete_command(shell, shell.parse_line("help"));
 
@@ -372,6 +510,9 @@ static void test_completion3b() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * Exact match commands are executed.
+ */
 static void test_execution3b() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("help"));
@@ -380,6 +521,9 @@ static void test_execution3b() {
 	TEST_ASSERT_EQUAL_STRING("help", run.c_str());
 }
 
+/**
+ * Exact matching commands with nothing longer return no replacements or help.
+ */
 static void test_completion3c() {
 	auto completion = commands.complete_command(shell, shell.parse_line("help "));
 
@@ -387,6 +531,9 @@ static void test_completion3c() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * Exact match commands with a trailing space are executed.
+ */
 static void test_execution3c() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("help "));
@@ -437,6 +584,7 @@ int main(int argc, char *argv[]) {
 	}, Commands::no_argument_completion());
 
 	UNITY_BEGIN();
+	RUN_TEST(test_completion0);
 	RUN_TEST(test_execution0);
 
 	RUN_TEST(test_completion1a);
