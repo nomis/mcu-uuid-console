@@ -82,26 +82,26 @@ public:
 	static Level get_log_level(Handler *handler) { return Level::ALL; }
 
 	static inline bool enabled(Level level) { return true; }
-	void emerg(const char *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
-	void emerg(const __FlashStringHelper *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
-	void alert(const char *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
-	void alert(const __FlashStringHelper *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
-	void crit(const char *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
-	void crit(const __FlashStringHelper *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
-	void err(const char *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
-	void err(const __FlashStringHelper *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
-	void warning(const char *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
-	void warning(const __FlashStringHelper *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
-	void notice(const char *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
-	void notice(const __FlashStringHelper *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
-	void info(const char *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
-	void info(const __FlashStringHelper *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
-	void debug(const char *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
-	void debug(const __FlashStringHelper *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
-	void trace(const char *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
-	void trace(const __FlashStringHelper *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
-	void log(Level level __attribute__((unused)), Facility facility __attribute__((unused)), const char *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
-	void log(Level level __attribute__((unused)), Facility facility __attribute__((unused)), const __FlashStringHelper *format __attribute__((unused)), ...) { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
+	void emerg(const char *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
+	void emerg(const __FlashStringHelper *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
+	void alert(const char *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
+	void alert(const __FlashStringHelper *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
+	void crit(const char *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
+	void crit(const __FlashStringHelper *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
+	void err(const char *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
+	void err(const __FlashStringHelper *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
+	void warning(const char *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
+	void warning(const __FlashStringHelper *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
+	void notice(const char *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
+	void notice(const __FlashStringHelper *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
+	void info(const char *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
+	void info(const __FlashStringHelper *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
+	void debug(const char *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
+	void debug(const __FlashStringHelper *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
+	void trace(const char *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
+	void trace(const __FlashStringHelper *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
+	void log(Level level __attribute__((unused)), Facility facility __attribute__((unused)), const char *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
+	void log(Level level __attribute__((unused)), Facility facility __attribute__((unused)), const __FlashStringHelper *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(reinterpret_cast<const char *>(format), ap); va_end(ap); }
 };
 
 } // namespace log

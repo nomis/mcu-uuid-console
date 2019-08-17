@@ -250,7 +250,7 @@ public:
 	bool running();
 	void stop();
 
-	static inline uuid::log::Logger& logger() { return logger_; }
+	static inline const uuid::log::Logger& logger() { return logger_; }
 
 	inline unsigned int context() const {
 		if (!context_.empty()) {
@@ -398,7 +398,7 @@ private:
 	size_t vprintf(const char *format, va_list ap);
 	size_t vprintf(const __FlashStringHelper *format, va_list ap);
 
-	static uuid::log::Logger logger_;
+	static const uuid::log::Logger logger_;
 	static std::set<std::shared_ptr<Shell>> shells_;
 
 	std::shared_ptr<Commands> commands_;
