@@ -179,6 +179,21 @@ static void test_execution1f() {
 	TEST_ASSERT_EQUAL_STRING("show thing1", run.c_str());
 }
 
+static void test_completion1g() {
+	auto completion = commands.complete_command(shell, shell.parse_line("show thing1 "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
+static void test_execution1g() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("show thing1 "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("show thing1", run.c_str());
+}
+
 static void test_completion2a() {
 	auto completion = commands.complete_command(shell, shell.parse_line("cons"));
 
@@ -320,6 +335,21 @@ static void test_execution2i() {
 	TEST_ASSERT_EQUAL_STRING("console log info", run.c_str());
 }
 
+static void test_completion2j() {
+	auto completion = commands.complete_command(shell, shell.parse_line("console log info "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
+static void test_execution2j() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("console log info "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("console log info", run.c_str());
+}
+
 static void test_completion3a() {
 	auto completion = commands.complete_command(shell, shell.parse_line("h"));
 
@@ -345,6 +375,21 @@ static void test_completion3b() {
 static void test_execution3b() {
 	run = "";
 	auto execution = commands.execute_command(shell, shell.parse_line("help"));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("help", run.c_str());
+}
+
+static void test_completion3c() {
+	auto completion = commands.complete_command(shell, shell.parse_line("help "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
+static void test_execution3c() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("help "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("help", run.c_str());
@@ -400,12 +445,14 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_completion1d);
 	RUN_TEST(test_completion1e);
 	RUN_TEST(test_completion1f);
+	RUN_TEST(test_completion1g);
 	RUN_TEST(test_execution1a);
 	RUN_TEST(test_execution1b);
 	RUN_TEST(test_execution1d);
 	RUN_TEST(test_execution1c);
 	RUN_TEST(test_execution1e);
 	RUN_TEST(test_execution1f);
+	RUN_TEST(test_execution1g);
 
 	RUN_TEST(test_completion2a);
 	RUN_TEST(test_completion2b);
@@ -416,6 +463,7 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_completion2g);
 	RUN_TEST(test_completion2h);
 	RUN_TEST(test_completion2i);
+	RUN_TEST(test_completion2j);
 	RUN_TEST(test_execution2a);
 	RUN_TEST(test_execution2b);
 	RUN_TEST(test_execution2c);
@@ -425,13 +473,15 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_execution2g);
 	RUN_TEST(test_execution2h);
 	RUN_TEST(test_execution2i);
+	RUN_TEST(test_execution2j);
 
 	RUN_TEST(test_completion3a);
 	RUN_TEST(test_completion3b);
+	RUN_TEST(test_completion3c);
 	RUN_TEST(test_execution3a);
 	RUN_TEST(test_execution3b);
+	RUN_TEST(test_execution3c);
 
-	// FIXME verify executions
 	// FIXME test arguments
 	return UNITY_END();
 }
