@@ -244,10 +244,10 @@ public:
 
 	void start();
 	virtual void operator<<(std::shared_ptr<uuid::log::Message> message);
-	uuid::log::Level get_log_level();
+	uuid::log::Level get_log_level() const;
 	void set_log_level(uuid::log::Level level);
 	void loop_one();
-	bool running();
+	bool running() const;
 	void stop();
 
 	static inline const uuid::log::Logger& logger() { return logger_; }

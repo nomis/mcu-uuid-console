@@ -66,7 +66,7 @@ void Shell::start() {
 	started();
 };
 
-bool Shell::running() {
+bool Shell::running() const {
 	return !stopped_;
 }
 
@@ -88,7 +88,7 @@ void Shell::operator<<(std::shared_ptr<uuid::log::Message> message) {
 	log_messages_.emplace_back(log_message_id_++, message);
 }
 
-uuid::log::Level Shell::get_log_level() {
+uuid::log::Level Shell::get_log_level() const {
 	return uuid::log::Logger::get_log_level(this);
 }
 

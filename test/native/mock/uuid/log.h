@@ -79,7 +79,7 @@ public:
 	static void register_handler(Handler *handler __attribute__((unused)), Level level __attribute__((unused))) {}
 	static void unregister_handler(Handler *handler __attribute__((unused))) {}
 
-	static Level get_log_level(Handler *handler) { return Level::ALL; }
+	static Level get_log_level(const Handler *handler) { return Level::ALL; }
 
 	static inline bool enabled(Level level) { return true; }
 	void emerg(const char *format __attribute__((unused)), ...) const { va_list ap; va_start(ap, format); vprintf(format, ap); va_end(ap); }
