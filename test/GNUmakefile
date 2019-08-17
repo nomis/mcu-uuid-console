@@ -1,7 +1,11 @@
-.PHONY: all native
+.PHONY: all build native
 
-all: native
+all: build native
+
+build:
+	rm -rf build/*/.pio
+	platformio run -d build/example-DigitalIO
 
 native:
-	rm -rf natvie/.pio
+	rm -rf native/.pio
 	platformio test -d native

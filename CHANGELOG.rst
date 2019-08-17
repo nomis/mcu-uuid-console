@@ -25,5 +25,6 @@ Added
     command execution (e.g. ``logout``).
 * Support for ``Stream`` (``Serial``) consoles.
 * Loop function to consolidate the execution of all active shells.
+* Example serial console for Arduino Digital I/O features.
 
 .. |--| unicode:: U+2013 .. EN DASH
