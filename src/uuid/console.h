@@ -230,28 +230,125 @@ private:
 	std::list<Command> commands_; /*!< Commands stored in this container. */
 };
 
+/**
+ * Base class for a command shell.
+ *
+ * Must be constructed within a std::shared_ptr.
+ *
+ * Requires a derived class to provide input/output. Derived classes
+ * should use virtual inheritance to allow the behaviour to be further
+ * extended.
+ */
 class Shell: public std::enable_shared_from_this<Shell>, public uuid::log::Handler, public ::Print {
 public:
-	static constexpr size_t MAX_COMMAND_LINE_LENGTH = 80;
-	static constexpr size_t MAX_LOG_MESSAGES = 20;
+	static constexpr size_t MAX_COMMAND_LINE_LENGTH = 80; /*!< Maximum length of a command line. */
+	static constexpr size_t MAX_LOG_MESSAGES = 20; /*!< Maximum number of log messages to buffer before they are output. */
 
+	/*
+	 * Function to handle the response to a password entry prompt.
+	 *
+	 * @param[in] shell Shell instance where the password entry prompt
+	 *                  was requested.
+	 * @param[in] completed Password entry at the prompt was either
+	 *                      completed (true) or aborted (false).
+	 * @param[in] password Password entered at the prompt (may be
+	 *                     empty).
+	 */
 	using password_function = std::function<void(Shell &shell, bool completed, const std::string &password)>;
+	/**
+	 * Function to handle the end of an execution delay.
+	 *
+	 * @param[in] shell Shell instance where execution was delayed.
+	 */
 	using delay_function = std::function<void(Shell &shell)>;
 
 	~Shell() override;
 
+	/**
+	 * Loop through all registered shell objects.
+	 *
+	 * Call loop_one() on every Shell (if it has not been stopped).
+	 * Any Shell that is stopped is then unregistered.
+	 */
 	static void loop_all();
 
+	/**
+	 * Perform startup process for this shell.
+	 *
+	 * Register as a uuid::log::Handler at the uuid::log::Level::NOTICE
+	 * log level, output the banner and	register this Shell with the
+	 * loop_all() set.
+	 *
+	 * The started() function will be called after startup is complete.
+	 *
+	 * Do not call this function more than once.
+	 */
 	void start();
+	/**
+	 * Add a new log message.
+	 *
+	 * This will be put in a queue for output at the next loop_one()
+	 * process. The queue has a maximum size of maximum_log_messages()
+	 * and will discard the oldest message first.
+	 *
+	 * @param[in] message New log message, shared by all handlers.
+	 */
 	virtual void operator<<(std::shared_ptr<uuid::log::Message> message);
+	/**
+	 * Get the current log level.
+	 *
+	 * This only affects newly received log messages, not messages that
+	 * have already been queued.
+	 *
+	 * @return The current log level.
+	 */
 	uuid::log::Level get_log_level() const;
+	/**
+	 * Set the current log level.
+	 *
+	 * This only affects newly received log messages, not messages that
+	 * have already been queued.
+	 *
+	 * @param[in] level Minimum log level that the shell will receive
+	 *                  messages for.
+	 */
 	void set_log_level(uuid::log::Level level);
+	/**
+	 * Perform one execution step of this shell.
+	 *
+	 * Depending on the current mode, either read input characters and
+	 * process them or check if an execution delay has passed.
+	 */
 	void loop_one();
+	/**
+	 * Determine if this shell is still running.
+	 *
+	 * @return Running status of this Shell, false if the Shell has
+	 *         been stopped using stop().
+	 */
 	bool running() const;
+	/**
+	 * Stop this shell from running.
+	 *
+	 * It is not possible to restart the Shell, which must be destroyed
+	 * after it has been stopped.
+	 */
 	void stop();
 
+	/**
+	 * Get the built-in uuid::log::Logger instance for shells.
+	 *
+	 * @return Logger instance.
+	 */
 	static inline const uuid::log::Logger& logger() { return logger_; }
 
+	/**
+	 * Get the context at the top of the stack.
+	 *
+	 * The current context affects which commands are available.
+	 *
+	 * @return Current shell context.
+	 */
 	inline unsigned int context() const {
 		if (!context_.empty()) {
 			return context_.back();
@@ -259,9 +356,24 @@ public:
 			return 0;
 		}
 	}
+	/**
+	 * Push a new context onto the stack.
+	 *
+	 * The current context affects which commands are available.
+	 *
+	 * @param[in] context New context.
+	 */
 	inline void enter_context(unsigned int context) {
 		context_.emplace_back(context);
 	}
+	/**
+	 * Pop a context off the stack.
+	 *
+	 * The current context affects which commands are available.
+	 *
+	 * @return True if there was a context to be exited, false if there
+	 *         are no more contexts to exit.
+	 */
 	virtual bool exit_context() {
 		if (context_.size() > 1) {
 			context_.pop_back();
@@ -271,10 +383,48 @@ public:
 		}
 	}
 
+	/**
+	 * Add one or more flags to the current flags.
+	 *
+	 * Flags are not affected by execution context. The current flags
+	 * affect which commands are available (for access control).
+	 *
+	 * @param[in] flags Flag bits to add.
+	 */
 	inline void add_flags(unsigned int flags) { flags_ |= flags; }
+	/**
+	 * Check if the current flags include all of the specified flags.
+	 *
+	 * Flags are not affected by execution context. The current flags
+	 * affect which commands are available (for access control).
+	 *
+	 * @param[in] flags Flag bits to check for.
+	 * @return True if the current flags includes all of the specified
+	 *         flags, otherwise false.
+	 */
 	inline bool has_flags(unsigned int flags) const { return (flags_ & flags) == flags; }
+	/**
+	 * Remove one or more flags from the current flags.
+	 *
+	 * Flags are not affected by execution context. The current flags
+	 * affect which commands are available (for access control).
+	 *
+	 * @param[in] flags Flag bits to remove.
+	 */
 	inline void remove_flags(unsigned int flags) { flags_ &= ~flags; }
 
+	/**
+	 * Prompt for a password to be entered on this shell.
+	 *
+	 * Password entry is not visible and can be interrupted by the
+	 * user.
+	 *
+	 * @param[in] prompt Message to display prompting for password
+	 *                   input.
+	 * @param[in] function Function to be executed after the password
+	 *                     has been entered prior to resuming normal
+	 *                     execution.
+	 */
 	void enter_password(const __FlashStringHelper *prompt, password_function function);
 
 	/**
@@ -305,46 +455,223 @@ public:
 	 */
 	void delay_until(uint64_t ms, delay_function function);
 
-	using ::Print::print;
+	using ::Print::print; /*!< Include standard Arduino print() functions. */
+	/**
+	 * Output a string.
+	 *
+	 * @param[in] data String to be output.
+	 * @return The number of bytes that were output.
+	 */
 	size_t print(const std::string &data);
-	using ::Print::println;
+	using ::Print::println; /*!< Include standard Arduino println() functions. */
+	/**
+	 * Output a string followed by CRLF end of line characters.
+	 *
+	 * @param[in] data String to be output.
+	 * @return The number of bytes that were output, including CRLF.
+	 */
 	size_t println(const std::string &data);
+	/**
+	 * Output a message.
+	 *
+	 * @param[in] format Format string.
+	 * @param[in] ... Format string arguments.
+	 * @return The number of bytes that were output.
+	 */
 	size_t printf(const char *format, ...) /* __attribute__((format(printf, 2, 3))) */;
+	/**
+	 * Output a message.
+	 *
+	 * @param[in] format Format string (flash string).
+	 * @param[in] ... Format string arguments.
+	 * @return The number of bytes that were output.
+	 */
 	size_t printf(const __FlashStringHelper *format, ...) /* __attribute__((format(printf, 2, 3))) */;
+	/**
+	 * Output a message followed by CRLF end of line characters.
+	 *
+	 * @param[in] format Format string.
+	 * @param[in] ... Format string arguments.
+	 * @return The number of bytes that were output, including CRLF.
+	 */
 	size_t printfln(const char *format, ...) /* __attribute__((format (printf, 2, 3))) */;
+	/**
+	 * Output a message followed by CRLF end of line characters.
+	 *
+	 * @param[in] format Format string (flash string).
+	 * @param[in] ... Format string arguments.
+	 * @return The number of bytes that were output, including CRLF.
+	 */
 	size_t printfln(const __FlashStringHelper *format, ...) /* __attribute__((format(printf, 2, 3))) */;
 
 protected:
+	/**
+	 * Default constructor used by intermediate derived classes for
+	 * multiple inheritance.
+	 *
+	 * This does not initialise the shell completely so the outer
+	 * derived class must call the normal constructor or there will be
+	 * no commands. Does not put any default context on the stack.
+	 */
 	Shell() = default;
+	/**
+	 * Create a new Shell with the given commands, default context and
+	 * initial flags.
+	 *
+	 * The default context is put on the stack and cannot be removed.
+	 *
+	 * @param[in] commands Commands available for execution in this shell.
+	 * @param[in] context Default context for the shell.
+	 * @param[in] flags Initial flags for the shell.
+	 */
 	Shell(std::shared_ptr<Commands> commands, unsigned int context, unsigned int flags = 0);
 
+	/**
+	 * Get the maximum length of a command line.
+	 *
+	 * Defaults to MAX_COMMAND_LINE_LENGTH.
+	 *
+	 * @return The maximum length of a command line in bytes.
+	 */
 	virtual size_t maximum_command_line_length() const;
+	/**
+	 * Get the maximum number of queued log messages.
+	 *
+	 * Defaults to MAX_LOG_MESSAGES.
+	 *
+	 * @return The maximum number of queued log messages.
+	 */
 	virtual size_t maximum_log_messages() const;
+	/**
+	 * Read one character from the available input.
+	 *
+	 * @return An unsigned char if input is available, otherwise -1.
+	 */
 	virtual int read_one_char() = 0;
+	/**
+	 * Output ANSI escape sequence to erase the current line.
+	 */
 	virtual void erase_current_line();
+	/**
+	 * Output ANSI escape sequence to erase characters.
+	 *
+	 * @param[in] count The number of characters to erase.
+	 */
 	virtual void erase_characters(size_t count);
 
+	/**
+	 * Startup complete event.
+	 *
+	 * The shell is ready to start executing commands.
+	 */
 	virtual void started();
+	/**
+	 * Output the startup banner.
+	 *
+	 * There is no default banner.
+	 */
 	virtual void display_banner();
+	/**
+	 * Get the hostname to be included in the command prompt.
+	 *
+	 * Defaults to "".
+	 *
+	 * @return The current hostname of the device, or an empty string
+	 *         for no hostname.
+	 */
 	virtual std::string hostname_text();
+	/**
+	 * Get the text indicating the current context, to be included in
+	 * the command prompt.
+	 *
+	 * Defaults to "".
+	 *
+	 * @return Text indicating the current context, or an empty string
+	 *         for no context description.
+	 */
 	virtual std::string context_text();
+	/**
+	 * Get the prefix to be used at the beginning of the command
+	 * prompt.
+	 *
+	 * Defaults to "".
+	 *
+	 * @return Text for the beginning of the command prompt, or an
+	 *         empty string.
+	 */
 	virtual std::string prompt_prefix();
+	/**
+	 * Get the prefix to be used at the end of the command prompt.
+	 *
+	 * Defaults to "$".
+	 *
+	 * @return Text for the end of the command prompt, or an empty
+	 *         string.
+	 */
 	virtual std::string prompt_suffix();
+	/**
+	 * The end of transmission character has been received.
+	 *
+	 * A command can be invoked using invoke_command(). All other
+	 * actions may result in an inconsistent display of the command
+	 * prompt. If the shell is stopped without invoking a command then
+	 * a blank line should usually be printed first.
+	 *
+	 * There is no default action.
+	 */
 	virtual void end_of_transmission();
+	/**
+	 * Stop request event.
+	 *
+	 * The shell is going to stop executing.
+	 */
 	virtual void stopped();
 
+	/**
+	 * Invoke a command on the shell.
+	 *
+	 * This will output a prompt with the provided command line and
+	 * then try to execute it.
+	 *
+	 * Intended for use from end_of_transmission() to execute an "exit"
+	 * or "logout" command.
+	 *
+	 * @param[in] line The command line to be executed.
+	 */
 	void invoke_command(std::string line);
 
+	/**
+	 * Parse a command line into separate parameters using built-in
+	 * escaping rules.
+	 *
+	 * @param[in] line Command line to parse.
+	 * @return A list of strings, one per command line parameter.
+	 */
 	std::list<std::string> parse_line(const std::string &line);
+	/**
+	 * Format a command line from separate parameters using built-in
+	 * escaping rules.
+	 *
+	 * @param[in] items Command line parameters.
+	 * @return A command line, with escaping of characters sufficient
+	 *         to reproduce the same command line parameters when
+	 *         parsed.
+	 */
 	std::string format_line(const std::list<std::string> &items);
 
 private:
+	/**
+	 * Current mode of the shell.
+	 */
 	enum class Mode : uint8_t {
-		NORMAL,
-		PASSWORD,
-		DELAY,
+		NORMAL, /*!< Normal command execution. */
+		PASSWORD, /*!< Password entry prompt. */
+		DELAY, /*!< Delay execution until a future time. */
 	};
 
+	/**
+	 * Base class of data for a shell mode.
+	 */
 	class ModeData {
 	public:
 		virtual ~ModeData() = default;
@@ -353,65 +680,162 @@ private:
 		ModeData() = default;
 	};
 
+	/**
+	 * Data for the Mode::PASSWORD shell mode.
+	 */
 	class PasswordData: public ModeData {
 	public:
+		/**
+		 * Create Mode::PASSWORD shell mode data.
+		 *
+		 * @param[in] password_prompt Message to display prompting for
+		 *                            password input.
+		 * @param[in] password_function Function to be executed after
+		 *                              the password has been entered
+		 *                              prior to resuming normal
+		 *                              execution.
+		 */
 		PasswordData(const __FlashStringHelper *password_prompt, password_function password_function);
 		~PasswordData() override = default;
 
-		const __FlashStringHelper *password_prompt_;
-		password_function password_function_;
+		const __FlashStringHelper *password_prompt_; /*!< Prompt requesting password input. */
+		password_function password_function_; /*!< Function to execute after password entry. */
 	};
 
+	/**
+	 * Data for the Mode::DELAY shell mode.
+	 */
 	class DelayData: public ModeData {
 	public:
+		/**
+		 * Create Mode::DELAY shell mode data.
+		 *
+		 * @param[in] delay_time Uptime in the future (in milliseconds)
+		 *                       when the function should be executed.
+		 * @param[in] delay_function Function to be executed at a
+		 *                           future time, prior to resuming
+		 *                           normal execution.
+		 */
 		DelayData(uint64_t delay_time, delay_function delay_function);
 		~DelayData() override = default;
 
-		uint64_t delay_time_;
-		delay_function delay_function_;
+		uint64_t delay_time_; /*!< Future uptime to resume execution (in milliseconds). */
+		delay_function delay_function_; /*!< Function execute after delay. */
 	};
 
+	/**
+	 * Log message that has been queued.
+	 *
+	 * Contains an identifier sequence to indicate when log messages
+	 * could not be output because the queue discarded one or more
+	 * messages.
+	 */
 	class QueuedLogMessage {
 	public:
+		/**
+		 * Create a queued log message.
+		 *
+		 * @param[in] id Identifier to use for the log message on the queue.
+		 * @param[in] content Log message content.
+		 */
 		QueuedLogMessage(unsigned long id, std::shared_ptr<uuid::log::Message> content);
 		~QueuedLogMessage() = default;
 
-		const unsigned long id_;
-		const std::shared_ptr<const uuid::log::Message> content_;
+		const unsigned long id_; /*!< Sequential identifier for this log message. */
+		const std::shared_ptr<const uuid::log::Message> content_; /*!< Log message content. */
 	};
 
 	Shell(const Shell&) = delete;
 	Shell& operator=(const Shell&) = delete;
 
+	/**
+	 * Perform one execution step in Mode::NORMAL mode.
+	 *
+	 * Read characters and execute commands or invoke tab completion.
+	 */
 	void loop_normal();
+	/**
+	 * Perform one execution step in Mode::PASSWORD mode.
+	 *
+	 * Read characters until interrupted or password entry is complete.
+	 */
 	void loop_password();
+	/**
+	 * Perform one execution step in Mode::DELAY mode.
+	 *
+	 * Wait until the delay uptime is reached.
+	 */
 	void loop_delay();
 
+	/**
+	 * Output a prompt on the shell.
+	 *
+	 * Based on the current mode this will output the appropriate text,
+	 * e.g. the command prompt with the current command line (for
+	 * Mode::NORMAL mode).
+	 */
 	void display_prompt();
+	/**
+	 * Output queued log messages for this shell.
+	 */
 	void output_logs();
+	/**
+	 * Try to execute a command with the current command line.
+	 */
 	void process_command();
+	/**
+	 * Try to complete a command from the current command line.
+	 */
 	void process_completion();
+	/**
+	 * Finish password entry.
+	 *
+	 * The entered password is in the command line buffer.
+	 *
+	 * @param[in] completed Password entry at the prompt was either
+	 *                      completed (true) or aborted (false).
+	 */
 	void process_password(bool completed);
 
+	/**
+	 * Delete a word from the command line buffer.
+	 *
+	 * @param[in] display True if output to erased characters is
+	 *                    required, false for no output.
+	 */
 	void delete_buffer_word(bool display);
 
+	/**
+	 * Output a message.
+	 *
+	 * @param[in] format Format string.
+	 * @param[in] ap Variable arguments pointer for format string.
+	 * @return The number of bytes that were output.
+	 */
 	size_t vprintf(const char *format, va_list ap);
+	/**
+	 * Output a message.
+	 *
+	 * @param[in] format Format string (flash string).
+	 * @param[in] ap Variable arguments pointer for format string.
+	 * @return The number of bytes that were output.
+	 */
 	size_t vprintf(const __FlashStringHelper *format, va_list ap);
 
-	static const uuid::log::Logger logger_;
-	static std::set<std::shared_ptr<Shell>> shells_;
+	static const uuid::log::Logger logger_; /*!< uuid::log::Logger instance for shells. */
+	static std::set<std::shared_ptr<Shell>> shells_; /*!< Registered running shells to be executed. */
 
-	std::shared_ptr<Commands> commands_;
-	std::deque<unsigned int> context_;
-	unsigned int flags_ = 0;
-	unsigned long log_message_id_ = 0;
-	std::list<QueuedLogMessage> log_messages_;
-	std::string line_buffer_;
-	unsigned char previous_ = 0;
-	Mode mode_ = Mode::NORMAL;
-	std::unique_ptr<ModeData> mode_data_ = nullptr;
-	bool stopped_ = false;
-	bool prompt_displayed_ = false;
+	std::shared_ptr<Commands> commands_; /*!< Commands available for execution in this shell. */
+	std::deque<unsigned int> context_; /*!< Context stack for this shell. Should never be empty. */
+	unsigned int flags_ = 0; /*!< Current flags for this shell. Affects which commands are available. */
+	unsigned long log_message_id_ = 0; /*!< The next identifier to use for queued log messages. */
+	std::list<QueuedLogMessage> log_messages_; /*!< Queued log messages, in the order they were received. */
+	std::string line_buffer_; /*!< Command line buffer. Limited to maximum_command_line_length() bytes. */
+	unsigned char previous_ = 0; /*!< Previous character that was entered on the command line. Used to detect CRLF line endings. */
+	Mode mode_ = Mode::NORMAL; /*!< Current execution mode. */
+	std::unique_ptr<ModeData> mode_data_ = nullptr; /*!< Data associated with the current execution mode. */
+	bool stopped_ = false; /*!< Indicates that the shell has been stopped. */
+	bool prompt_displayed_ = false; /*!< Indicates that a command prompt has been displayed, so that the output of invoke_command() is correct. */
 };
 
 class StreamConsole: virtual public Shell {
