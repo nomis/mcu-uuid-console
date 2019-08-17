@@ -164,8 +164,6 @@ private:
 		/**
 		 * Create a command for execution on a Shell.
 		 *
-		 * @param[in] context Shell context in which this command is
-		 *                    available.
 		 * @param[in] flags Shell flags that must be set for this command
 		 *                  to be available.
 		 * @param[in] name Name of the command as a std::vector of flash
@@ -178,7 +176,7 @@ private:
 		 * @param[in] arg_function Function to be used to perform argument
 		 *                         completions for this command.
 		 */
-		Command(unsigned int context, unsigned int flags,
+		Command(unsigned int flags,
 				const flash_string_vector name, const flash_string_vector arguments,
 				command_function function, argument_completion_function arg_function);
 		~Command();
@@ -199,7 +197,6 @@ private:
 		 */
 		size_t maximum_arguments() const;
 
-		unsigned int context_; /*!< Shell context in which this command is available. */
 		unsigned int flags_; /*!< Shell flags that must be set for this command to be available. */
 		const flash_string_vector name_; /*!< Name of the command as a std::vector of flash strings. */
 		const flash_string_vector arguments_; /*!< Help text for arguments that the command accepts as a std::vector of flash strings. */
@@ -227,7 +224,7 @@ private:
 	 */
 	Match find_command(Shell &shell, const std::list<std::string> &command_line);
 
-	std::list<Command> commands_; /*!< Commands stored in this container. */
+	std::multimap<unsigned int,Command> commands_; /*!< Commands stored in this container, separated by context. */
 };
 
 /**

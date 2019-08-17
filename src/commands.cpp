@@ -46,7 +46,8 @@ namespace console {
 void Commands::add_command(unsigned int context, unsigned int flags,
 		const flash_string_vector &name, const flash_string_vector &arguments,
 		command_function function, argument_completion_function arg_function) {
-	commands_.emplace_back(context, flags, name, arguments, function, arg_function);
+	commands_.emplace(std::piecewise_construct, std::forward_as_tuple(context),
+			std::forward_as_tuple(flags, name, arguments, function, arg_function));
 }
 
 Commands::Execution Commands::execute_command(Shell &shell, const std::list<std::string> &command_line) {
@@ -148,7 +149,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 			// Create a temporary command that represents the longest common substring
 			auto &target = exact ? commands.exact : commands.partial;
 
-			temp_command = std::make_unique<Command>(0, 0,
+			temp_command = std::make_unique<Command>(0,
 					std::vector<const __FlashStringHelper *>{shortest_first.begin(), std::next(shortest_first.begin(), longest_common)}, no_arguments(),
 					[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {}, no_argument_completion());
 			target.emplace(longest_common, temp_command.get());
@@ -288,16 +289,14 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 
 Commands::Match Commands::find_command(Shell &shell, const std::list<std::string> &command_line) {
 	Match commands;
+	auto context_commands = commands_.equal_range(shell.context());
 
-	for (auto& command : commands_) {
+	for (auto it = context_commands.first; it != context_commands.second; it++) {
+		auto& command = it->second;
 		bool match = true;
 		bool exact = true;
 
 		if (!shell.has_flags(command.flags_)) {
-			continue;
-		}
-
-		if (shell.context() != command.context_) {
 			continue;
 		}
 
@@ -340,11 +339,10 @@ Commands::Match Commands::find_command(Shell &shell, const std::list<std::string
 	return commands;
 }
 
-Commands::Command::Command(unsigned int context, unsigned int flags,
+Commands::Command::Command(unsigned int flags,
 		const flash_string_vector name, const flash_string_vector arguments,
 		command_function function, argument_completion_function arg_function)
-		: context_(context), flags_(flags),
-		  name_(name), arguments_(arguments),
+		: flags_(flags), name_(name), arguments_(arguments),
 		  function_(function), arg_function_(arg_function) {
 
 }
@@ -354,8 +352,9 @@ Commands::Command::~Command() {
 }
 
 size_t Commands::Command::minimum_arguments() const {
-	return std::count_if(arguments_.cbegin(), arguments_.cend(), [] (const __FlashStringHelper *argument) { return pgm_read_byte(argument) == '<'; });
+	return std::count_if(arguments_.cbegin(), arguments_.cend(), [] (const __FlashStringHelper *argument) { return ::pgm_read_byte(argument) == '<'; });
 }
+
 size_t Commands::Command::maximum_arguments() const {
 	return arguments_.size();
 };
