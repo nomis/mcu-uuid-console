@@ -65,7 +65,7 @@ static void test_completion0() {
 	auto completion = commands.complete_command(shell, shell.parse_line(""));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
-	TEST_ASSERT_EQUAL_INT(8, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(10, completion.help.size());
 }
 
 /**
@@ -542,6 +542,73 @@ static void test_execution3c() {
 	TEST_ASSERT_EQUAL_STRING("help", run.c_str());
 }
 
+/**
+ * A partial command with only one potential match (that is a prefix for multiple longer commands)
+ * should be completed up to that point and no further.
+ */
+static void test_completion4a() {
+	auto completion = commands.complete_command(shell, shell.parse_line("se"));
+
+	TEST_ASSERT_EQUAL_STRING("set", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
+/**
+ * Commands are not completed before being executed.
+ */
+static void test_execution4a() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("se"));
+
+	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+}
+
+/**
+ * An exact matching command that is a prefix for one longer command (that has
+ * no arguments or longer commands) should complete to that longer command.
+ */
+static void test_completion4b() {
+	auto completion = commands.complete_command(shell, shell.parse_line("set"));
+
+	TEST_ASSERT_EQUAL_STRING("set hostname", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
+/**
+ * Exact match commands are executed.
+ */
+static void test_execution4b() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("set"));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("set", run.c_str());
+}
+
+/**
+ * An exact matching command that is a prefix (with a space) for one longer
+ * command (that has no arguments or longer commands) should complete to that
+ * longer command without a space.
+ */
+static void test_completion4c() {
+	auto completion = commands.complete_command(shell, shell.parse_line("set "));
+
+	TEST_ASSERT_EQUAL_STRING("set hostname", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
+/**
+ * Exact match commands with a trailing space are executed.
+ */
+static void test_execution4c() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("set "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("set", run.c_str());
+}
+
 int main(int argc, char *argv[]) {
 	commands.add_command(0, 0, flash_string_vector{F("help")}, Commands::no_arguments(),
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
@@ -566,6 +633,16 @@ int main(int argc, char *argv[]) {
 	commands.add_command(0, 0, flash_string_vector{F("show"), F("thing3")}, Commands::no_arguments(),
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "show thing3";
+	}, Commands::no_argument_completion());
+
+	commands.add_command(0, 0, flash_string_vector{F("set")}, Commands::no_arguments(),
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+		run = "set";
+	}, Commands::no_argument_completion());
+
+	commands.add_command(0, 0, flash_string_vector{F("set"), F("hostname")}, Commands::no_arguments(),
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+		run = "set hostname";
 	}, Commands::no_argument_completion());
 
 	commands.add_command(0, 0, flash_string_vector{F("console"), F("log"), F("err")}, Commands::no_arguments(),
@@ -631,5 +708,12 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_execution3c);
 
 	// FIXME test arguments
+	RUN_TEST(test_completion4a);
+	RUN_TEST(test_completion4b);
+	RUN_TEST(test_completion4c);
+	RUN_TEST(test_execution4a);
+	RUN_TEST(test_execution4b);
+	RUN_TEST(test_execution4c);
+
 	return UNITY_END();
 }

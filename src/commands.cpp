@@ -221,7 +221,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 
 				result.help.emplace_back(help);
 			}
-		} else if (command_line.size() < matching_command->name_.size() + matching_command->arguments_.size()) {
+		} else if (result.replacement.size() < matching_command->name_.size() + matching_command->arguments_.size()) {
 			// Add a space because the are more arguments for this command
 			add_space = true;
 		} else if (exact && longer_matches) {
