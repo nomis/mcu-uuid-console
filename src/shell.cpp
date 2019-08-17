@@ -71,8 +71,10 @@ bool Shell::running() const {
 }
 
 void Shell::stop() {
-	stopped_ = true;
-	stopped();
+	if (running()) {
+		stopped_ = true;
+		stopped();
+	}
 }
 
 Shell::QueuedLogMessage::QueuedLogMessage(unsigned long id, std::shared_ptr<uuid::log::Message> content)
