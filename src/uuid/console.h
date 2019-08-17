@@ -407,11 +407,11 @@ private:
 	unsigned long log_message_id_ = 0;
 	std::list<QueuedLogMessage> log_messages_;
 	std::string line_buffer_;
+	unsigned char previous_ = 0;
 	Mode mode_ = Mode::NORMAL;
-	char previous_ = 0;
+	std::unique_ptr<ModeData> mode_data_ = nullptr;
 	bool stopped_ = false;
 	bool prompt_displayed_ = false;
-	std::unique_ptr<ModeData> mode_data_ = nullptr;
 };
 
 class StreamConsole: virtual public Shell {
