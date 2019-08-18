@@ -65,7 +65,7 @@ static void test_completion0() {
 	auto completion = commands.complete_command(shell, shell.parse_line(""));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
-	TEST_ASSERT_EQUAL_INT(18, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(22, completion.help.size());
 }
 
 /**
@@ -612,8 +612,8 @@ static void test_execution4c() {
 }
 
 /**
- * Partial matches of commands with arguments should complete the command,
- * add a space and provide a list of all the remaining command line arguments.
+ * Partial matches of commands with arguments should complete the command
+ * and add a space.
  *
  * The type of arguments (required/optional) is irrelevant.
  */
@@ -621,38 +621,22 @@ static void test_completion5a() {
 	auto completion = commands.complete_command(shell, shell.parse_line("test_a"));
 
 	TEST_ASSERT_EQUAL_STRING("test_a0 ", shell.format_line(completion.replacement).c_str());
-	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
-	if (completion.help.size() == 1) {
-		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", shell.format_line(*it++).c_str());
-	}
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
 	completion = commands.complete_command(shell, shell.parse_line("test_b"));
 
 	TEST_ASSERT_EQUAL_STRING("test_b1 ", shell.format_line(completion.replacement).c_str());
-	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
-	if (completion.help.size() == 1) {
-		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("<one> [two] [three]", shell.format_line(*it++).c_str());
-	}
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
 	completion = commands.complete_command(shell, shell.parse_line("test_c"));
 
 	TEST_ASSERT_EQUAL_STRING("test_c2 ", shell.format_line(completion.replacement).c_str());
-	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
-	if (completion.help.size() == 1) {
-		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("<one> <two> [three]", shell.format_line(*it++).c_str());
-	}
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
 	completion = commands.complete_command(shell, shell.parse_line("test_d"));
 
 	TEST_ASSERT_EQUAL_STRING("test_d3 ", shell.format_line(completion.replacement).c_str());
-	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
-	if (completion.help.size() == 1) {
-		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("<one> <two> <three>", shell.format_line(*it++).c_str());
-	}
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
 /**
@@ -685,9 +669,8 @@ static void test_execution5a() {
 }
 
 /**
- * Exact matches of commands (without a space) with arguments should add a space
- * and provide a list of all the remaining command line arguments, appending a
- * space if there are arguments remaining.
+ * Exact matches of commands (without a space) with arguments should add
+ * a space if there are arguments remaining.
  *
  * The type of arguments (required/optional) is irrelevant.
  */
@@ -695,38 +678,22 @@ static void test_completion5b() {
 	auto completion = commands.complete_command(shell, shell.parse_line("test_a0"));
 
 	TEST_ASSERT_EQUAL_STRING("test_a0 ", shell.format_line(completion.replacement).c_str());
-	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
-	if (completion.help.size() == 1) {
-		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", shell.format_line(*it++).c_str());
-	}
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
 	completion = commands.complete_command(shell, shell.parse_line("test_b1"));
 
 	TEST_ASSERT_EQUAL_STRING("test_b1 ", shell.format_line(completion.replacement).c_str());
-	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
-	if (completion.help.size() == 1) {
-		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("<one> [two] [three]", shell.format_line(*it++).c_str());
-	}
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
 	completion = commands.complete_command(shell, shell.parse_line("test_c2"));
 
 	TEST_ASSERT_EQUAL_STRING("test_c2 ", shell.format_line(completion.replacement).c_str());
-	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
-	if (completion.help.size() == 1) {
-		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("<one> <two> [three]", shell.format_line(*it++).c_str());
-	}
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
 	completion = commands.complete_command(shell, shell.parse_line("test_d3"));
 
 	TEST_ASSERT_EQUAL_STRING("test_d3 ", shell.format_line(completion.replacement).c_str());
-	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
-	if (completion.help.size() == 1) {
-		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("<one> <two> <three>", shell.format_line(*it++).c_str());
-	}
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
 /**
@@ -833,47 +800,46 @@ static void test_execution5c() {
 }
 
 /**
- * Exact matches of commands (with a space) with arguments should provide a list of
- * all the remaining command line arguments, appending a space if there are arguments
- * remaining.
+ * Exact matches of commands with arguments (without a space) should provide a list of
+ * all the remaining command line arguments.
  *
  * The type of arguments (required/optional) is irrelevant.
  */
 static void test_completion5d() {
 	auto completion = commands.complete_command(shell, shell.parse_line("test_a0 un"));
 
-	TEST_ASSERT_EQUAL_STRING("test_a0 un ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
 	if (completion.help.size() == 1) {
 		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", shell.format_line(*it++).c_str());
 	}
 
 	completion = commands.complete_command(shell, shell.parse_line("test_b1 un"));
 
-	TEST_ASSERT_EQUAL_STRING("test_b1 un ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
 	if (completion.help.size() == 1) {
 		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("<one> [two] [three]", shell.format_line(*it++).c_str());
 	}
 
 	completion = commands.complete_command(shell, shell.parse_line("test_c2 un"));
 
-	TEST_ASSERT_EQUAL_STRING("test_c2 un ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
 	if (completion.help.size() == 1) {
 		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("<two> [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("<one> <two> [three]", shell.format_line(*it++).c_str());
 	}
 
 	completion = commands.complete_command(shell, shell.parse_line("test_d3 un"));
 
-	TEST_ASSERT_EQUAL_STRING("test_d3 un ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
 	if (completion.help.size() == 1) {
 		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("<two> <three>", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("<one> <two> <three>", shell.format_line(*it++).c_str());
 	}
 }
 
@@ -981,47 +947,46 @@ static void test_execution5e() {
 }
 
 /**
- * Exact matches of commands (with a space) with arguments should provide a list of
- * all the remaining command line arguments, appending a space if there are arguments
- * remaining.
+ * Exact matches of commands with arguments (without a space) should provide a list of
+ * all the remaining command line arguments.
  *
  * The type of arguments (required/optional) is irrelevant.
  */
 static void test_completion5f() {
 	auto completion = commands.complete_command(shell, shell.parse_line("test_a0 un deux"));
 
-	TEST_ASSERT_EQUAL_STRING("test_a0 un deux ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
 	if (completion.help.size() == 1) {
 		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
 	}
 
 	completion = commands.complete_command(shell, shell.parse_line("test_b1 un deux"));
 
-	TEST_ASSERT_EQUAL_STRING("test_b1 un deux ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
 	if (completion.help.size() == 1) {
 		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
 	}
 
 	completion = commands.complete_command(shell, shell.parse_line("test_c2 un deux"));
 
-	TEST_ASSERT_EQUAL_STRING("test_c2 un deux ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
 	if (completion.help.size() == 1) {
 		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("<two> [three]", shell.format_line(*it++).c_str());
 	}
 
 	completion = commands.complete_command(shell, shell.parse_line("test_d3 un deux"));
 
-	TEST_ASSERT_EQUAL_STRING("test_d3 un deux ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
 	if (completion.help.size() == 1) {
 		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("<three>", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("<two> <three>", shell.format_line(*it++).c_str());
 	}
 }
 
@@ -1129,7 +1094,8 @@ static void test_execution5g() {
 }
 
 /**
- * Exact matches of commands (with a space) with maximum arguments should do nothing.
+ * Exact matches of commands with maximum arguments (without a space) should provide a list of
+ * all the remaining command line arguments.
  *
  * The type of arguments (required/optional) is irrelevant.
  */
@@ -1137,22 +1103,38 @@ static void test_completion5h() {
 	auto completion = commands.complete_command(shell, shell.parse_line("test_a0 un deux trois"));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
-	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
 
 	completion = commands.complete_command(shell, shell.parse_line("test_b1 un deux trois"));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
-	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
 
 	completion = commands.complete_command(shell, shell.parse_line("test_c2 un deux trois"));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
-	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
 
 	completion = commands.complete_command(shell, shell.parse_line("test_d3 un deux trois"));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
-	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("<three>", shell.format_line(*it++).c_str());
+	}
 }
 
 /**
@@ -1414,6 +1396,764 @@ static void test_execution7a() {
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
+/**
+ * Exact command matches with no arguments should get a trailing space.
+ */
+static void test_completion8a() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f"));
+
+	TEST_ASSERT_EQUAL_STRING("test_f ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g"));
+
+	TEST_ASSERT_EQUAL_STRING("test_g ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h"));
+
+	TEST_ASSERT_EQUAL_STRING("test_h ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i"));
+
+	TEST_ASSERT_EQUAL_STRING("test_i ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
+/**
+ * Exact command matches with no arguments but a trailing space should provide
+ * a list of possible arguments but not complete to anything (even for a single
+ * option).
+ */
+static void test_completion8b() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(6, completion.help.size());
+	if (completion.help.size() == 6) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("aaaaa [two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbb1 [two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbb2 [two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("cccc1c [two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("cccc2c [two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("cccc3c [two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(6, completion.help.size());
+	if (completion.help.size() == 6) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("aaaaa [two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbb1 [two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbb2 [two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("cccc1c [two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("cccc2c [two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("cccc3c [two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("test [two] [three]", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact command matches with a partial argument should try to auto-complete the
+ * argument as far as possible.
+ */
+static void test_completion8c() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f a"));
+
+	TEST_ASSERT_EQUAL_STRING("test_f aaaaa", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g a"));
+
+	TEST_ASSERT_EQUAL_STRING("test_g aaaaa", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h a"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i t"));
+
+	TEST_ASSERT_EQUAL_STRING("test_i test", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact command matches with a partial argument should try to auto-complete the
+ * argument as far as possible.
+ */
+static void test_completion8d() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f b"));
+
+	TEST_ASSERT_EQUAL_STRING("test_f bbb", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("bbb1 [two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbb2 [two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g b"));
+
+	TEST_ASSERT_EQUAL_STRING("test_g bbb", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("bbb1 [two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbb2 [two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h b"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i b"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact command matches with a partial argument should try to auto-complete the
+ * argument as far as possible.
+ */
+static void test_completion8e() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f c"));
+
+	TEST_ASSERT_EQUAL_STRING("test_f cccc", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
+	if (completion.help.size() == 3) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("cccc1c [two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("cccc2c [two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("cccc3c [two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g c"));
+
+	TEST_ASSERT_EQUAL_STRING("test_g cccc", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
+	if (completion.help.size() == 3) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("cccc1c [two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("cccc2c [two] [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("cccc3c [two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h c"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i c"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact command matches with a known completion argument should append a space
+ * and return the remaining argument list. Unknown arguments don't get a space.
+ */
+static void test_completion8f() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f cccc1c"));
+
+	TEST_ASSERT_EQUAL_STRING("test_f cccc1c ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g cccc2c"));
+
+	TEST_ASSERT_EQUAL_STRING("test_g cccc2c ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h cccc3c"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i test"));
+
+	TEST_ASSERT_EQUAL_STRING("test_i test ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact command matches with no arguments but a trailing space should provide
+ * a list of possible arguments but not complete to anything (even for a single
+ * option).
+ */
+static void test_completion8g() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f ddd "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(6, completion.help.size());
+	if (completion.help.size() == 6) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("aaAaa [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbB1 [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbB2 [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("ccCc1c [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("ccCc2c [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("ccCc3c [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g ddd "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h ddd "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(6, completion.help.size());
+	if (completion.help.size() == 6) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("aaaaa [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbb1 [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbb2 [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("cccc1c [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("cccc2c [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("cccc3c [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i ddd "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("test [three]", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact command matches with a partial argument should try to auto-complete the
+ * argument as far as possible.
+ */
+static void test_completion8h() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f ddd a"));
+
+	TEST_ASSERT_EQUAL_STRING("test_f ddd aaAaa", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g ddd a"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h ddd a"));
+
+	TEST_ASSERT_EQUAL_STRING("test_h ddd aaaaa", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i ddd t"));
+
+	TEST_ASSERT_EQUAL_STRING("test_i ddd test", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact command matches with a partial argument should try to auto-complete the
+ * argument as far as possible.
+ */
+static void test_completion8i() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f ddd b"));
+
+	TEST_ASSERT_EQUAL_STRING("test_f ddd bbB", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("bbB1 [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbB2 [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h ddd b"));
+
+	TEST_ASSERT_EQUAL_STRING("test_h ddd bbb", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("bbb1 [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbb2 [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g ddd b"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i ddd b"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact command matches with a partial argument should try to auto-complete the
+ * argument as far as possible.
+ */
+static void test_completion8j() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f ddd c"));
+
+	TEST_ASSERT_EQUAL_STRING("test_f ddd ccCc", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
+	if (completion.help.size() == 3) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("ccCc1c [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("ccCc2c [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("ccCc3c [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g ddd c"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h ddd c"));
+
+	TEST_ASSERT_EQUAL_STRING("test_h ddd cccc", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
+	if (completion.help.size() == 3) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("cccc1c [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("cccc2c [three]", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("cccc3c [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i ddd c"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact command matches with a known completion argument should append a space
+ * and return the remaining argument list. Unknown arguments don't get a space.
+ */
+static void test_completion8k() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f ddd ccCc1c"));
+
+	TEST_ASSERT_EQUAL_STRING("test_f ddd ccCc1c ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g ddd cccc2c"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h ddd cccc3c"));
+
+	TEST_ASSERT_EQUAL_STRING("test_h ddd cccc3c ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i ddd test"));
+
+	TEST_ASSERT_EQUAL_STRING("test_i ddd test ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact command matches with no arguments but a trailing space should provide
+ * a list of possible arguments but not complete to anything (even for a single
+ * option).
+ */
+static void test_completion8l() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f ddd eee "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g ddd eee "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(6, completion.help.size());
+	if (completion.help.size() == 6) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("aaAaa", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbB1", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbB2", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("ccCc1c", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("ccCc2c", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("ccCc3c", shell.format_line(*it++).c_str());
+	}
+	completion = commands.complete_command(shell, shell.parse_line("test_h ddd eee "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(6, completion.help.size());
+	if (completion.help.size() == 6) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("aaAaa", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbB1", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbB2", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("ccCc1c", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("ccCc2c", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("ccCc3c", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i ddd eee "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("test", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact command matches with a partial argument should try to auto-complete the
+ * argument as far as possible.
+ */
+static void test_completion8m() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f ddd eee a"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g ddd eee a"));
+
+	TEST_ASSERT_EQUAL_STRING("test_g ddd eee aaAaa", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h ddd eee a"));
+
+	TEST_ASSERT_EQUAL_STRING("test_h ddd eee aaAaa", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i ddd eee t"));
+
+	TEST_ASSERT_EQUAL_STRING("test_i ddd eee test", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
+/**
+ * Exact command matches with a partial argument should try to auto-complete the
+ * argument as far as possible.
+ */
+static void test_completion8n() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f ddd eee b"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g ddd eee b"));
+
+	TEST_ASSERT_EQUAL_STRING("test_g ddd eee bbB", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("bbB1", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbB2", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h ddd eee b"));
+
+	TEST_ASSERT_EQUAL_STRING("test_h ddd eee bbB", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("bbB1", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("bbB2", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i ddd eee b"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact command matches with a partial argument should try to auto-complete the
+ * argument as far as possible.
+ */
+static void test_completion8o() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f ddd eee c"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g ddd eee c"));
+
+	TEST_ASSERT_EQUAL_STRING("test_g ddd eee ccCc", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
+	if (completion.help.size() == 3) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("ccCc1c", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("ccCc2c", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("ccCc3c", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h ddd eee c"));
+
+	TEST_ASSERT_EQUAL_STRING("test_h ddd eee ccCc", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
+	if (completion.help.size() == 3) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("ccCc1c", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("ccCc2c", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("ccCc3c", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i ddd eee c"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact command matches with a known completion argument at the end of the
+ * argument list should do nothing, and an unknown completion argument should
+ * return help.
+ */
+static void test_completion8p() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f ddd eee ccCc1c"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g ddd eee ccCc2c"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g ddd eee fff"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h ddd eee ccCc3c"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h ddd eee fff"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i ddd eee test"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i ddd eee fff"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * Exact command matches with maximum arguments and a space should do nothing.
+ */
+static void test_completion8q() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f ddd eee fff "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g ddd eee fff "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h ddd eee fff "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i ddd eee fff "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
+/**
+ * Exact command matches with too many arguments should do nothing.
+ */
+static void test_completion8r() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f ddd eee fff ggg"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_g ddd eee fff ggg"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_h ddd eee fff ggg"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_i ddd eee fff ggg"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
 int main(int argc, char *argv[]) {
 	commands.add_command(0, 0, flash_string_vector{F("help")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
@@ -1520,6 +2260,104 @@ int main(int argc, char *argv[]) {
 		}
 	});
 
+	commands.add_command(0, 0, flash_string_vector{F("test_f")}, flash_string_vector{F("[one]"), F("[two]"), F("[three]")},
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
+		run = "test_f";
+		for (auto& argument : arguments) {
+			run += " " + argument;
+		}
+	},
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
+		std::list<std::string> potential_arguments;
+
+		if (arguments.size() == 0) {
+			potential_arguments.emplace_back("aaaaa");
+			potential_arguments.emplace_back("bbb1");
+			potential_arguments.emplace_back("bbb2");
+			potential_arguments.emplace_back("cccc1c");
+			potential_arguments.emplace_back("cccc2c");
+			potential_arguments.emplace_back("cccc3c");
+		} else if (arguments.size() == 1) {
+			potential_arguments.emplace_back("aaAaa");
+			potential_arguments.emplace_back("bbB1");
+			potential_arguments.emplace_back("bbB2");
+			potential_arguments.emplace_back("ccCc1c");
+			potential_arguments.emplace_back("ccCc2c");
+			potential_arguments.emplace_back("ccCc3c");
+		}
+
+		return potential_arguments;
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("test_g")}, flash_string_vector{F("[one]"), F("[two]"), F("[three]")},
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
+		run = "test_g";
+		for (auto& argument : arguments) {
+			run += " " + argument;
+		}
+	},
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
+		std::list<std::string> potential_arguments;
+
+		if (arguments.size() == 0) {
+			potential_arguments.emplace_back("aaaaa");
+			potential_arguments.emplace_back("bbb1");
+			potential_arguments.emplace_back("bbb2");
+			potential_arguments.emplace_back("cccc1c");
+			potential_arguments.emplace_back("cccc2c");
+			potential_arguments.emplace_back("cccc3c");
+		} else if (arguments.size() == 2) {
+			potential_arguments.emplace_back("aaAaa");
+			potential_arguments.emplace_back("bbB1");
+			potential_arguments.emplace_back("bbB2");
+			potential_arguments.emplace_back("ccCc1c");
+			potential_arguments.emplace_back("ccCc2c");
+			potential_arguments.emplace_back("ccCc3c");
+		}
+
+		return potential_arguments;
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("test_h")}, flash_string_vector{F("[one]"), F("[two]"), F("[three]")},
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
+		run = "test_h";
+		for (auto& argument : arguments) {
+			run += " " + argument;
+		}
+	},
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
+		std::list<std::string> potential_arguments;
+
+		if (arguments.size() == 1) {
+			potential_arguments.emplace_back("aaaaa");
+			potential_arguments.emplace_back("bbb1");
+			potential_arguments.emplace_back("bbb2");
+			potential_arguments.emplace_back("cccc1c");
+			potential_arguments.emplace_back("cccc2c");
+			potential_arguments.emplace_back("cccc3c");
+		} else if (arguments.size() == 2) {
+			potential_arguments.emplace_back("aaAaa");
+			potential_arguments.emplace_back("bbB1");
+			potential_arguments.emplace_back("bbB2");
+			potential_arguments.emplace_back("ccCc1c");
+			potential_arguments.emplace_back("ccCc2c");
+			potential_arguments.emplace_back("ccCc3c");
+		}
+
+		return potential_arguments;
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("test_i")}, flash_string_vector{F("[one]"), F("[two]"), F("[three]")},
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
+		run = "test_i";
+		for (auto& argument : arguments) {
+			run += " " + argument;
+		}
+	},
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
+		return std::list<std::string>{"test"};
+	});
+
 	UNITY_BEGIN();
 	RUN_TEST(test_completion0);
 	RUN_TEST(test_execution0);
@@ -1603,6 +2441,25 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_execution6c);
 
 	RUN_TEST(test_execution7a);
+
+	RUN_TEST(test_completion8a);
+	RUN_TEST(test_completion8b);
+	RUN_TEST(test_completion8c);
+	RUN_TEST(test_completion8d);
+	RUN_TEST(test_completion8e);
+	RUN_TEST(test_completion8f);
+	RUN_TEST(test_completion8g);
+	RUN_TEST(test_completion8h);
+	RUN_TEST(test_completion8i);
+	RUN_TEST(test_completion8j);
+	RUN_TEST(test_completion8k);
+	RUN_TEST(test_completion8l);
+	RUN_TEST(test_completion8m);
+	RUN_TEST(test_completion8n);
+	RUN_TEST(test_completion8o);
+	RUN_TEST(test_completion8p);
+	RUN_TEST(test_completion8q);
+	RUN_TEST(test_completion8r);
 
 	return UNITY_END();
 }

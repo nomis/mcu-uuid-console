@@ -153,6 +153,29 @@ bool Commands::find_longest_common_prefix(const std::multimap<size_t,const Comma
 	return true;
 }
 
+std::string Commands::find_longest_common_prefix(const std::list<std::string> &arguments) {
+	auto& first = *arguments.begin();
+	bool all_match = true;
+	size_t chars_prefix = 0;
+
+	for (size_t length = 0; all_match; length++) {
+		for (auto argument_it = std::next(arguments.begin()); argument_it != arguments.end(); argument_it++) {
+			// This relies on the null terminator character limiting the
+			// length before it becomes longer than any of the strings
+			if (first[length] != (*argument_it)[length]) {
+				all_match = false;
+				break;
+			}
+		}
+
+		if (all_match) {
+			chars_prefix = length + 1;
+		}
+	}
+
+	return arguments.begin()->substr(0, chars_prefix);
+}
+
 Commands::Completion Commands::complete_command(Shell &shell, const std::list<std::string> &command_line) {
 	auto commands = find_command(shell, command_line);
 	Completion result;
@@ -205,7 +228,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 			}
 		}
 
-		if (command_line.size() >= result.replacement.size() && command_line.size() <= command_name_size + matching_command->maximum_arguments()) {
+		if (command_line.size() > result.replacement.size() && command_line.size() <= command_name_size + matching_command->maximum_arguments()) {
 			// Try to auto-complete arguments
 			std::vector<std::string> arguments{std::next(command_line.cbegin(), result.replacement.size()), command_line.cend()};
 			result.replacement.insert(result.replacement.end(), arguments.cbegin(), arguments.cend());
@@ -216,21 +239,18 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 			std::string last_argument = result.replacement.back();
 			result.replacement.pop_back();
 			if (!arguments.empty()) {
-				if (arguments.back().empty()) {
-					current_args_count--;
-				}
-
 				arguments.pop_back();
+				current_args_count--;
 			}
 
 			auto potential_arguments = matching_command->arg_function_
 					? matching_command->arg_function_(shell, arguments)
-					: std::list<std::string>{};
+							: std::list<std::string>{};
 
 			// Remove arguments that can't match
 			if (!last_argument.empty()) {
 				for (auto it = potential_arguments.begin(); it != potential_arguments.end(); ) {
-					if (last_argument.rfind(*it, 0) == std::string::npos) {
+					if (it->rfind(last_argument, 0) == std::string::npos) {
 						it = potential_arguments.erase(it);
 					} else {
 						it++;
@@ -238,20 +258,28 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 				}
 			}
 
-			if (potential_arguments.size() == 1 && !last_argument.empty()) {
-				// Auto-complete if there's something present in the last argument
-				result.replacement.emplace_back(*potential_arguments.begin());
-				current_args_count++;
+			// Auto-complete if there's something present in the last argument
+			if (!last_argument.empty()) {
+				if (potential_arguments.size() == 1) {
+					if (last_argument == *potential_arguments.begin()) {
+						if (result.replacement.size() + 1 < command_name_size + matching_command->maximum_arguments()) {
+							// Add a space because this argument is complete and there are more arguments for this command
+							add_space = true;
+						}
+					}
 
-				if (result.replacement.size() < command_name_size + matching_command->maximum_arguments()) {
-					result.replacement.emplace_back("");
+					last_argument = *potential_arguments.begin();
+					potential_arguments.clear();
+
+					// Remaining help should skip the replaced argument
+					current_args_count++;
+				} else if (potential_arguments.size() > 1) {
+					last_argument = find_longest_common_prefix(potential_arguments);
 				}
-
-				potential_arguments.clear();
-			} else {
-				// Put the last argument back
-				result.replacement.emplace_back(last_argument);
 			}
+
+			// Put the last argument back
+			result.replacement.emplace_back(last_argument);
 
 			std::list<std::string> remaining_help;
 			if (!potential_arguments.empty()) {
@@ -280,11 +308,9 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 					result.help.emplace_back(help);
 				}
 			}
-
-			if (result.replacement.size() < command_name_size + matching_command->maximum_arguments()) {
-				// Add a space because there are more arguments for this command
-				add_space = true;
-			}
+		} else if (result.replacement.size() < command_name_size + matching_command->maximum_arguments()) {
+			// Add a space because there are more arguments for this command
+			add_space = true;
 		}
 	}
 
@@ -325,7 +351,6 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 		}
 	}
 
-
 	if (shortest_count > 1 && !commands.exact.empty()) {
 		// Try to add a space to exact matches
 		auto longest = commands.exact.crbegin();
@@ -341,10 +366,8 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 	}
 
 	if (add_space) {
-		if (command_line.size() <= result.replacement.size()) {
-			if (result.replacement.empty() || !result.replacement.back().empty()) {
-				result.replacement.emplace_back("");
-			}
+		if (!result.replacement.back().empty()) {
+			result.replacement.emplace_back("");
 		}
 	}
 

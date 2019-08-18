@@ -249,15 +249,23 @@ private:
 	/**
 	 * Find the longest common prefix from a shortest match of commands.
 	 *
-	 * @param[in] commands All commands that matched.
+	 * @param[in] commands All commands that matched (at least 2).
 	 * @param[in] shortest_match The length of the shortest match.
 	 * @param[out] longest_name The longest common prefix as a list of
 	 *                          strings.
-	 * @returns True if the longest common prefix is made up of whole
+	 * @return True if the longest common prefix is made up of whole
 	 *          components, false if the last part is constructed from
 	 *          a partial component.
 	 */
 	bool find_longest_common_prefix(const std::multimap<size_t,const Command*> &commands, size_t shortest_match, std::list<std::string> &longest_name);
+
+	/**
+	 * Find the longest common prefix from a list of potential arguments.
+	 *
+	 * @param[in] arguments All potential arguments (at least 2).
+	 * @return The longest common prefix, which could be empty.
+	 */
+	std::string find_longest_common_prefix(const std::list<std::string> &arguments);
 
 	std::multimap<unsigned int,Command> commands_; /*!< Commands stored in this container, separated by context. */
 };
