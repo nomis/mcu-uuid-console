@@ -65,7 +65,7 @@ static void test_completion0() {
 	auto completion = commands.complete_command(shell, shell.parse_line(""));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
-	TEST_ASSERT_EQUAL_INT(14, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(17, completion.help.size());
 }
 
 /**
@@ -978,6 +978,49 @@ static void test_completion5i() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * A partial command with only one exact match (that is a prefix for multiple longer commands)
+ * should be completed up to that point and no further.
+ */
+static void test_completion6a() {
+	auto completion = commands.complete_command(shell, shell.parse_line("ge"));
+
+	TEST_ASSERT_EQUAL_STRING("get", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
+/**
+ * An exact matching command that is a prefix for multiple different longer commands should
+ * add a space and return those commands.
+ */
+static void test_completion6b() {
+	auto completion = commands.complete_command(shell, shell.parse_line("get"));
+
+	TEST_ASSERT_EQUAL_STRING("get ", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("hostname", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("uptime", shell.format_line(*it++).c_str());
+	}
+}
+
+/**
+ * An exact matching command with a space that is a prefix for multiple different longer
+ * commands should return those commands.
+ */
+static void test_completion6c() {
+	auto completion = commands.complete_command(shell, shell.parse_line("get "));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("hostname", shell.format_line(*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("uptime", shell.format_line(*it++).c_str());
+	}
+}
+
 int main(int argc, char *argv[]) {
 	commands.add_command(0, 0, flash_string_vector{F("help")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
@@ -1002,6 +1045,21 @@ int main(int argc, char *argv[]) {
 	commands.add_command(0, 0, flash_string_vector{F("show"), F("thing3")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "show thing3";
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("get")},
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+		run = "get";
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("get"), F("hostname")},
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+		run = "get hostname";
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("get"), F("uptime")},
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+		run = "get uptime";
 	});
 
 	commands.add_command(0, 0, flash_string_vector{F("set")},
@@ -1124,6 +1182,10 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_completion5g);
 	RUN_TEST(test_completion5h);
 	RUN_TEST(test_completion5i);
+
+	RUN_TEST(test_completion6a);
+	RUN_TEST(test_completion6b);
+	RUN_TEST(test_completion6c);
 
 	return UNITY_END();
 }
