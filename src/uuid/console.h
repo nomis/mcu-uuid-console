@@ -236,9 +236,23 @@ private:
 	 * @param[in] shell Shell that is accessing commands.
 	 * @param[in] command_line Command line as a space-delimited list
 	 *                         of strings.
-	 * @return An object describing the result of the command find operation.
+	 * @return An object describing the result of the command find
+	 *         operation.
 	 */
 	Match find_command(Shell &shell, const std::list<std::string> &command_line);
+
+	/**
+	 * Find the longest common prefix from a shortest match of commands.
+	 *
+	 * @param[in] commands All commands that matched.
+	 * @param[in] shortest_match The length of the shortest match.
+	 * @param[out] longest_name The longest common prefix as a list of
+	 *                          strings.
+	 * @returns True if the longest common prefix is made up of whole
+	 *          components, false if the last part is constructed from
+	 *          a partial component.
+	 */
+	bool find_longest_common_prefix(const std::multimap<size_t,const Command*> &commands, size_t shortest_match, std::list<std::string> &longest_name);
 
 	std::multimap<unsigned int,Command> commands_; /*!< Commands stored in this container, separated by context. */
 };

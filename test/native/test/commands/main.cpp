@@ -131,12 +131,12 @@ static void test_execution1b() {
 
 /**
  * An exact matching command that is a prefix (with a space) for multiple longer
- * commands should return the longer commands.
+ * commands should complete as far as possible and return the longer commands.
  */
 static void test_completion1c() {
 	auto completion = commands.complete_command(shell, shell.parse_line("show "));
 
-	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("show thing", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
 	if (completion.help.size() == 3) {
 		auto it = completion.help.begin();
@@ -159,12 +159,12 @@ static void test_execution1c() {
 
 /**
  * A partial matching command that is a prefix for multiple longer commands
- * should complete as far as possible (FIXME) and return the longer commands.
+ * should complete as far as possible and return the longer commands.
  */
 static void test_completion1d() {
 	auto completion = commands.complete_command(shell, shell.parse_line("show th"));
 
-	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_STRING("show thing", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
 	if (completion.help.size() == 3) {
 		auto it = completion.help.begin();
