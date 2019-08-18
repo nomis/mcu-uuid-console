@@ -93,26 +93,6 @@ public:
 	~Commands() = default;
 
 	/**
-	 * Parameter to specify that a command has no arguments.
-	 *
-	 * @return An empty flash_string_vector.
-	 */
-	static inline flash_string_vector no_arguments() { return flash_string_vector{}; }
-	/**
-	 * Parameter to specify that a command does not support argument
-	 * completion.
-	 *
-	 * @return A std::function that returns an empty std::set.
-	 */
-	static inline argument_completion_function no_argument_completion() {
-		return [] (Shell &shell __attribute__((unused)),
-				const std::vector<std::string> &arguments __attribute__((unused)))
-				-> const std::set<std::string> {
-			return std::set<std::string>{};
-		};
-	}
-
-	/**
 	 * Add a command with no arguments to the list of commands in this
 	 * container.
 	 *
@@ -250,6 +230,14 @@ private:
 		std::multimap<size_t,const Command*> exact; /*!< Commands that match the command line exactly, grouped by the size of the command names. */
 		std::multimap<size_t,const Command*> partial; /*!< Commands that the command line partially matches, grouped by the size of the command names. */
 	};
+
+	/**
+	 * Parameter to specify that a command does not support argument
+	 * completion.
+	 *
+	 * @return A std::function that returns an empty std::set.
+	 */
+	static argument_completion_function no_argument_completion();
 
 	/**
 	 * Find commands by matching them against the command line.

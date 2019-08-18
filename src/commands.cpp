@@ -45,7 +45,7 @@ namespace console {
 
 void Commands::add_command(unsigned int context, unsigned int flags,
 		const flash_string_vector &name, command_function function) {
-	add_command(context, flags, name, no_arguments(), function, no_argument_completion());
+	add_command(context, flags, name, flash_string_vector{}, function);
 }
 
 void Commands::add_command(unsigned int context, unsigned int flags,
@@ -59,6 +59,14 @@ void Commands::add_command(unsigned int context, unsigned int flags,
 		command_function function, argument_completion_function arg_function) {
 	commands_.emplace(std::piecewise_construct, std::forward_as_tuple(context),
 			std::forward_as_tuple(flags, name, arguments, function, arg_function));
+}
+
+Commands::argument_completion_function Commands::no_argument_completion() {
+	return [] (Shell &shell __attribute__((unused)),
+			const std::vector<std::string> &arguments __attribute__((unused)))
+			-> const std::set<std::string> {
+		return std::set<std::string>{};
+	};
 }
 
 Commands::Execution Commands::execute_command(Shell &shell, const std::list<std::string> &command_line) {
@@ -181,7 +189,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 		bool whole_components = find_longest_common_prefix(commands.partial, shortest_match->first, temp_command_name);
 
 		if (!temp_command_name.empty() && command_line.size() <= temp_command_name.size()) {
-			temp_command = std::make_unique<Command>(0, no_arguments(), no_arguments(),
+			temp_command = std::make_unique<Command>(0, flash_string_vector{}, flash_string_vector{},
 					[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {}, no_argument_completion());
 			temp_command_it = commands.partial.emplace(temp_command_name.size(), temp_command.get());
 			shortest_count = 1;
