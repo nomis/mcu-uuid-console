@@ -126,8 +126,6 @@ public:
 	 *                      (use "<" to indicate a required argument).
 	 * @param[in] function Function to be used when the command is
 	 *                     executed.
-	 * @param[in] arg_function Function to be used to perform argument
-	 *                         completions for this command.
 	 */
 	void add_command(unsigned int context, unsigned int flags,
 			const flash_string_vector &name, const flash_string_vector &arguments,
