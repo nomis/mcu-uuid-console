@@ -75,14 +75,18 @@ public:
 	/**
 	 * Function to obtain completions for a command line.
 	 *
+	 * This is a list instead of set so that a custom sort order can be
+	 * used. It should normally be sorted lexicographically so that the
+	 * list of options is not confusing.
+	 *
 	 * @param[in] shell Shell instance that has a command line matching
 	 *                  this command.
 	 * @param[in] arguments Command line arguments prior to (but
 	 *                      excluding) the argument being completed.
-	 * @return Set of possible values for the next argument on the
+	 * @return List of possible values for the next argument on the
 	 *         command line.
 	 */
-	using argument_completion_function = std::function<const std::set<std::string>(Shell &shell, const std::vector<std::string> &arguments)>;
+	using argument_completion_function = std::function<const std::list<std::string>(Shell &shell, const std::vector<std::string> &arguments)>;
 
 	/**
 	 * Construct a new container of commands for use by a Shell.

@@ -225,7 +225,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 
 			auto potential_arguments = matching_command->arg_function_
 					? matching_command->arg_function_(shell, arguments)
-					: std::set<std::string>{};
+					: std::list<std::string>{};
 
 			// Remove arguments that can't match
 			if (!last_argument.empty()) {
