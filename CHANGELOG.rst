@@ -14,7 +14,7 @@ Added
 * Minimal line editing support (backspace, delete word, delete line).
 * Text input in the US-ASCII character set.
 * Support for ``CR``, ``CRLF`` and ``LF`` line endings on input.
-* Tab completion to whole words for recognised commands/arguments.
+* Tab completion for recognised commands/arguments.
 * Logging handler to output log messages without interrupting the entry
   of commands at a prompt.
 * Password entry prompt.
