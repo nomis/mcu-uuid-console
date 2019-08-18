@@ -979,55 +979,55 @@ static void test_completion5i() {
 }
 
 int main(int argc, char *argv[]) {
-	commands.add_command(0, 0, flash_string_vector{F("help")}, Commands::no_arguments(),
+	commands.add_command(0, 0, flash_string_vector{F("help")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "help";
-	}, Commands::no_argument_completion());
+	});
 
-	commands.add_command(0, 0, flash_string_vector{F("show")}, Commands::no_arguments(),
+	commands.add_command(0, 0, flash_string_vector{F("show")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "show";
-	}, Commands::no_argument_completion());
+	});
 
-	commands.add_command(0, 0, flash_string_vector{F("show"), F("thing1")}, Commands::no_arguments(),
+	commands.add_command(0, 0, flash_string_vector{F("show"), F("thing1")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "show thing1";
-	}, Commands::no_argument_completion());
+	});
 
-	commands.add_command(0, 0, flash_string_vector{F("show"), F("thing2")}, Commands::no_arguments(),
+	commands.add_command(0, 0, flash_string_vector{F("show"), F("thing2")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "show thing2";
-	}, Commands::no_argument_completion());
+	});
 
-	commands.add_command(0, 0, flash_string_vector{F("show"), F("thing3")}, Commands::no_arguments(),
+	commands.add_command(0, 0, flash_string_vector{F("show"), F("thing3")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "show thing3";
-	}, Commands::no_argument_completion());
+	});
 
-	commands.add_command(0, 0, flash_string_vector{F("set")}, Commands::no_arguments(),
+	commands.add_command(0, 0, flash_string_vector{F("set")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "set";
-	}, Commands::no_argument_completion());
+	});
 
-	commands.add_command(0, 0, flash_string_vector{F("set"), F("hostname")}, Commands::no_arguments(),
+	commands.add_command(0, 0, flash_string_vector{F("set"), F("hostname")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "set hostname";
-	}, Commands::no_argument_completion());
+	});
 
-	commands.add_command(0, 0, flash_string_vector{F("console"), F("log"), F("err")}, Commands::no_arguments(),
+	commands.add_command(0, 0, flash_string_vector{F("console"), F("log"), F("err")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "console log err";
-	}, Commands::no_argument_completion());
+	});
 
-	commands.add_command(0, 0, flash_string_vector{F("console"), F("log"), F("warning")}, Commands::no_arguments(),
+	commands.add_command(0, 0, flash_string_vector{F("console"), F("log"), F("warning")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "console log warning";
-	}, Commands::no_argument_completion());
+	});
 
-	commands.add_command(0, 0, flash_string_vector{F("console"), F("log"), F("info")}, Commands::no_arguments(),
+	commands.add_command(0, 0, flash_string_vector{F("console"), F("log"), F("info")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 		run = "console log info";
-	}, Commands::no_argument_completion());
+	});
 
 	commands.add_command(0, 0, flash_string_vector{F("test_a0")}, flash_string_vector{F("[one]"), F("[two]"), F("[three]")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
@@ -1035,7 +1035,7 @@ int main(int argc, char *argv[]) {
 		for (auto& argument : arguments) {
 			run += " " + argument;
 		}
-	}, Commands::no_argument_completion());
+	});
 
 	commands.add_command(0, 0, flash_string_vector{F("test_b1")}, flash_string_vector{F("<one>"), F("[two]"), F("[three]")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
@@ -1043,7 +1043,7 @@ int main(int argc, char *argv[]) {
 		for (auto& argument : arguments) {
 			run += " " + argument;
 		}
-	}, Commands::no_argument_completion());
+	});
 
 	commands.add_command(0, 0, flash_string_vector{F("test_c2")}, flash_string_vector{F("<one>"), F("<two>"), F("[three]")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
@@ -1051,7 +1051,7 @@ int main(int argc, char *argv[]) {
 		for (auto& argument : arguments) {
 			run += " " + argument;
 		}
-	}, Commands::no_argument_completion());
+	});
 
 	commands.add_command(0, 0, flash_string_vector{F("test_d3")}, flash_string_vector{F("<one>"), F("<two>"), F("<three>")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
@@ -1059,7 +1059,7 @@ int main(int argc, char *argv[]) {
 		for (auto& argument : arguments) {
 			run += " " + argument;
 		}
-	}, Commands::no_argument_completion());
+	});
 
 	UNITY_BEGIN();
 	RUN_TEST(test_completion0);

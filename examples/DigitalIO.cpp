@@ -67,9 +67,7 @@ void setup() {
 
 				shell.printfln(F("Read value from pin %u: %S"),
 						pin, value == HIGH ? F("HIGH") : F("LOW"));
-			},
-
-			Commands::no_argument_completion()
+			}
 	);
 
 	commands->add_command(0, 0, flash_string_vector{F("write")},
