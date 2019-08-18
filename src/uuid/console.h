@@ -232,14 +232,6 @@ private:
 	};
 
 	/**
-	 * Parameter to specify that a command does not support argument
-	 * completion.
-	 *
-	 * @return A std::function that returns an empty std::set.
-	 */
-	static argument_completion_function no_argument_completion();
-
-	/**
 	 * Find commands by matching them against the command line.
 	 *
 	 * @param[in] shell Shell that is accessing commands.
