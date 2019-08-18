@@ -50,6 +50,12 @@ void Commands::add_command(unsigned int context, unsigned int flags,
 
 void Commands::add_command(unsigned int context, unsigned int flags,
 		const flash_string_vector &name, const flash_string_vector &arguments,
+		command_function function) {
+	add_command(context, flags, name, arguments, function, no_argument_completion());
+}
+
+void Commands::add_command(unsigned int context, unsigned int flags,
+		const flash_string_vector &name, const flash_string_vector &arguments,
 		command_function function, argument_completion_function arg_function) {
 	commands_.emplace(std::piecewise_construct, std::forward_as_tuple(context),
 			std::forward_as_tuple(flags, name, arguments, function, arg_function));
