@@ -175,7 +175,8 @@ static void test_completion1d() {
 }
 
 /**
- * Commands are not completed before being executed.
+ * Exact match commands that have longer matches cannot have arguments so they
+ * will fail to find a command if arguments are used.
  */
 static void test_execution1d() {
 	run = "";
@@ -203,7 +204,8 @@ static void test_completion1e() {
 }
 
 /**
- * Commands are not completed before being executed.
+ * Exact match commands that have longer matches cannot have arguments so they
+ * will fail to find a command if arguments are used.
  */
 static void test_execution1e() {
 	run = "";
@@ -654,6 +656,35 @@ static void test_completion5a() {
 }
 
 /**
+ * Commands are not completed before being executed.
+ */
+static void test_execution5a() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("test_a"));
+
+	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_b"));
+
+	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_c"));
+
+	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_d"));
+
+	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+}
+
+/**
  * Exact matches of commands (without a space) with arguments should add a space
  * and provide a list of all the remaining command line arguments, appending a
  * space if there are arguments remaining.
@@ -696,6 +727,35 @@ static void test_completion5b() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("<one> <two> <three>", shell.format_line(*it++).c_str());
 	}
+}
+
+/**
+ * Exact match commands are executed after checking for minimum arguments.
+ */
+static void test_execution5b() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("test_a0"));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_a0", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_b1"));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_c2"));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_d3"));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 /**
@@ -744,6 +804,35 @@ static void test_completion5c() {
 }
 
 /**
+ * Exact match commands are executed after checking for minimum arguments.
+ */
+static void test_execution5c() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("test_a0 "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_a0", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_b1 "));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_c2 "));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_d3 "));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+}
+
+/**
  * Exact matches of commands (with a space) with arguments should provide a list of
  * all the remaining command line arguments, appending a space if there are arguments
  * remaining.
@@ -786,6 +875,35 @@ static void test_completion5d() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("<two> <three>", shell.format_line(*it++).c_str());
 	}
+}
+
+/**
+ * Exact match commands are executed after checking for minimum arguments.
+ */
+static void test_execution5d() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("test_a0 un"));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_a0 un", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_b1 un"));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_b1 un", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_c2 un"));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_d3 un"));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 /**
@@ -834,6 +952,35 @@ static void test_completion5e() {
 }
 
 /**
+ * Exact match commands are executed after checking for minimum arguments.
+ */
+static void test_execution5e() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("test_a0 un "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_a0 un", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_b1 un "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_b1 un", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_c2 un "));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_d3 un "));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+}
+
+/**
  * Exact matches of commands (with a space) with arguments should provide a list of
  * all the remaining command line arguments, appending a space if there are arguments
  * remaining.
@@ -876,6 +1023,35 @@ static void test_completion5f() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("<three>", shell.format_line(*it++).c_str());
 	}
+}
+
+/**
+ * Exact match commands are executed after checking for minimum arguments.
+ */
+static void test_execution5f() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("test_a0 un deux"));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_a0 un deux", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_b1 un deux"));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_b1 un deux", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_c2 un deux"));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_c2 un deux", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_d3 un deux"));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 /**
@@ -924,6 +1100,35 @@ static void test_completion5g() {
 }
 
 /**
+ * Exact match commands are executed after checking for minimum arguments.
+ */
+static void test_execution5g() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("test_a0 un deux "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_a0 un deux", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_b1 un deux "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_b1 un deux", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_c2 un deux "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_c2 un deux", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_d3 un deux "));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+}
+
+/**
  * Exact matches of commands (with a space) with maximum arguments should do nothing.
  *
  * The type of arguments (required/optional) is irrelevant.
@@ -948,6 +1153,35 @@ static void test_completion5h() {
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
+/**
+ * Exact match commands are executed after checking for minimum arguments.
+ */
+static void test_execution5h() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("test_a0 un deux trois"));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_a0 un deux trois", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_b1 un deux trois"));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_b1 un deux trois", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_c2 un deux trois"));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_c2 un deux trois", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_d3 un deux trois"));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_d3 un deux trois", run.c_str());
 }
 
 /**
@@ -979,6 +1213,91 @@ static void test_completion5i() {
 }
 
 /**
+ * Exact match commands are executed after checking for minimum arguments.
+ */
+static void test_execution5i() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("test_a0 un deux trois "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_a0 un deux trois", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_b1 un deux trois "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_b1 un deux trois", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_c2 un deux trois "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_c2 un deux trois", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_d3 un deux trois "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_d3 un deux trois", run.c_str());
+}
+
+/**
+ * Exact matches of commands with more than the maximum arguments should do nothing.
+ *
+ * The type of arguments (required/optional) is irrelevant.
+ */
+static void test_completion5j() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_a0 un deux trois quatre"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_b1 un deux trois quatre"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_c2 un deux trois quatre"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+
+	completion = commands.complete_command(shell, shell.parse_line("test_d3 un deux trois quatre"));
+
+	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
+/**
+ * Exact match commands are not executed if they have more than the maximum arguments.
+ */
+static void test_execution5j() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("test_a0 un deux trois quatre"));
+
+	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_b1 un deux trois quatre"));
+
+	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_c2 un deux trois quatre"));
+
+	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_d3 un deux trois quatre"));
+
+	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+}
+
+/**
  * A partial command with only one exact match (that is a prefix for multiple longer commands)
  * should be completed up to that point and no further.
  */
@@ -987,6 +1306,17 @@ static void test_completion6a() {
 
 	TEST_ASSERT_EQUAL_STRING("get", shell.format_line(completion.replacement).c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
+/**
+ * Commands are not completed before being executed.
+ */
+static void test_execution6a() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("ge"));
+
+	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 /**
@@ -1006,6 +1336,17 @@ static void test_completion6b() {
 }
 
 /**
+ * Exact match commands are executed.
+ */
+static void test_execution6b() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("get"));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("get", run.c_str());
+}
+
+/**
  * An exact matching command with a space that is a prefix for multiple different longer
  * commands should return those commands.
  */
@@ -1019,6 +1360,17 @@ static void test_completion6c() {
 		TEST_ASSERT_EQUAL_STRING("hostname", shell.format_line(*it++).c_str());
 		TEST_ASSERT_EQUAL_STRING("uptime", shell.format_line(*it++).c_str());
 	}
+}
+
+/**
+ * Exact match commands with a trailing space are executed.
+ */
+static void test_execution6c() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("get "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("get", run.c_str());
 }
 
 int main(int argc, char *argv[]) {
@@ -1089,7 +1441,7 @@ int main(int argc, char *argv[]) {
 
 	commands.add_command(0, 0, flash_string_vector{F("test_a0")}, flash_string_vector{F("[one]"), F("[two]"), F("[three]")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
-		run = "test";
+		run = "test_a0";
 		for (auto& argument : arguments) {
 			run += " " + argument;
 		}
@@ -1097,7 +1449,7 @@ int main(int argc, char *argv[]) {
 
 	commands.add_command(0, 0, flash_string_vector{F("test_b1")}, flash_string_vector{F("<one>"), F("[two]"), F("[three]")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
-		run = "test";
+		run = "test_b1";
 		for (auto& argument : arguments) {
 			run += " " + argument;
 		}
@@ -1105,7 +1457,7 @@ int main(int argc, char *argv[]) {
 
 	commands.add_command(0, 0, flash_string_vector{F("test_c2")}, flash_string_vector{F("<one>"), F("<two>"), F("[three]")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
-		run = "test";
+		run = "test_c2";
 		for (auto& argument : arguments) {
 			run += " " + argument;
 		}
@@ -1113,7 +1465,7 @@ int main(int argc, char *argv[]) {
 
 	commands.add_command(0, 0, flash_string_vector{F("test_d3")}, flash_string_vector{F("<one>"), F("<two>"), F("<three>")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
-		run = "test";
+		run = "test_d3";
 		for (auto& argument : arguments) {
 			run += " " + argument;
 		}
@@ -1182,10 +1534,24 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_completion5g);
 	RUN_TEST(test_completion5h);
 	RUN_TEST(test_completion5i);
+	RUN_TEST(test_completion5j);
+	RUN_TEST(test_execution5a);
+	RUN_TEST(test_execution5b);
+	RUN_TEST(test_execution5c);
+	RUN_TEST(test_execution5d);
+	RUN_TEST(test_execution5e);
+	RUN_TEST(test_execution5f);
+	RUN_TEST(test_execution5g);
+	RUN_TEST(test_execution5h);
+	RUN_TEST(test_execution5i);
+	RUN_TEST(test_execution5j);
 
 	RUN_TEST(test_completion6a);
 	RUN_TEST(test_completion6b);
 	RUN_TEST(test_completion6c);
+	RUN_TEST(test_execution6a);
+	RUN_TEST(test_execution6b);
+	RUN_TEST(test_execution6c);
 
 	return UNITY_END();
 }
