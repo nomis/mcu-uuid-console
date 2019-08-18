@@ -113,7 +113,23 @@ public:
 	}
 
 	/**
-	 * Add a command to the list of commands in this container.
+	 * Add a command with no arguments to the list of commands in this
+	 * container.
+	 *
+	 * @param[in] context Shell context in which this command is
+	 *                    available.
+	 * @param[in] flags Shell flags that must be set for this command
+	 *                  to be available.
+	 * @param[in] name Name of the command as a std::vector of flash
+	 *                 strings.
+	 * @param[in] function Function to be used when the command is
+	 *                     executed.
+	 */
+	void add_command(unsigned int context, unsigned int flags,
+			const flash_string_vector &name, command_function function);
+	/**
+	 * Add a command with arguments to the list of commands in this
+	 * container.
 	 *
 	 * @param[in] context Shell context in which this command is
 	 *                    available.
