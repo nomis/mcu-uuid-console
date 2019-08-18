@@ -205,7 +205,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 			}
 		}
 
-		if (command_line.size() >= result.replacement.size()) {
+		if (command_line.size() >= result.replacement.size() && command_line.size() <= command_name_size + matching_command->maximum_arguments()) {
 			// Try to auto-complete arguments
 			std::vector<std::string> arguments{std::next(command_line.cbegin(), result.replacement.size()), command_line.cend()};
 			result.replacement.insert(result.replacement.end(), arguments.cbegin(), arguments.cend());
@@ -243,7 +243,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 				result.replacement.emplace_back(*potential_arguments.begin());
 				current_args_count++;
 
-				if (result.replacement.size() < command_name_size + matching_command->arguments_.size()) {
+				if (result.replacement.size() < command_name_size + matching_command->maximum_arguments()) {
 					result.replacement.emplace_back("");
 				}
 
@@ -258,7 +258,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 				// Remaining help should skip the suggested argument
 				current_args_count++;
 			}
-			if (current_args_count < matching_command->arguments_.size()) {
+			if (current_args_count < matching_command->maximum_arguments()) {
 				for (auto it = std::next(matching_command->arguments_.cbegin(), current_args_count); it != matching_command->arguments_.cend(); it++) {
 					remaining_help.emplace_back(read_flash_string(*it));
 				}
@@ -281,7 +281,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 				}
 			}
 
-			if (result.replacement.size() < command_name_size + matching_command->arguments_.size()) {
+			if (result.replacement.size() < command_name_size + matching_command->maximum_arguments()) {
 				// Add a space because there are more arguments for this command
 				add_space = true;
 			}
@@ -423,10 +423,6 @@ Commands::Command::~Command() {
 size_t Commands::Command::minimum_arguments() const {
 	return std::count_if(arguments_.cbegin(), arguments_.cend(), [] (const __FlashStringHelper *argument) { return pgm_read_byte(argument) == '<'; });
 }
-
-size_t Commands::Command::maximum_arguments() const {
-	return arguments_.size();
-};
 
 } // namespace console
 

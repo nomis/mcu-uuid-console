@@ -216,7 +216,7 @@ private:
 		 *
 		 * @return The maximum number of arguments for this command.
 		 */
-		size_t maximum_arguments() const;
+		inline size_t maximum_arguments() const { return arguments_.size(); }
 
 		unsigned int flags_; /*!< Shell flags that must be set for this command to be available. */
 		const flash_string_vector name_; /*!< Name of the command as a std::vector of flash strings. */
