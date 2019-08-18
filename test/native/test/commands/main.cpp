@@ -65,7 +65,7 @@ static void test_completion0() {
 	auto completion = commands.complete_command(shell, shell.parse_line(""));
 
 	TEST_ASSERT_EQUAL_STRING("", shell.format_line(completion.replacement).c_str());
-	TEST_ASSERT_EQUAL_INT(17, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(18, completion.help.size());
 }
 
 /**
@@ -1373,6 +1373,47 @@ static void test_execution6c() {
 	TEST_ASSERT_EQUAL_STRING("get", run.c_str());
 }
 
+/**
+ * Required arguments can appear anywhere in the list of arguments.
+ */
+static void test_execution7a() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("test_e"));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_e un"));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_e un deux"));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_e un deux", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_e un deux trois"));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_e un deux trois", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_e un deux trois quatre"));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_e un deux trois quatre", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_e un deux trois quatre cinq"));
+
+	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+}
+
 int main(int argc, char *argv[]) {
 	commands.add_command(0, 0, flash_string_vector{F("help")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
@@ -1471,6 +1512,14 @@ int main(int argc, char *argv[]) {
 		}
 	});
 
+	commands.add_command(0, 0, flash_string_vector{F("test_e")}, flash_string_vector{F("[one]"), F("<two>"), F("[three]"), F("<four>")},
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
+		run = "test_e";
+		for (auto& argument : arguments) {
+			run += " " + argument;
+		}
+	});
+
 	UNITY_BEGIN();
 	RUN_TEST(test_completion0);
 	RUN_TEST(test_execution0);
@@ -1552,6 +1601,8 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_execution6a);
 	RUN_TEST(test_execution6b);
 	RUN_TEST(test_execution6c);
+
+	RUN_TEST(test_execution7a);
 
 	return UNITY_END();
 }
