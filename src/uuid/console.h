@@ -241,7 +241,7 @@ public:
 	static constexpr size_t MAX_COMMAND_LINE_LENGTH = 80; /*!< Maximum length of a command line. */
 	static constexpr size_t MAX_LOG_MESSAGES = 20; /*!< Maximum number of log messages to buffer before they are output. */
 
-	/*
+	/**
 	 * Function to handle the response to a password entry prompt.
 	 *
 	 * @param[in] shell Shell instance where the password entry prompt
