@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
+#include <list>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -41,18 +41,18 @@ void setup() {
 
 			[] (Shell &shell __attribute__((unused)),
 					const std::vector<std::string> &arguments)
-					-> const std::set<std::string> {
+					-> const std::list<std::string> {
 				if (arguments.size() == 1) {
 					/* The first argument has been provided, so return
 					 * completion values for the second argument.
 					 */
-					return std::set<std::string>{
+					return std::list<std::string>{
 						read_flash_string(F("INPUT")),
 						read_flash_string(F("OUTPUT")),
 						read_flash_string(F("INPUT_PULLUP"))
 					};
 				} else {
-					return std::set<std::string>{};
+					return std::list<std::string>{};
 				}
 			}
 	);
@@ -93,17 +93,17 @@ void setup() {
 
 			[] (Shell &shell __attribute__((unused)),
 					const std::vector<std::string> &arguments)
-					-> const std::set<std::string> {
+					-> const std::list<std::string> {
 				if (arguments.size() == 1) {
 					/* The first argument has been provided, so return
 					 * completion values for the second argument.
 					 */
-					return std::set<std::string>{
+					return std::list<std::string>{
 						read_flash_string(F("HIGH")),
 						read_flash_string(F("LOW"))
 					};
 				} else {
-					return std::set<std::string>{};
+					return std::list<std::string>{};
 				}
 			}
 	);
