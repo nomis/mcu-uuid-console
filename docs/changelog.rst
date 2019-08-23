@@ -19,7 +19,7 @@ Added
 * Minimal line editing support (backspace, delete word, delete line).
 * Text input in the US-ASCII character set.
 * Support for entry of spaces in arguments using backslashes or quotes.
-* Support for ``CR``, ``CRLF`` and ``LF`` line endings on input.
+* Support for CR, CRLF and LF line endings on input.
 * Tab completion for recognised commands/arguments.
 * Logging handler to output log messages without interrupting the entry
   of commands at a prompt.
