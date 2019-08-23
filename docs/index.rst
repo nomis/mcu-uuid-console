@@ -32,7 +32,7 @@ Command line prompt
 
 Text encoded using the US-ASCII character set can be entered with basic
 basic line editing (backspace, delete word, delete line). All standard
-line endings (``CR``, ``CRLF`` and ``LF``) are supported.
+line endings (CR, CRLF and LF) are supported.
 
 Both command names and arguments (where the command returns a list of
 potential arguments) can be tab completed and spaces can be escaped
