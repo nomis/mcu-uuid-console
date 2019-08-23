@@ -41,6 +41,7 @@ namespace uuid {
  * Console shell.
  *
  * - <a href="https://github.com/nomis/mcu-uuid-console/">Git Repository</a>
+ * - <a href="https://mcu-uuid-console.readthedocs.io/">Documentation</a>
  */
 namespace console {
 
