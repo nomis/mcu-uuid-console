@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+0.1.0_ |--| 2019-08-23
+----------------------
+
+Initial development release.
+
 Added
 ~~~~~
 
@@ -31,3 +36,6 @@ Added
 * Example serial console for Arduino Digital I/O features.
 
 .. |--| unicode:: U+2013 .. EN DASH
+
+.. _Unreleased: https://github.com/nomis/mcu-uuid-console/compare/0.1.0...HEAD
+.. _0.1.0: https://github.com/nomis/mcu-uuid-console/commits/0.1.0
