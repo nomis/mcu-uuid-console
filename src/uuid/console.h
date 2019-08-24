@@ -462,14 +462,7 @@ public:
 	 *         are no more contexts to exit.
 	 * @since 0.1.0
 	 */
-	virtual bool exit_context() {
-		if (context_.size() > 1) {
-			context_.pop_back();
-			return true;
-		} else {
-			return false;
-		}
-	}
+	virtual bool exit_context();
 
 	/**
 	 * Add one or more flags to the current flags.

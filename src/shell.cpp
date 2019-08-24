@@ -305,6 +305,15 @@ void Shell::loop_delay() {
 	}
 }
 
+bool Shell::exit_context() {
+	if (context_.size() > 1) {
+		context_.pop_back();
+		return true;
+	} else {
+		return false;
+	}
+}
+
 void Shell::enter_password(const __FlashStringHelper *prompt, password_function function) {
 	if (mode_ == Mode::NORMAL) {
 		mode_ = Mode::PASSWORD;
