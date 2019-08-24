@@ -18,4 +18,3 @@ Example
 -------
 
 .. literalinclude:: ../examples/DigitalIO.cpp
-   :tab-width: 4
