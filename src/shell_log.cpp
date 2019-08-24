@@ -61,6 +61,7 @@ void Shell::output_logs() {
 	if (!log_messages_.empty()) {
 		if (mode_ != Mode::DELAY) {
 			erase_current_line();
+			prompt_displayed_ = false;
 		}
 
 		while (!log_messages_.empty()) {

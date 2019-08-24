@@ -4,6 +4,12 @@ Change log
 Unreleased_
 -----------
 
+Fixed
+~~~~~
+
+* Don't set private member ``prompt_displayed_`` from virtual function
+  ``erase_current_line()``.
+
 0.1.0_ |--| 2019-08-23
 ----------------------
 

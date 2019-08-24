@@ -105,7 +105,6 @@ size_t Shell::vprintf(const __FlashStringHelper *format, va_list ap) {
 
 void Shell::erase_current_line() {
 	print(F("\033[0G\033[K"));
-	prompt_displayed_ = false;
 }
 
 void Shell::erase_characters(size_t count) {

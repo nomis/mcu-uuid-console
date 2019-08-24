@@ -147,6 +147,7 @@ void Shell::loop_normal() {
 	case '\x0C':
 		// New page (^L)
 		erase_current_line();
+		prompt_displayed_ = false;
 		display_prompt();
 		break;
 
@@ -158,6 +159,7 @@ void Shell::loop_normal() {
 	case '\x15':
 		// Delete line (^U)
 		erase_current_line();
+		prompt_displayed_ = false;
 		line_buffer_.clear();
 		display_prompt();
 		break;
@@ -220,6 +222,7 @@ void Shell::loop_password() {
 	case '\x0C':
 		// New page (^L)
 		erase_current_line();
+		prompt_displayed_ = false;
 		display_prompt();
 		break;
 
@@ -307,6 +310,7 @@ void Shell::delete_buffer_word(bool display) {
 		line_buffer_.clear();
 		if (display) {
 			erase_current_line();
+			prompt_displayed_ = false;
 			display_prompt();
 		}
 	} else {
@@ -363,6 +367,7 @@ void Shell::process_completion() {
 		if (!completion.replacement.empty()) {
 			if (!redisplay) {
 				erase_current_line();
+				prompt_displayed_ = false;
 				redisplay = true;
 			}
 
