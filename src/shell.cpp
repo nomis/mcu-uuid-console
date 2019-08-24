@@ -27,8 +27,6 @@
 #include <string>
 #include <vector>
 
-#include <uuid/log.h>
-
 #ifndef __cpp_lib_make_unique
 namespace std {
 
@@ -43,10 +41,6 @@ inline unique_ptr<_Tp> make_unique(_Args&&... __args) {
 namespace uuid {
 
 namespace console {
-
-static const char __pstr__logger_name[] __attribute__((__aligned__(sizeof(int)))) PROGMEM = "shell";
-const uuid::log::Logger Shell::logger_{FPSTR(__pstr__logger_name), uuid::log::Facility::LPR};
-std::set<std::shared_ptr<Shell>> Shell::shells_;
 
 Shell::Shell(std::shared_ptr<Commands> commands, unsigned int context, unsigned int flags)
 		: commands_(commands), flags_(flags) {
@@ -66,6 +60,10 @@ void Shell::start() {
 	started();
 };
 
+void Shell::started() {
+
+}
+
 bool Shell::running() const {
 	return !stopped_;
 }
@@ -77,38 +75,8 @@ void Shell::stop() {
 	}
 }
 
-Shell::QueuedLogMessage::QueuedLogMessage(unsigned long id, std::shared_ptr<uuid::log::Message> content)
-		: id_(id), content_(content) {
+void Shell::stopped() {
 
-}
-
-void Shell::operator<<(std::shared_ptr<uuid::log::Message> message) {
-	if (log_messages_.size() >= maximum_log_messages()) {
-		log_messages_.pop_front();
-	}
-
-	log_messages_.emplace_back(log_message_id_++, message);
-}
-
-uuid::log::Level Shell::get_log_level() const {
-	return uuid::log::Logger::get_log_level(this);
-}
-
-void Shell::set_log_level(uuid::log::Level level) {
-	uuid::log::Logger::register_handler(this, level);
-}
-
-void Shell::loop_all() {
-	for (auto shell = shells_.begin(); shell != shells_.end(); ) {
-		shell->get()->loop_one();
-
-		// This avoids copying the shared_ptr every time loop_one() is called
-		if (!shell->get()->running()) {
-			shell = shells_.erase(shell);
-		} else {
-			shell++;
-		}
-	}
 }
 
 void Shell::loop_one() {
@@ -349,181 +317,8 @@ void Shell::delete_buffer_word(bool display) {
 	}
 }
 
-size_t Shell::print(const std::string &data) {
-	return write(reinterpret_cast<const uint8_t*>(data.c_str()), data.length());
-}
-
-size_t Shell::println(const std::string &data) {
-	size_t len = print(data);
-	len += println();
-	return len;
-}
-
-size_t Shell::printf(const char *format, ...) {
-	va_list ap;
-
-	va_start(ap, format);
-	size_t len = vprintf(format, ap);
-	va_end(ap);
-
-	return len;
-}
-
-size_t Shell::printf(const __FlashStringHelper *format, ...) {
-	va_list ap;
-
-	va_start(ap, format);
-	size_t len = vprintf(format, ap);
-	va_end(ap);
-
-	return len;
-}
-
-size_t Shell::printfln(const char *format, ...) {
-	va_list ap;
-
-	va_start(ap, format);
-	size_t len = vprintf(format, ap);
-	va_end(ap);
-
-	len += println();
-	return len;
-}
-
-size_t Shell::printfln(const __FlashStringHelper *format, ...) {
-	va_list ap;
-
-	va_start(ap, format);
-	size_t len = vprintf(format, ap);
-	va_end(ap);
-
-	len += println();
-	return len;
-}
-
-size_t Shell::vprintf(const char *format, va_list ap) {
-	int len = ::vsnprintf(nullptr, 0, format, ap);
-	if (len > 0) {
-		std::string text(static_cast<std::string::size_type>(len), '\0');
-
-		::vsnprintf(&text[0], text.capacity() + 1, format, ap);
-		return print(text);
-	} else {
-		return 0;
-	}
-}
-
-size_t Shell::vprintf(const __FlashStringHelper *format, va_list ap) {
-	int len = ::vsnprintf_P(nullptr, 0, reinterpret_cast<PGM_P>(format), ap);
-	if (len > 0) {
-		std::string text(static_cast<std::string::size_type>(len), '\0');
-
-		::vsnprintf_P(&text[0], text.capacity() + 1, reinterpret_cast<PGM_P>(format), ap);
-		return print(text);
-	} else {
-		return 0;
-	}
-}
-
 size_t Shell::maximum_command_line_length() const {
 	return MAX_COMMAND_LINE_LENGTH;
-}
-
-size_t Shell::maximum_log_messages() const {
-	return MAX_LOG_MESSAGES;
-}
-
-void Shell::erase_current_line() {
-	print(F("\033[0G\033[K"));
-	prompt_displayed_ = false;
-}
-
-void Shell::erase_characters(size_t count) {
-	print(std::string(count, '\x08'));
-	print(F("\033[K"));
-}
-
-void Shell::started() {
-
-}
-
-void Shell::display_banner() {
-
-}
-
-std::string Shell::hostname_text() {
-	return "";
-}
-
-std::string Shell::context_text() {
-	return "";
-}
-
-std::string Shell::prompt_prefix() {
-	return "";
-}
-
-std::string Shell::prompt_suffix() {
-	return "$";
-}
-
-void Shell::end_of_transmission() {
-
-}
-
-void Shell::stopped() {
-
-}
-
-void Shell::display_prompt() {
-	switch (mode_) {
-	case Mode::DELAY:
-		break;
-
-	case Mode::PASSWORD:
-		print(reinterpret_cast<Shell::PasswordData*>(mode_data_.get())->password_prompt_);
-		break;
-
-	case Mode::NORMAL:
-		std::string hostname = hostname_text();
-		std::string context = context_text();
-
-		print(prompt_prefix());
-		if (!hostname.empty()) {
-			print(hostname);
-			print(' ');
-		}
-		if (!context.empty()) {
-			print(context);
-			print(' ');
-		}
-		print(prompt_suffix());
-		print(' ');
-		print(line_buffer_);
-		prompt_displayed_ = true;
-		break;
-	}
-}
-
-void Shell::output_logs() {
-	if (!log_messages_.empty()) {
-		if (mode_ != Mode::DELAY) {
-			erase_current_line();
-		}
-
-		while (!log_messages_.empty()) {
-			auto &message = log_messages_.front();
-
-			print(uuid::log::format_timestamp_ms(message.content_->uptime_ms, 3));
-			printf(F(" %c %lu: [%S] "), uuid::log::format_level_char(message.content_->level), message.id_, message.content_->name);
-			println(message.content_->text);
-
-			log_messages_.pop_front();
-			::yield();
-		}
-
-		display_prompt();
-	}
 }
 
 void Shell::process_command() {
@@ -610,100 +405,6 @@ void Shell::invoke_command(std::string line) {
 	line_buffer_ = line;
 	print(line_buffer_);
 	process_command();
-}
-
-std::list<std::string> Shell::parse_line(const std::string &line) {
-	std::list<std::string> items;
-	bool string_escape_double = false;
-	bool string_escape_single = false;
-	bool char_escape = false;
-
-	if (!line.empty()) {
-		items.emplace_back("");
-	}
-
-	for (char c : line) {
-		switch (c) {
-		case ' ':
-			if (string_escape_double || string_escape_single) {
-				if (char_escape) {
-					items.back().push_back('\\');
-					char_escape = false;
-				}
-				items.back().push_back(' ');
-			} else if (char_escape) {
-				items.back().push_back(' ');
-				char_escape = false;
-			} else if (!items.back().empty()) {
-				items.emplace_back("");
-			}
-			break;
-
-		case '"':
-			if (char_escape || string_escape_single) {
-				items.back().push_back('"');
-				char_escape = false;
-			} else {
-				string_escape_double = !string_escape_double;
-			}
-			break;
-
-		case '\'':
-			if (char_escape || string_escape_double) {
-				items.back().push_back('\'');
-				char_escape = false;
-			} else {
-				string_escape_single = !string_escape_single;
-			}
-			break;
-
-		case '\\':
-			if (char_escape) {
-				items.back().push_back('\\');
-				char_escape = false;
-			} else {
-				char_escape = true;
-			}
-			break;
-
-		default:
-			if (char_escape) {
-				items.back().push_back('\\');
-				char_escape = false;
-			}
-			items.back().push_back(c);
-			break;
-		}
-	}
-
-	return items;
-}
-
-std::string Shell::format_line(const std::list<std::string> &items) {
-	std::string line;
-
-	line.reserve(maximum_command_line_length());
-
-	for (auto &item : items) {
-		if (!line.empty()) {
-			line += ' ';
-		}
-
-		for (char c : item) {
-			switch (c) {
-			case ' ':
-			case '\"':
-			case '\'':
-			case '\\':
-				line += '\\';
-				break;
-			}
-
-			line += c;
-		}
-	}
-
-	return line;
 }
 
 } // namespace console
