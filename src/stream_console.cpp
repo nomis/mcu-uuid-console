@@ -32,8 +32,9 @@ StreamConsole::StreamConsole(Stream &stream)
 
 }
 
+// cppcheck-suppress passedByValue
 StreamConsole::StreamConsole(std::shared_ptr<Commands> commands, Stream &stream, unsigned int context, unsigned int flags)
-		: Shell(commands, context, flags), stream_(stream) {
+		: Shell(std::move(commands), context, flags), stream_(stream) {
 
 }
 

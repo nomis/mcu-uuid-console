@@ -42,8 +42,9 @@ namespace uuid {
 
 namespace console {
 
+// cppcheck-suppress passedByValue
 Shell::Shell(std::shared_ptr<Commands> commands, unsigned int context, unsigned int flags)
-		: commands_(commands), flags_(flags) {
+		: commands_(std::move(commands)), flags_(flags) {
 	enter_context(context);
 }
 

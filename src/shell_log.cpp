@@ -32,8 +32,9 @@ namespace console {
 static const char __pstr__logger_name[] __attribute__((__aligned__(sizeof(int)))) PROGMEM = "shell";
 const uuid::log::Logger Shell::logger_{reinterpret_cast<const __FlashStringHelper *>(__pstr__logger_name), uuid::log::Facility::LPR};
 
+// cppcheck-suppress passedByValue
 Shell::QueuedLogMessage::QueuedLogMessage(unsigned long id, std::shared_ptr<uuid::log::Message> content)
-		: id_(id), content_(content) {
+		: id_(id), content_(std::move(content)) {
 
 }
 
@@ -42,7 +43,7 @@ void Shell::operator<<(std::shared_ptr<uuid::log::Message> message) {
 		log_messages_.pop_front();
 	}
 
-	log_messages_.emplace_back(log_message_id_++, message);
+	log_messages_.emplace_back(log_message_id_++, std::move(message));
 }
 
 uuid::log::Level Shell::get_log_level() const {
