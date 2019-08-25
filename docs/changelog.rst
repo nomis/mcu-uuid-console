@@ -23,6 +23,8 @@ Fixed
 * Don't set private member ``prompt_displayed_`` from virtual function
   ``erase_current_line()``.
 * Don't try to write empty strings to the shell output.
+* Workaround incorrect definition of ``FPSTR()`` on ESP32
+  (`#1371 <https://github.com/espressif/arduino-esp32/issues/1371>`_).
 
 0.1.0_ |--| 2019-08-23
 ----------------------
