@@ -997,7 +997,7 @@ private:
 		 *                              returns true.
 		 * @since 0.2.0
 		 */
-		BlockingData(blocking_function blocking_function);
+		explicit BlockingData(blocking_function blocking_function);
 		~BlockingData() override = default;
 
 		blocking_function blocking_function_; /*!< Function execute on every loop_one(). @since 0.2.0 */
@@ -1225,7 +1225,7 @@ protected:
 	 *
 	 * @since 0.1.0
 	 */
-	StreamConsole(Stream &stream);
+	explicit StreamConsole(Stream &stream);
 
 private:
 	StreamConsole(const StreamConsole&) = delete;
