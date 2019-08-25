@@ -113,6 +113,13 @@ int Shell::peek() {
 	}
 }
 
+void Shell::flush() {
+	// This is a pure virtual function in Arduino's Stream class, which
+	// makes no sense because that class is for input and this is an
+	// output function. Later versions move it to Print as an empty
+	// virtual function so this is here for backward compatibility.
+}
+
 } // namespace console
 
 } // namespace uuid

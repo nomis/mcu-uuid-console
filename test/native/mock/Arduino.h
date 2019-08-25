@@ -48,6 +48,7 @@ public:
 	size_t println() { return print("\r\n"); }
 	size_t println(const char *data) { return print(data) + println(); }
 	size_t println(const __FlashStringHelper *data) { return print(reinterpret_cast<const char *>(data)) + println(); }
+	virtual void flush() { };
 };
 
 class Stream: public Print {

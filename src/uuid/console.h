@@ -660,6 +660,30 @@ public:
 	 */
 	int peek() final override;
 
+	/**
+	 * Write one byte to the output stream.
+	 *
+	 * @param[in] data Data to be output.
+	 * @return The number of bytes that were output.
+	 * @since 0.1.0
+	 */
+	size_t write(uint8_t data) override = 0;
+	/**
+	 * Write an array of bytes to the output stream.
+	 *
+	 * @param[in] buffer Buffer to be output.
+	 * @param[in] size Length of the buffer.
+	 * @return The number of bytes that were output.
+	 * @since 0.1.0
+	 */
+	size_t write(const uint8_t *buffer, size_t size) override = 0;
+	/**
+	 * Clears the output stream buffer.
+	 *
+	 * @since 0.2.0
+	 */
+	void flush() override;
+
 	using ::Print::print; /*!< Include standard Arduino print() functions. */
 	/**
 	 * Output a string.
