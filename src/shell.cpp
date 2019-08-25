@@ -447,7 +447,7 @@ void Shell::process_password(bool completed) {
 	}
 }
 
-void Shell::invoke_command(std::string line) {
+void Shell::invoke_command(const std::string &line) {
 	if (!line_buffer_.empty()) {
 		println();
 		prompt_displayed_ = false;

@@ -884,7 +884,7 @@ protected:
 	 * @param[in] line The command line to be executed.
 	 * @since 0.1.0
 	 */
-	void invoke_command(std::string line);
+	void invoke_command(const std::string &line);
 
 	/**
 	 * Parse a command line into separate parameters using built-in
