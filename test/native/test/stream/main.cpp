@@ -134,22 +134,29 @@ static void test_blocking_cr(BlockingTestMode mode, bool stream_supports_peek, b
 
 	stream << "test\r";
 	if (with_data) {
-		stream << "x";
+		stream << "x\n";
 	}
 	switch (mode) {
 	case BlockingTestMode::AVAILABLE:
 		test_fn = [executions, stream_supports_peek, with_data, &stream] (Shell &shell, bool stop) mutable -> bool {
 			TEST_ASSERT_EQUAL(1, ++executions);
 			if (with_data) {
-				TEST_ASSERT_EQUAL_STRING("x", stream.input().c_str());
+				TEST_ASSERT_EQUAL_STRING("x\n", stream.input().c_str());
 				TEST_ASSERT_TRUE(shell.available());
 				if (stream_supports_peek) {
 					TEST_ASSERT_EQUAL_INT('x', shell.peek());
 				} else {
 					TEST_ASSERT_EQUAL_INT(-1, shell.peek());
 				}
-				TEST_ASSERT_EQUAL_STRING("x", stream.input().c_str());
+				TEST_ASSERT_EQUAL_STRING("x\n", stream.input().c_str());
 				TEST_ASSERT_EQUAL_INT('x', shell.read());
+				TEST_ASSERT_EQUAL_STRING("\n", stream.input().c_str());
+				if (stream_supports_peek) {
+					TEST_ASSERT_EQUAL_INT('\n', shell.peek());
+				} else {
+					TEST_ASSERT_EQUAL_INT(-1, shell.peek());
+				}
+				TEST_ASSERT_EQUAL_INT('\n', shell.read());
 			}
 			TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 			TEST_ASSERT_FALSE(shell.available());
@@ -164,14 +171,20 @@ static void test_blocking_cr(BlockingTestMode mode, bool stream_supports_peek, b
 		test_fn = [executions, stream_supports_peek, with_data, &stream] (Shell &shell, bool stop) mutable -> bool {
 			TEST_ASSERT_EQUAL(1, ++executions);
 			if (with_data) {
-				TEST_ASSERT_EQUAL_STRING("x", stream.input().c_str());
+				TEST_ASSERT_EQUAL_STRING("x\n", stream.input().c_str());
 				if (stream_supports_peek) {
 					TEST_ASSERT_EQUAL_INT('x', shell.peek());
 				} else {
 					TEST_ASSERT_EQUAL_INT(-1, shell.peek());
 				}
-				TEST_ASSERT_EQUAL_STRING("x", stream.input().c_str());
+				TEST_ASSERT_EQUAL_STRING("x\n", stream.input().c_str());
 				TEST_ASSERT_EQUAL_INT('x', shell.read());
+				if (stream_supports_peek) {
+					TEST_ASSERT_EQUAL_INT('\n', shell.peek());
+				} else {
+					TEST_ASSERT_EQUAL_INT(-1, shell.peek());
+				}
+				TEST_ASSERT_EQUAL_INT('\n', shell.read());
 			}
 			TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 			TEST_ASSERT_EQUAL_INT(-1, shell.peek());
@@ -185,8 +198,9 @@ static void test_blocking_cr(BlockingTestMode mode, bool stream_supports_peek, b
 		test_fn = [executions, with_data, &stream] (Shell &shell, bool stop) mutable -> bool {
 			TEST_ASSERT_EQUAL(1, ++executions);
 			if (with_data) {
-				TEST_ASSERT_EQUAL_STRING("x", stream.input().c_str());
+				TEST_ASSERT_EQUAL_STRING("x\n", stream.input().c_str());
 				TEST_ASSERT_EQUAL_INT('x', shell.read());
+				TEST_ASSERT_EQUAL_INT('\n', shell.read());
 			}
 			TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 			TEST_ASSERT_EQUAL_INT(-1, shell.read());
@@ -350,29 +364,36 @@ static void test_blocking_crlf(BlockingTestMode mode, bool stream_supports_peek,
 
 	stream << "test\r\n";
 	if (with_data) {
-		stream << "x";
+		stream << "x\n";
 	}
 	switch (mode) {
 	case BlockingTestMode::AVAILABLE:
 		test_fn = [executions, stream_supports_peek, with_data, &stream] (Shell &shell, bool stop) mutable -> bool {
 			TEST_ASSERT_EQUAL(1, ++executions);
 			if (with_data) {
-				TEST_ASSERT_EQUAL_STRING("\nx", stream.input().c_str());
+				TEST_ASSERT_EQUAL_STRING("\nx\n", stream.input().c_str());
 				TEST_ASSERT_TRUE(shell.available());
 				if (stream_supports_peek) {
-					TEST_ASSERT_EQUAL_STRING("x", stream.input().c_str());
+					TEST_ASSERT_EQUAL_STRING("x\n", stream.input().c_str());
 					TEST_ASSERT_EQUAL_INT('x', shell.peek());
-					TEST_ASSERT_EQUAL_STRING("x", stream.input().c_str());
+					TEST_ASSERT_EQUAL_STRING("x\n", stream.input().c_str());
 					TEST_ASSERT_EQUAL_INT('x', shell.read());
+					TEST_ASSERT_EQUAL_STRING("\n", stream.input().c_str());
+					TEST_ASSERT_EQUAL_INT('\n', shell.peek());
+					TEST_ASSERT_EQUAL_STRING("\n", stream.input().c_str());
+					TEST_ASSERT_EQUAL_INT('\n', shell.read());
 					TEST_ASSERT_FALSE(shell.available());
 					TEST_ASSERT_EQUAL_INT(-1, shell.peek());
 					TEST_ASSERT_EQUAL_INT(-1, shell.read());
 				} else {
-					TEST_ASSERT_EQUAL_STRING("\nx", stream.input().c_str());
+					TEST_ASSERT_EQUAL_STRING("\nx\n", stream.input().c_str());
 					TEST_ASSERT_EQUAL_INT(-1, shell.peek());
 					TEST_ASSERT_TRUE(shell.available());
-					TEST_ASSERT_EQUAL_STRING("\nx", stream.input().c_str());
 					TEST_ASSERT_EQUAL_INT('x', shell.read());
+					TEST_ASSERT_EQUAL_STRING("\n", stream.input().c_str());
+					TEST_ASSERT_EQUAL_INT(-1, shell.peek());
+					TEST_ASSERT_TRUE(shell.available());
+					TEST_ASSERT_EQUAL_INT('\n', shell.read());
 					TEST_ASSERT_FALSE(shell.available());
 				}
 				TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
@@ -400,17 +421,24 @@ static void test_blocking_crlf(BlockingTestMode mode, bool stream_supports_peek,
 		test_fn = [executions, stream_supports_peek, with_data, &stream] (Shell &shell, bool stop) mutable -> bool {
 			TEST_ASSERT_EQUAL(1, ++executions);
 			if (with_data) {
-				TEST_ASSERT_EQUAL_STRING("\nx", stream.input().c_str());
+				TEST_ASSERT_EQUAL_STRING("\nx\n", stream.input().c_str());
 				if (stream_supports_peek) {
 					TEST_ASSERT_EQUAL_INT('x', shell.peek());
-					TEST_ASSERT_EQUAL_STRING("x", stream.input().c_str());
+					TEST_ASSERT_EQUAL_STRING("x\n", stream.input().c_str());
 					TEST_ASSERT_EQUAL_INT('x', shell.read());
+					TEST_ASSERT_EQUAL_INT('\n', shell.peek());
+					TEST_ASSERT_EQUAL_STRING("\n", stream.input().c_str());
+					TEST_ASSERT_EQUAL_INT('\n', shell.read());
 				} else {
 					TEST_ASSERT_EQUAL_INT(-1, shell.peek());
-					TEST_ASSERT_EQUAL_STRING("\nx", stream.input().c_str());
+					TEST_ASSERT_EQUAL_STRING("\nx\n", stream.input().c_str());
 					TEST_ASSERT_TRUE(shell.available());
-					TEST_ASSERT_EQUAL_STRING("\nx", stream.input().c_str());
+					TEST_ASSERT_EQUAL_STRING("\nx\n", stream.input().c_str());
 					TEST_ASSERT_EQUAL_INT('x', shell.read());
+					TEST_ASSERT_EQUAL_STRING("\n", stream.input().c_str());
+					TEST_ASSERT_TRUE(shell.available());
+					TEST_ASSERT_EQUAL_INT(-1, shell.peek());
+					TEST_ASSERT_EQUAL_INT('\n', shell.read());
 				}
 				TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 				TEST_ASSERT_FALSE(shell.available());
@@ -438,8 +466,10 @@ static void test_blocking_crlf(BlockingTestMode mode, bool stream_supports_peek,
 		test_fn = [executions, with_data, &stream] (Shell &shell, bool stop) mutable -> bool {
 			TEST_ASSERT_EQUAL(1, ++executions);
 			if (with_data) {
-				TEST_ASSERT_EQUAL_STRING("\nx", stream.input().c_str());
+				TEST_ASSERT_EQUAL_STRING("\nx\n", stream.input().c_str());
 				TEST_ASSERT_EQUAL_INT('x', shell.read());
+				TEST_ASSERT_EQUAL_STRING("\n", stream.input().c_str());
+				TEST_ASSERT_EQUAL_INT('\n', shell.read());
 				TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 			} else {
 				TEST_ASSERT_EQUAL_STRING("\n", stream.input().c_str());
@@ -602,22 +632,29 @@ static void test_blocking_lf(BlockingTestMode mode, bool stream_supports_peek, b
 
 	stream << "test\n";
 	if (with_data) {
-		stream << "x";
+		stream << "x\n";
 	}
 	switch (mode) {
 	case BlockingTestMode::AVAILABLE:
 		test_fn = [executions, stream_supports_peek, with_data, &stream] (Shell &shell, bool stop) mutable -> bool {
 			TEST_ASSERT_EQUAL(1, ++executions);
 			if (with_data) {
-				TEST_ASSERT_EQUAL_STRING("x", stream.input().c_str());
+				TEST_ASSERT_EQUAL_STRING("x\n", stream.input().c_str());
 				TEST_ASSERT_TRUE(shell.available());
 				if (stream_supports_peek) {
 					TEST_ASSERT_EQUAL_INT('x', shell.peek());
 				} else {
 					TEST_ASSERT_EQUAL_INT(-1, shell.peek());
 				}
-				TEST_ASSERT_EQUAL_STRING("x", stream.input().c_str());
+				TEST_ASSERT_EQUAL_STRING("x\n", stream.input().c_str());
 				TEST_ASSERT_EQUAL_INT('x', shell.read());
+				TEST_ASSERT_EQUAL_STRING("\n", stream.input().c_str());
+				if (stream_supports_peek) {
+					TEST_ASSERT_EQUAL_INT('\n', shell.peek());
+				} else {
+					TEST_ASSERT_EQUAL_INT(-1, shell.peek());
+				}
+				TEST_ASSERT_EQUAL_INT('\n', shell.read());
 			}
 			TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 			TEST_ASSERT_FALSE(shell.available());
@@ -632,14 +669,20 @@ static void test_blocking_lf(BlockingTestMode mode, bool stream_supports_peek, b
 		test_fn = [executions, stream_supports_peek, with_data, &stream] (Shell &shell, bool stop) mutable -> bool {
 			TEST_ASSERT_EQUAL(1, ++executions);
 			if (with_data) {
-				TEST_ASSERT_EQUAL_STRING("x", stream.input().c_str());
+				TEST_ASSERT_EQUAL_STRING("x\n", stream.input().c_str());
 				if (stream_supports_peek) {
 					TEST_ASSERT_EQUAL_INT('x', shell.peek());
 				} else {
 					TEST_ASSERT_EQUAL_INT(-1, shell.peek());
 				}
-				TEST_ASSERT_EQUAL_STRING("x", stream.input().c_str());
+				TEST_ASSERT_EQUAL_STRING("x\n", stream.input().c_str());
 				TEST_ASSERT_EQUAL_INT('x', shell.read());
+				if (stream_supports_peek) {
+					TEST_ASSERT_EQUAL_INT('\n', shell.peek());
+				} else {
+					TEST_ASSERT_EQUAL_INT(-1, shell.peek());
+				}
+				TEST_ASSERT_EQUAL_INT('\n', shell.read());
 			}
 			TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 			TEST_ASSERT_EQUAL_INT(-1, shell.peek());
@@ -653,8 +696,9 @@ static void test_blocking_lf(BlockingTestMode mode, bool stream_supports_peek, b
 		test_fn = [executions, with_data, &stream] (Shell &shell, bool stop) mutable -> bool {
 			TEST_ASSERT_EQUAL(1, ++executions);
 			if (with_data) {
-				TEST_ASSERT_EQUAL_STRING("x", stream.input().c_str());
+				TEST_ASSERT_EQUAL_STRING("x\n", stream.input().c_str());
 				TEST_ASSERT_EQUAL_INT('x', shell.read());
+				TEST_ASSERT_EQUAL_INT('\n', shell.read());
 			}
 			TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 			TEST_ASSERT_EQUAL_INT(-1, shell.read());
