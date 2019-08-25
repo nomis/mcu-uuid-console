@@ -16,7 +16,7 @@ using uuid::console::Shell;
 void setup() {
 	std::shared_ptr<Commands> commands = std::make_shared<Commands>();
 
-	commands->add_command(0, 0, flash_string_vector{F("pinMode")},
+	commands->add_command(flash_string_vector{F("pinMode")},
 		flash_string_vector{F("<pin>"), F("<mode>")},
 
 		[] (Shell &shell, const std::vector<std::string> &arguments) {
@@ -57,7 +57,7 @@ void setup() {
 		}
 	);
 
-	commands->add_command(0, 0, flash_string_vector{F("digitalRead")},
+	commands->add_command(flash_string_vector{F("digitalRead")},
 		flash_string_vector{F("<pin>")},
 
 		[] (Shell &shell, const std::vector<std::string> &arguments) {
@@ -69,7 +69,7 @@ void setup() {
 		}
 	);
 
-	commands->add_command(0, 0, flash_string_vector{F("digitalWrite")},
+	commands->add_command(flash_string_vector{F("digitalWrite")},
 		flash_string_vector{F("<pin>"), F("<value>")},
 
 		[] (Shell &shell, const std::vector<std::string> &arguments) {
@@ -110,7 +110,7 @@ void setup() {
 	Serial.begin(115200);
 
 	std::shared_ptr<Shell> shell;
-	shell = std::make_shared<uuid::console::StreamConsole>(commands, Serial, 0, 0);
+	shell = std::make_shared<uuid::console::StreamConsole>(commands, Serial);
 	shell->start();
 }
 

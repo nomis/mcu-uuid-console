@@ -10,6 +10,13 @@ Added
 * Support for blocking commands that execute asynchronously and can
   read from the underlying input stream.
 
+Changed
+~~~~~~~
+
+* The default context is now optional when creating a ``Shell`` (it
+  defaults to 0).
+* Commands can now be created with a default context and flags of 0.
+
 Fixed
 ~~~~~
 
