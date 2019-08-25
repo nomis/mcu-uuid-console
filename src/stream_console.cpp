@@ -45,8 +45,16 @@ size_t StreamConsole::write(const uint8_t *buffer, size_t size) {
 	return stream_.write(buffer, size);
 }
 
+bool StreamConsole::available_char() {
+	return stream_.available() > 0;
+}
+
 int StreamConsole::read_one_char() {
 	return stream_.read();
+}
+
+int StreamConsole::peek_one_char() {
+	return stream_.peek();
 }
 
 } // namespace console

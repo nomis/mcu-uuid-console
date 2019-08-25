@@ -69,9 +69,15 @@ bool Shell::running() const {
 }
 
 void Shell::stop() {
-	if (running()) {
-		stopped_ = true;
-		stopped();
+	if (mode_ == Mode::BLOCKING) {
+		auto *blocking_data = reinterpret_cast<Shell::BlockingData*>(mode_data_.get());
+
+		blocking_data->stop_ = true;
+	} else {
+		if (running()) {
+			stopped_ = true;
+			stopped();
+		}
 	}
 }
 
@@ -79,20 +85,34 @@ void Shell::stopped() {
 
 }
 
-void Shell::loop_one() {
-	output_logs();
+bool Shell::exit_context() {
+	if (context_.size() > 1) {
+		context_.pop_back();
+		return true;
+	} else {
+		return false;
+	}
+}
 
+void Shell::loop_one() {
 	switch (mode_) {
 	case Mode::NORMAL:
+		output_logs();
 		loop_normal();
 		break;
 
 	case Mode::PASSWORD:
+		output_logs();
 		loop_password();
 		break;
 
 	case Mode::DELAY:
+		output_logs();
 		loop_delay();
+		break;
+
+	case Mode::BLOCKING:
+		loop_blocking();
 		break;
 	}
 }
@@ -276,12 +296,32 @@ void Shell::loop_delay() {
 	}
 }
 
-bool Shell::exit_context() {
-	if (context_.size() > 1) {
-		context_.pop_back();
-		return true;
-	} else {
-		return false;
+Shell::BlockingData::BlockingData(blocking_function blocking_function)
+		: blocking_function_(blocking_function) {
+
+}
+
+void Shell::loop_blocking() {
+	auto *blocking_data = reinterpret_cast<Shell::BlockingData*>(mode_data_.get());
+
+	/* It is not possible to change mode while executing this function,
+	 * because that would require copying either the std::shared_ptr or
+	 * the std::function on every loop execution (to ensure that the
+	 * function captures aren't destroyed while executing).
+	 */
+	if (blocking_data->blocking_function_(*this, blocking_data->stop_)) {
+		bool stop_pending = blocking_data->stop_;
+
+		mode_ = Mode::NORMAL;
+		mode_data_.reset();
+
+		if (stop_pending) {
+			stop();
+		}
+
+		if (running()) {
+			display_prompt();
+		}
 	}
 }
 
@@ -300,6 +340,13 @@ void Shell::delay_until(uint64_t ms, delay_function function) {
 	if (mode_ == Mode::NORMAL) {
 		mode_ = Mode::DELAY;
 		mode_data_ = std::make_unique<Shell::DelayData>(ms, function);
+	}
+}
+
+void Shell::block_with(blocking_function function) {
+	if (mode_ == Mode::NORMAL) {
+		mode_ = Mode::BLOCKING;
+		mode_data_ = std::make_unique<Shell::BlockingData>(function);
 	}
 }
 

@@ -28,7 +28,11 @@ namespace uuid {
 namespace console {
 
 size_t Shell::print(const std::string &data) {
-	return write(reinterpret_cast<const uint8_t*>(data.c_str()), data.length());
+	if (data.empty()) {
+		return 0;
+	} else {
+		return write(reinterpret_cast<const uint8_t*>(data.c_str()), data.length());
+	}
 }
 
 size_t Shell::println(const std::string &data) {

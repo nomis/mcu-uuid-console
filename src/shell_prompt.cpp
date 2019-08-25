@@ -51,6 +51,7 @@ void Shell::end_of_transmission() {
 void Shell::display_prompt() {
 	switch (mode_) {
 	case Mode::DELAY:
+	case Mode::BLOCKING:
 		break;
 
 	case Mode::PASSWORD:

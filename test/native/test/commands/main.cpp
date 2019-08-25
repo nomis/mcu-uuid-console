@@ -39,7 +39,9 @@ public:
 	using Shell::format_line;
 
 protected:
-	int read_one_char() { return '\n'; };
+	bool available_char() override { return true; }
+	int read_one_char() override { return '\n'; };
+	int peek_one_char() override { return '\n'; };
 	size_t write(uint8_t data __attribute__((unused))) override { return 1; }
 	size_t write(const uint8_t *buffer __attribute__((unused)), size_t size) override { return size; }
 };

@@ -4,11 +4,18 @@ Change log
 Unreleased_
 -----------
 
+Added
+~~~~~
+
+* Support for blocking commands that execute asynchronously and can
+  read from the underlying input stream.
+
 Fixed
 ~~~~~
 
 * Don't set private member ``prompt_displayed_`` from virtual function
   ``erase_current_line()``.
+* Don't try to write empty strings to the shell output.
 
 0.1.0_ |--| 2019-08-23
 ----------------------

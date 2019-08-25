@@ -41,6 +41,9 @@ using backslashes or quotes.
 Password entry (without echo) can be performed using a callback function
 process.
 
+Blocking commands can be performed using a callback function to execute
+asynchronously and can read from the underlying input stream.
+
 The ``Shell`` class is customisable to allow the prompt, banner,
 hostname and context text to be replaced. The ``^D`` (end of
 transmission) character can be made to execute implied commands (e.g.

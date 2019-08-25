@@ -308,7 +308,7 @@ private:
  *
  * @since 0.1.0
  */
-class Shell: public std::enable_shared_from_this<Shell>, public uuid::log::Handler, public ::Print {
+class Shell: public std::enable_shared_from_this<Shell>, public uuid::log::Handler, public ::Stream {
 public:
 	static constexpr size_t MAX_COMMAND_LINE_LENGTH = 80; /*!< Maximum length of a command line. @since 0.1.0 */
 	static constexpr size_t MAX_LOG_MESSAGES = 20; /*!< Maximum number of log messages to buffer before they are output. @since 0.1.0 */
@@ -332,6 +332,17 @@ public:
 	 * @since 0.1.0
 	 */
 	using delay_function = std::function<void(Shell &shell)>;
+	/**
+	 * Function to handle a blocking operation.
+	 *
+	 * @param[in] shell Shell instance where execution is blocked.
+	 * @param[in] stop Request to return so that the shell can stop
+	 *                 (true) or continue (false).
+	 * @return True if the blocking operation is finished, otherwise
+	 *         false.
+	 * @since 0.2.0
+	 */
+	using blocking_function = std::function<bool(Shell &shell, bool stop)>;
 
 	~Shell() override;
 
@@ -411,6 +422,9 @@ public:
 	bool running() const;
 	/**
 	 * Stop this shell from running.
+	 *
+	 * If the shell is currently executing a blocking function, that
+	 * must complete before the shell will stop.
 	 *
 	 * It is not possible to restart the Shell, which must be destroyed
 	 * after it has been stopped.
@@ -503,6 +517,8 @@ public:
 	 * Password entry is not visible and can be interrupted by the
 	 * user.
 	 *
+	 * The shell must not be currently executing a blocking function.
+	 *
 	 * @param[in] prompt Message to display prompting for password
 	 *                   input.
 	 * @param[in] function Function to be executed after the password
@@ -517,6 +533,8 @@ public:
 	 *
 	 * There is an assumption that 2^64 milliseconds uptime will always
 	 * be enough time for this delay process.
+	 *
+	 * The shell must not be currently executing a blocking function.
 	 *
 	 * @param[in] ms Time in milliseconds to delay execution for.
 	 * @param[in] function Function to be executed at a future time,
@@ -534,6 +552,8 @@ public:
 	 *
 	 * The reference time is uuid::get_uptime_ms().
 	 *
+	 * The shell must not be currently executing a blocking function.
+	 *
 	 * @param[in] ms Uptime in the future (in milliseconds) when the
 	 *               function should be executed.
 	 * @param[in] function Function to be executed at a future time,
@@ -541,6 +561,52 @@ public:
 	 * @since 0.1.0
 	 */
 	void delay_until(uint64_t ms, delay_function function);
+
+	/**
+	 * Execute a blocking function on this shell until it returns true.
+	 *
+	 * The function will be executed every time loop_one() is called,
+	 * which allows commands that do not complete immediately to be run
+	 * asynchronously.
+	 *
+	 * The shell must not be currently executing a blocking function.
+	 *
+	 * @param[in] function Function to be executed on every loop_one()
+	 *                     until normal execution resumes.
+	 */
+	void block_with(blocking_function function);
+
+	/**
+	 * Check for available input.
+	 *
+	 * The shell must be currently executing a blocking function
+	 * otherwise it will always return 0.
+	 *
+	 * @return The number of bytes available to read.
+	 * @since 0.2.0
+	 */
+	int available() final override;
+	/**
+	 * Read one byte from the available input.
+	 *
+	 * The shell must be currently executing a blocking function
+	 * otherwise it will always return -1.
+	 *
+	 * @return An unsigned char if input is available, otherwise -1.
+	 * @since 0.2.0
+	 */
+	int read() final override;
+	/**
+	 * Read one byte from the available input without advancing to the
+	 * next one.
+	 *
+	 * The shell must be currently executing a blocking function
+	 * otherwise it will always return -1.
+	 *
+	 * @return An unsigned char if input is available, otherwise -1.
+	 * @since 0.2.0
+	 */
+	int peek() final override;
 
 	using ::Print::print; /*!< Include standard Arduino print() functions. */
 	/**
@@ -775,6 +841,7 @@ private:
 		NORMAL, /*!< Normal command execution. @since 0.1.0 */
 		PASSWORD, /*!< Password entry prompt. @since 0.1.0 */
 		DELAY, /*!< Delay execution until a future time. @since 0.1.0 */
+		BLOCKING, /*!< Block execution by calling a function repeatedly. @since 0.2.0 */
 	};
 
 	/**
@@ -811,8 +878,8 @@ private:
 		PasswordData(const __FlashStringHelper *password_prompt, password_function password_function);
 		~PasswordData() override = default;
 
-		const __FlashStringHelper *password_prompt_; /*!< Prompt requesting password input. */
-		password_function password_function_; /*!< Function to execute after password entry. */
+		const __FlashStringHelper *password_prompt_; /*!< Prompt requesting password input. @since 0.1.0 */
+		password_function password_function_; /*!< Function to execute after password entry. @since 0.1.0 */
 	};
 
 	/**
@@ -835,8 +902,31 @@ private:
 		DelayData(uint64_t delay_time, delay_function delay_function);
 		~DelayData() override = default;
 
-		uint64_t delay_time_; /*!< Future uptime to resume execution (in milliseconds). */
-		delay_function delay_function_; /*!< Function execute after delay. */
+		uint64_t delay_time_; /*!< Future uptime to resume execution (in milliseconds). @since 0.1.0 */
+		delay_function delay_function_; /*!< Function execute after delay. @since 0.1.0 */
+	};
+
+	/**
+	 * Data for the Mode::BLOCKING shell mode.
+	 *
+	 * @since 0.2.0
+	 */
+	class BlockingData: public ModeData {
+	public:
+		/**
+		 * Create Mode::DELAY shell mode data.
+		 *
+		 * @param[in] blocking_function Function to be executed on
+		 *                              every loop_one() until it
+		 *                              returns true.
+		 * @since 0.2.0
+		 */
+		BlockingData(blocking_function blocking_function);
+		~BlockingData() override = default;
+
+		blocking_function blocking_function_; /*!< Function execute on every loop_one(). @since 0.2.0 */
+		bool consume_line_feed_ = true; /*!< Stream input should try to consume the first line feed following a carriage return. @since 0.2.0 */
+		bool stop_ = false; /*!< There is a stop pending for the shell. @since 0.2.0 */
 	};
 
 	/**
@@ -891,7 +981,22 @@ private:
 	 * @since 0.1.0
 	 */
 	void loop_delay();
+	/**
+	 * Perform one execution step in Mode::BLOCKING mode.
+	 *
+	 * Wait until the function returns true.
+	 *
+	 * @since 0.2.0
+	 */
+	void loop_blocking();
 
+	/**
+	 * Check for at least one character of available input.
+	 *
+	 * @return True if a character is available, otherwise false.
+	 * @since 0.2.0
+	 */
+	virtual bool available_char() = 0;
 	/**
 	 * Read one character from the available input.
 	 *
@@ -899,6 +1004,14 @@ private:
 	 * @since 0.1.0
 	 */
 	virtual int read_one_char() = 0;
+	/**
+	 * Read one character from the available input without advancing to
+	 * the next one.
+	 *
+	 * @return An unsigned char if input is available, otherwise -1.
+	 * @since 0.2.0
+	 */
+	virtual int peek_one_char() = 0;
 
 	/**
 	 * Output a prompt on the shell.
@@ -1041,14 +1154,28 @@ protected:
 private:
 	StreamConsole(const StreamConsole&) = delete;
 	StreamConsole& operator=(const StreamConsole&) = delete;
-
 	/**
-	 * Read one character from the input stream.
+	 * Check for at least one character of available input.
+	 *
+	 * @return True if a character is available, otherwise false.
+	 * @since 0.2.0
+	 */
+	bool available_char() override;
+	/**
+	 * Read one character from the available input.
 	 *
 	 * @return An unsigned char if input is available, otherwise -1.
 	 * @since 0.1.0
 	 */
 	int read_one_char() override;
+	/**
+	 * Read one character from the available input without advancing to
+	 * the next one.
+	 *
+	 * @return An unsigned char if input is available, otherwise -1.
+	 * @since 0.2.0
+	 */
+	int peek_one_char() override;
 
 	Stream &stream_; /*!< Stream used for the input/output of this shell. @since 0.1.0 */
 };
