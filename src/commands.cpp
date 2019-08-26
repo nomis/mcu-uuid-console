@@ -44,7 +44,7 @@ namespace uuid {
 namespace console {
 
 void Commands::add_command(const flash_string_vector &name, command_function function) {
-	add_command(0, 0, name, flash_string_vector{}, function);
+	add_command(0, 0, name, flash_string_vector{}, function, nullptr);
 }
 
 void Commands::add_command(const flash_string_vector &name, const flash_string_vector &arguments,
@@ -59,7 +59,7 @@ void Commands::add_command(const flash_string_vector &name, const flash_string_v
 
 void Commands::add_command(unsigned int context, unsigned int flags,
 		const flash_string_vector &name, command_function function) {
-	add_command(context, flags, name, flash_string_vector{}, function);
+	add_command(context, flags, name, flash_string_vector{}, function, nullptr);
 }
 
 void Commands::add_command(unsigned int context, unsigned int flags,
