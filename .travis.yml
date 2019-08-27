@@ -18,6 +18,7 @@ install:
 script:
   - make -C test
   - make -C docs html linkcheck
+  - git diff --exit-code
 
 notifications:
   email:
