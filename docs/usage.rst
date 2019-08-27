@@ -14,8 +14,8 @@ instance and then |uuid::console::Shell::loop_all()|_ regularly. (The
 static set of all shells will retain a copy of the |shared_ptr|_ until
 the shell is stopped.)
 
-Example
--------
+Example (Digital I/O)
+---------------------
 
 .. literalinclude:: ../examples/DigitalIO.cpp
 
@@ -23,6 +23,17 @@ Output
 ~~~~~~
 
 .. literalinclude:: ../examples/DigitalIO_output.txt
+   :language: console
+
+Example (WiFi network scan)
+---------------------------
+
+.. literalinclude:: ../examples/WiFi.cpp
+
+Output
+~~~~~~
+
+.. literalinclude:: ../examples/WiFi_output.txt
    :language: console
 
 .. |std::shared_ptr<uuid::console::Commands>| replace:: ``std::shared_ptr<uuid::console::Commands>``

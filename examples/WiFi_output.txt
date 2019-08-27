@@ -1,0 +1,8 @@
+$ wifi scan
+Scanning for WiFi networks...
+Found 3 networks
+
+Free Public WiFi (-87 dBm)
+Hacklab (-30 dBm)
+ALL YOUR BASE ARE BELONG TO US (-44 dBm)
+$ 

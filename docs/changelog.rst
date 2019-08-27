@@ -9,6 +9,7 @@ Added
 
 * Support for blocking commands that execute asynchronously and can
   read from the underlying input stream.
+* Example serial console for ESP8266/ESP32 WiFi features.
 
 Changed
 ~~~~~~~

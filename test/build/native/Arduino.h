@@ -101,6 +101,10 @@ public:
 		return std::stol(data_);
 	}
 
+	const char *c_str() const {
+		return data_.c_str();
+	}
+
 private:
 	std::string data_;
 };
