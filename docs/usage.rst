@@ -19,6 +19,12 @@ Example
 
 .. literalinclude:: ../examples/DigitalIO.cpp
 
+Output
+~~~~~~
+
+.. literalinclude:: ../examples/DigitalIO_output.txt
+   :language: console
+
 .. |std::shared_ptr<uuid::console::Commands>| replace:: ``std::shared_ptr<uuid::console::Commands>``
 .. _std::shared_ptr<uuid::console::Commands>: https://mcu-doxygen.uuid.uk/classuuid_1_1console_1_1Commands.html
 

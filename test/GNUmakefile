@@ -8,6 +8,7 @@ build:
 	# Workaround for https://github.com/platformio/platformio-core/issues/2573
 	cd build/example-DigitalIO && pio lib install uuid-common uuid-log
 	platformio run -d build/example-DigitalIO
+	build/example-DigitalIO/.pio/build/native/program <../examples/DigitalIO_input.txt >../examples/DigitalIO_output.txt
 
 native:
 	rm -rf native/.pio

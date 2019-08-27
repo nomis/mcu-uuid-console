@@ -1,0 +1,6 @@
+digitalRead 2
+digitalRead 3
+pinMode 4 OUTPUT
+digitalWrite 4 HIGH
+pinMode 5 OUTPUT
+digitalWrite 5 LOW

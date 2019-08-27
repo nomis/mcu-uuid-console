@@ -1,0 +1,13 @@
+$ digitalRead 2
+Read value from pin 2: LOW
+$ digitalRead 3
+Read value from pin 3: HIGH
+$ pinMode 4 OUTPUT
+Configured pin 4 to mode OUTPUT
+$ digitalWrite 4 HIGH
+Wrote HIGH value to pin 4
+$ pinMode 5 OUTPUT
+Configured pin 5 to mode OUTPUT
+$ digitalWrite 5 LOW
+Wrote LOW value to pin 5
+$ 
