@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+0.2.0_ |--| 2019-08-27
+----------------------
+
+Support blocking commands that execute asynchronously.
+
 Added
 ~~~~~
 
