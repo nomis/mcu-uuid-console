@@ -84,27 +84,39 @@ size_t Shell::printfln(const __FlashStringHelper *format, ...) {
 }
 
 size_t Shell::vprintf(const char *format, va_list ap) {
-	int len = ::vsnprintf(nullptr, 0, format, ap);
-	if (len > 0) {
-		std::string text(static_cast<std::string::size_type>(len), '\0');
+	size_t print_len = 0;
+	va_list copy_ap;
 
-		::vsnprintf(&text[0], text.capacity() + 1, format, ap);
-		return print(text);
-	} else {
-		return 0;
+	va_copy(copy_ap, ap);
+
+	int format_len = ::vsnprintf(nullptr, 0, format, ap);
+	if (format_len > 0) {
+		std::string text(static_cast<std::string::size_type>(format_len), '\0');
+
+		::vsnprintf(&text[0], text.capacity() + 1, format, copy_ap);
+		print_len = print(text);
 	}
+
+	va_end(copy_ap);
+	return print_len;
 }
 
 size_t Shell::vprintf(const __FlashStringHelper *format, va_list ap) {
-	int len = ::vsnprintf_P(nullptr, 0, reinterpret_cast<PGM_P>(format), ap);
-	if (len > 0) {
-		std::string text(static_cast<std::string::size_type>(len), '\0');
+	size_t print_len = 0;
+	va_list copy_ap;
 
-		::vsnprintf_P(&text[0], text.capacity() + 1, reinterpret_cast<PGM_P>(format), ap);
-		return print(text);
-	} else {
-		return 0;
+	va_copy(copy_ap, ap);
+
+	int format_len = ::vsnprintf_P(nullptr, 0, reinterpret_cast<PGM_P>(format), ap);
+	if (format_len > 0) {
+		std::string text(static_cast<std::string::size_type>(format_len), '\0');
+
+		::vsnprintf_P(&text[0], text.capacity() + 1, reinterpret_cast<PGM_P>(format), copy_ap);
+		print_len = print(text);
 	}
+
+	va_end(copy_ap);
+	return print_len;
 }
 
 void Shell::erase_current_line() {

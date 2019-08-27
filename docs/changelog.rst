@@ -25,6 +25,8 @@ Fixed
 * Don't try to write empty strings to the shell output.
 * Workaround incorrect definition of ``FPSTR()`` on ESP32
   (`#1371 <https://github.com/espressif/arduino-esp32/issues/1371>`_).
+* Create a copy of ``va_list`` when outputting with a format string so
+  that it can be used twice.
 
 0.1.0_ |--| 2019-08-23
 ----------------------
