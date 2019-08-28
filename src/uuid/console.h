@@ -346,6 +346,16 @@ private:
 	 */
 	std::string find_longest_common_prefix(const std::list<std::string> &arguments);
 
+	/**
+	 * Identify arguments that indicate a trailing space.
+	 *
+	 * @param[in] argument Argument to check.
+	 * @return True if this argument is a trailing space, otherwise
+	 *         false.
+	 * @since 0.3.0
+	 */
+	bool is_trailing_space(const std::string &argument);
+
 	std::multimap<unsigned int,Command> commands_; /*!< Commands stored in this container, separated by context. @since 0.1.0 */
 };
 
@@ -890,6 +900,8 @@ protected:
 	 * Parse a command line into separate parameters using built-in
 	 * escaping rules.
 	 *
+	 * Trailing spaces are represented by a "\0" parameter value.
+	 *
 	 * @param[in] line Command line to parse.
 	 * @return A list of strings, one per command line parameter.
 	 * @since 0.1.0
@@ -898,6 +910,8 @@ protected:
 	/**
 	 * Format a command line from separate parameters using built-in
 	 * escaping rules.
+	 *
+	 * Trailing spaces are represented by a "\0" parameter value.
 	 *
 	 * @param[in] items Command line parameters.
 	 * @return A command line, with escaping of characters sufficient

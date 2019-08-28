@@ -427,6 +427,210 @@ static void test_single_quote_escaped5() {
 	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\'World\\'!", shell.format_line(command_line).c_str());
 }
 
+/**
+ * Empty arguments can be created using double quotes.
+ */
+static void test_empty_args_double_quotes1() {
+	auto command_line = shell.parse_line("\"\"");
+
+	TEST_ASSERT_EQUAL_INT(1, command_line.size());
+	if (command_line.size() == 1) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+	}
+
+	TEST_ASSERT_EQUAL_STRING("\"\"", shell.format_line(command_line).c_str());
+}
+
+/**
+ * Empty arguments can be created using double quotes.
+ */
+static void test_empty_args_double_quotes2() {
+	auto command_line = shell.parse_line("\"\" \"\"");
+
+	TEST_ASSERT_EQUAL_INT(2, command_line.size());
+	if (command_line.size() == 2) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+	}
+
+	TEST_ASSERT_EQUAL_STRING("\"\" \"\"", shell.format_line(command_line).c_str());
+}
+
+/**
+ * Empty arguments can be created using double quotes.
+ */
+static void test_empty_args_double_quotes3() {
+	auto command_line = shell.parse_line("\"\" \"\" \"\"");
+
+	TEST_ASSERT_EQUAL_INT(3, command_line.size());
+	if (command_line.size() == 3) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+	}
+
+	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\"", shell.format_line(command_line).c_str());
+}
+
+/**
+ * Empty arguments can be created using double quotes, extra spaces are ignored.
+ */
+static void test_empty_args_double_quotes4() {
+	auto command_line = shell.parse_line(" \"\" \"\" \"\" ");
+
+	TEST_ASSERT_EQUAL_INT(4, command_line.size());
+	if (command_line.size() == 4) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str()); // Trailing space
+	}
+
+	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\" ", shell.format_line(command_line).c_str());
+}
+
+/**
+ * Empty arguments can be created using double quotes, extra spaces are ignored.
+ */
+static void test_empty_args_double_quotes5() {
+	auto command_line = shell.parse_line("  \"\"  \"\"  \"\"  ");
+
+	TEST_ASSERT_EQUAL_INT(4, command_line.size());
+	if (command_line.size() == 4) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str()); // Trailing space
+	}
+
+	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\" ", shell.format_line(command_line).c_str());
+}
+
+/**
+ * Empty arguments can be created using double quotes.
+ */
+static void test_empty_args_double_quotes6() {
+	auto command_line = shell.parse_line("command \"\" test \"\"");
+
+	TEST_ASSERT_EQUAL_INT(4, command_line.size());
+	if (command_line.size() == 4) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("command", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("test", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+	}
+
+	TEST_ASSERT_EQUAL_STRING("command \"\" test \"\"", shell.format_line(command_line).c_str());
+}
+
+/**
+ * Empty arguments can be created using single quotes.
+ */
+static void test_empty_args_single_quotes1() {
+	auto command_line = shell.parse_line("''");
+
+	TEST_ASSERT_EQUAL_INT(1, command_line.size());
+	if (command_line.size() == 1) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+	}
+
+	TEST_ASSERT_EQUAL_STRING("\"\"", shell.format_line(command_line).c_str());
+}
+
+/**
+ * Empty arguments can be created using single quotes.
+ */
+static void test_empty_args_single_quotes2() {
+	auto command_line = shell.parse_line("'' ''");
+
+	TEST_ASSERT_EQUAL_INT(2, command_line.size());
+	if (command_line.size() == 2) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+	}
+
+	TEST_ASSERT_EQUAL_STRING("\"\" \"\"", shell.format_line(command_line).c_str());
+}
+
+/**
+ * Empty arguments can be created using single quotes.
+ */
+static void test_empty_args_single_quotes3() {
+	auto command_line = shell.parse_line("'' '' ''");
+
+	TEST_ASSERT_EQUAL_INT(3, command_line.size());
+	if (command_line.size() == 3) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+	}
+
+	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\"", shell.format_line(command_line).c_str());
+}
+
+/**
+ * Empty arguments can be created using single quotes, extra spaces are ignored.
+ */
+static void test_empty_args_single_quotes4() {
+	auto command_line = shell.parse_line(" '' '' '' ");
+
+	TEST_ASSERT_EQUAL_INT(4, command_line.size());
+	if (command_line.size() == 4) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str()); // Trailing space
+	}
+
+	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\" ", shell.format_line(command_line).c_str());
+}
+
+/**
+ * Empty arguments can be created using single quotes, extra spaces are ignored.
+ */
+static void test_empty_args_single_quotes5() {
+	auto command_line = shell.parse_line("  ''   ''   ''  ");
+
+	TEST_ASSERT_EQUAL_INT(4, command_line.size());
+	if (command_line.size() == 4) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str()); // Trailing space
+	}
+
+	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\" ", shell.format_line(command_line).c_str());
+}
+
+/**
+ * Empty arguments can be created using single quotes.
+ */
+static void test_empty_args_single_quotes6() {
+	auto command_line = shell.parse_line("command '' test ''");
+
+	TEST_ASSERT_EQUAL_INT(4, command_line.size());
+	if (command_line.size() == 4) {
+		auto it = command_line.begin();
+		TEST_ASSERT_EQUAL_STRING("command", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("test", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+	}
+
+	TEST_ASSERT_EQUAL_STRING("command \"\" test \"\"", shell.format_line(command_line).c_str());
+}
+
 int main(int argc, char *argv[]) {
 	UNITY_BEGIN();
 	RUN_TEST(test_simple1);
@@ -455,6 +659,20 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_single_quote_escaped3b);
 	RUN_TEST(test_single_quote_escaped4);
 	RUN_TEST(test_single_quote_escaped5);
+
+	RUN_TEST(test_empty_args_double_quotes1);
+	RUN_TEST(test_empty_args_double_quotes2);
+	RUN_TEST(test_empty_args_double_quotes3);
+	RUN_TEST(test_empty_args_double_quotes4);
+	RUN_TEST(test_empty_args_double_quotes5);
+	RUN_TEST(test_empty_args_double_quotes6);
+
+	RUN_TEST(test_empty_args_single_quotes1);
+	RUN_TEST(test_empty_args_single_quotes2);
+	RUN_TEST(test_empty_args_single_quotes3);
+	RUN_TEST(test_empty_args_single_quotes4);
+	RUN_TEST(test_empty_args_single_quotes5);
+	RUN_TEST(test_empty_args_single_quotes6);
 
 	return UNITY_END();
 }

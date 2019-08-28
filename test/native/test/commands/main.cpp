@@ -872,6 +872,30 @@ static void test_execution5d() {
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_a0 \"\""));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_a0 <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_b1 \"\""));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_b1 <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_c2 \"\""));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_d3 \"\""));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 /**
@@ -946,6 +970,30 @@ static void test_execution5e() {
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_a0 \"\" "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_a0 <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_b1 \"\" "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_b1 <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_c2 \"\" "));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_d3 \"\" "));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 /**
@@ -1016,6 +1064,30 @@ static void test_execution5f() {
 
 	run = "";
 	execution = commands.execute_command(shell, shell.parse_line("test_d3 un deux"));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_a0 \"\" \"\""));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_a0 <empty> <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_b1 \"\" \"\""));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_b1 <empty> <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_c2 \"\" \"\""));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_c2 <empty> <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_d3 \"\" \"\""));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
@@ -1093,6 +1165,30 @@ static void test_execution5g() {
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_a0 \"\" \"\" "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_a0 <empty> <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_b1 \"\" \"\" "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_b1 <empty> <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_c2 \"\" \"\" "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_c2 <empty> <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_d3 \"\" \"\" "));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 }
 
 /**
@@ -1166,6 +1262,30 @@ static void test_execution5h() {
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_d3 un deux trois", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_a0 \"\" \"\" \"\""));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_a0 <empty> <empty> <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_b1 \"\" \"\" \"\""));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_b1 <empty> <empty> <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_c2 \"\" \"\" \"\""));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_c2 <empty> <empty> <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_d3 \"\" \"\" \"\""));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_d3 <empty> <empty> <empty>", run.c_str());
 }
 
 /**
@@ -1223,6 +1343,30 @@ static void test_execution5i() {
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_d3 un deux trois", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_a0 \"\" \"\" \"\" "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_a0 <empty> <empty> <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_b1 \"\" \"\" \"\" "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_b1 <empty> <empty> <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_c2 \"\" \"\" \"\" "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_c2 <empty> <empty> <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_d3 \"\" \"\" \"\" "));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_d3 <empty> <empty> <empty>", run.c_str());
 }
 
 /**
@@ -1276,6 +1420,30 @@ static void test_execution5j() {
 
 	run = "";
 	execution = commands.execute_command(shell, shell.parse_line("test_d3 un deux trois quatre"));
+
+	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_a0 \"\" \"\" \"\" \"\""));
+
+	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_b1 \"\" \"\" \"\" \"\""));
+
+	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_c2 \"\" \"\" \"\" \"\""));
+
+	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_d3 \"\" \"\" \"\" \"\""));
 
 	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
@@ -1393,6 +1561,48 @@ static void test_execution7a() {
 
 	run = "";
 	execution = commands.execute_command(shell, shell.parse_line("test_e un deux trois quatre cinq"));
+
+	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+}
+
+/**
+ * Required arguments can appear anywhere in the list of arguments,
+ * and empty arguments are valid arguments.
+ */
+static void test_execution7b() {
+	run = "";
+	auto execution = commands.execute_command(shell, shell.parse_line("test_e"));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_e \"\""));
+
+	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
+	TEST_ASSERT_EQUAL_STRING("", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_e \"\" \"\""));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_e <empty> <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_e \"\" \"\" \"\""));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_e <empty> <empty> <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_e \"\" \"\" \"\" \"\""));
+
+	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_e <empty> <empty> <empty> <empty>", run.c_str());
+
+	run = "";
+	execution = commands.execute_command(shell, shell.parse_line("test_e \"\" \"\" \"\" \"\" \"\""));
 
 	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
@@ -2156,6 +2366,21 @@ static void test_completion8r() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * Exact command matches with a partial argument should try to auto-complete the
+ * argument as far as possible, preserving empty arguments.
+ */
+static void test_completion8s() {
+	auto completion = commands.complete_command(shell, shell.parse_line("test_f \"\" a"));
+
+	TEST_ASSERT_EQUAL_STRING("test_f \"\" aaAaa", shell.format_line(completion.replacement).c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[three]", shell.format_line(*it++).c_str());
+	}
+}
+
 int main(int argc, char *argv[]) {
 	commands.add_command(0, 0, flash_string_vector{F("help")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
@@ -2227,6 +2452,9 @@ int main(int argc, char *argv[]) {
 		run = "test_a0";
 		for (auto& argument : arguments) {
 			run += " " + argument;
+			if (argument.empty()) {
+				run += "<empty>";
+			}
 		}
 	});
 
@@ -2235,6 +2463,9 @@ int main(int argc, char *argv[]) {
 		run = "test_b1";
 		for (auto& argument : arguments) {
 			run += " " + argument;
+			if (argument.empty()) {
+				run += "<empty>";
+			}
 		}
 	});
 
@@ -2243,6 +2474,9 @@ int main(int argc, char *argv[]) {
 		run = "test_c2";
 		for (auto& argument : arguments) {
 			run += " " + argument;
+			if (argument.empty()) {
+				run += "<empty>";
+			}
 		}
 	});
 
@@ -2251,6 +2485,9 @@ int main(int argc, char *argv[]) {
 		run = "test_d3";
 		for (auto& argument : arguments) {
 			run += " " + argument;
+			if (argument.empty()) {
+				run += "<empty>";
+			}
 		}
 	});
 
@@ -2259,6 +2496,9 @@ int main(int argc, char *argv[]) {
 		run = "test_e";
 		for (auto& argument : arguments) {
 			run += " " + argument;
+			if (argument.empty()) {
+				run += "<empty>";
+			}
 		}
 	});
 
@@ -2267,6 +2507,9 @@ int main(int argc, char *argv[]) {
 		run = "test_f";
 		for (auto& argument : arguments) {
 			run += " " + argument;
+			if (argument.empty()) {
+				run += "<empty>";
+			}
 		}
 	},
 	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
@@ -2296,6 +2539,9 @@ int main(int argc, char *argv[]) {
 		run = "test_g";
 		for (auto& argument : arguments) {
 			run += " " + argument;
+			if (argument.empty()) {
+				run += "<empty>";
+			}
 		}
 	},
 	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
@@ -2325,6 +2571,9 @@ int main(int argc, char *argv[]) {
 		run = "test_h";
 		for (auto& argument : arguments) {
 			run += " " + argument;
+			if (argument.empty()) {
+				run += "<empty>";
+			}
 		}
 	},
 	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
@@ -2354,6 +2603,9 @@ int main(int argc, char *argv[]) {
 		run = "test_i";
 		for (auto& argument : arguments) {
 			run += " " + argument;
+			if (argument.empty()) {
+				run += "<empty>";
+			}
 		}
 	},
 	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
@@ -2443,6 +2695,7 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_execution6c);
 
 	RUN_TEST(test_execution7a);
+	RUN_TEST(test_execution7b);
 
 	RUN_TEST(test_completion8a);
 	RUN_TEST(test_completion8b);
@@ -2462,6 +2715,7 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_completion8p);
 	RUN_TEST(test_completion8q);
 	RUN_TEST(test_completion8r);
+	RUN_TEST(test_completion8s);
 
 	return UNITY_END();
 }

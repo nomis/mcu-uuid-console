@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+Added
+~~~~~
+
+* Support for empty arguments using quotes (``""`` or ``''``).
+
 0.2.0_ |--| 2019-08-27
 ----------------------
 

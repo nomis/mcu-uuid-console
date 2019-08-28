@@ -30,6 +30,7 @@ std::list<std::string> Shell::parse_line(const std::string &line) {
 	bool string_escape_double = false;
 	bool string_escape_single = false;
 	bool char_escape = false;
+	bool quoted_argument = false;
 
 	if (!line.empty()) {
 		items.emplace_back("");
@@ -47,8 +48,13 @@ std::list<std::string> Shell::parse_line(const std::string &line) {
 			} else if (char_escape) {
 				items.back().push_back(' ');
 				char_escape = false;
-			} else if (!items.back().empty()) {
-				items.emplace_back("");
+			} else {
+				// Begin a new argument if the previous
+				// one is not empty or it was quoted
+				if (quoted_argument || !items.back().empty()) {
+					items.emplace_back("");
+				}
+				quoted_argument = false;
 			}
 			break;
 
@@ -58,6 +64,7 @@ std::list<std::string> Shell::parse_line(const std::string &line) {
 				char_escape = false;
 			} else {
 				string_escape_double = !string_escape_double;
+				quoted_argument = true;
 			}
 			break;
 
@@ -67,6 +74,7 @@ std::list<std::string> Shell::parse_line(const std::string &line) {
 				char_escape = false;
 			} else {
 				string_escape_single = !string_escape_single;
+				quoted_argument = true;
 			}
 			break;
 
@@ -89,6 +97,11 @@ std::list<std::string> Shell::parse_line(const std::string &line) {
 		}
 	}
 
+	if (!items.empty() && items.back().empty() && !quoted_argument) {
+		// A trailing space is represented by a NUL character
+		items.back().push_back('\0');
+	}
+
 	return items;
 }
 
@@ -102,8 +115,18 @@ std::string Shell::format_line(const std::list<std::string> &items) {
 			line += ' ';
 		}
 
+		if (item.empty()) {
+			line += '\"';
+			line += '\"';
+			continue;
+		}
+
 		for (char c : item) {
 			switch (c) {
+			case '\0':
+				// A trailing space is represented by a NUL character
+				continue;
+
 			case ' ':
 			case '\"':
 			case '\'':
