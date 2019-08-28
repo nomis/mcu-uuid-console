@@ -1258,7 +1258,7 @@ public:
 	 * @return A list of strings, one per command line parameter.
 	 * @since 0.3.0
 	 */
-	static std::list<std::string> parse_line(const std::string &line);
+	static std::list<std::string> parse(const std::string &line);
 
 	/**
 	 * Format a command line from separate parameters using built-in
@@ -1273,7 +1273,7 @@ public:
 	 *         parsed.
 	 * @since 0.3.0
 	 */
-	static std::string format_line(const std::list<std::string> &items, size_t reserve = Shell::MAX_COMMAND_LINE_LENGTH);
+	static std::string format(const std::list<std::string> &items, size_t reserve = Shell::MAX_COMMAND_LINE_LENGTH);
 
 	/**
 	 * Identify arguments that indicate a trailing space.

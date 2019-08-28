@@ -25,7 +25,7 @@ namespace uuid {
 
 namespace console {
 
-std::list<std::string> CommandLine::parse_line(const std::string &line) {
+std::list<std::string> CommandLine::parse(const std::string &line) {
 	std::list<std::string> items;
 	bool string_escape_double = false;
 	bool string_escape_single = false;
@@ -105,7 +105,7 @@ std::list<std::string> CommandLine::parse_line(const std::string &line) {
 	return items;
 }
 
-std::string CommandLine::format_line(const std::list<std::string> &items, size_t reserve) {
+std::string CommandLine::format(const std::list<std::string> &items, size_t reserve) {
 	std::string line;
 
 	line.reserve(reserve);

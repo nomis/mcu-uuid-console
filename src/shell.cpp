@@ -374,7 +374,7 @@ size_t Shell::maximum_command_line_length() const {
 }
 
 void Shell::process_command() {
-	std::list<std::string> command_line = CommandLine::parse_line(line_buffer_);
+	std::list<std::string> command_line = CommandLine::parse(line_buffer_);
 
 	line_buffer_.clear();
 	println();
@@ -395,7 +395,7 @@ void Shell::process_command() {
 }
 
 void Shell::process_completion() {
-	std::list<std::string> command_line = CommandLine::parse_line(line_buffer_);
+	std::list<std::string> command_line = CommandLine::parse(line_buffer_);
 
 	if (!command_line.empty() && commands_) {
 		auto completion = commands_->complete_command(*this, command_line);
@@ -406,7 +406,7 @@ void Shell::process_completion() {
 			redisplay = true;
 
 			for (auto &help : completion.help) {
-				std::string help_line = CommandLine::format_line(help);
+				std::string help_line = CommandLine::format(help);
 
 				println(help_line);
 			}
@@ -419,7 +419,7 @@ void Shell::process_completion() {
 				redisplay = true;
 			}
 
-			line_buffer_ = CommandLine::format_line(completion.replacement, maximum_command_line_length());
+			line_buffer_ = CommandLine::format(completion.replacement, maximum_command_line_length());
 		}
 
 		if (redisplay) {
