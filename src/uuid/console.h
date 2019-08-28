@@ -1241,55 +1241,48 @@ private:
 	Stream &stream_; /*!< Stream used for the input/output of this shell. @since 0.1.0 */
 };
 
+namespace command_line {
+
 /**
- * Utility class to parse and format command lines.
+ * Parse a command line into separate parameters using built-in
+ * escaping rules.
  *
- * @since 0.3.0
+ * Trailing spaces are represented by a "\0" parameter value.
+ *
+ * @param[in] line Command line to parse.
+ * @return A list of strings, one per command line parameter.
+ * @since 0.4.0
  */
-class CommandLine {
-public:
-	/**
-	 * Parse a command line into separate parameters using built-in
-	 * escaping rules.
-	 *
-	 * Trailing spaces are represented by a "\0" parameter value.
-	 *
-	 * @param[in] line Command line to parse.
-	 * @return A list of strings, one per command line parameter.
-	 * @since 0.3.0
-	 */
-	static std::list<std::string> parse(const std::string &line);
+std::list<std::string> parse(const std::string &line);
 
-	/**
-	 * Format a command line from separate parameters using built-in
-	 * escaping rules.
-	 *
-	 * Trailing spaces are represented by a "\0" parameter value.
-	 *
-	 * @param[in] items Command line parameters.
-	 * @param[in] reserve String buffer size to preallocate.
-	 * @return A command line, with escaping of characters sufficient
-	 *         to reproduce the same command line parameters when
-	 *         parsed.
-	 * @since 0.3.0
-	 */
-	static std::string format(const std::list<std::string> &items, size_t reserve = Shell::MAX_COMMAND_LINE_LENGTH);
+/**
+ * Format a command line from separate parameters using built-in
+ * escaping rules.
+ *
+ * Trailing spaces are represented by a "\0" parameter value.
+ *
+ * @param[in] items Command line parameters.
+ * @param[in] reserve String buffer size to preallocate.
+ * @return A command line, with escaping of characters sufficient
+ *         to reproduce the same command line parameters when
+ *         parsed.
+ * @since 0.4.0
+ */
+std::string format(const std::list<std::string> &items, size_t reserve = Shell::MAX_COMMAND_LINE_LENGTH);
 
-	/**
-	 * Identify arguments that indicate a trailing space.
-	 *
-	 * Trailing spaces are represented by a "\0" value.
-	 *
-	 * @param[in] argument Argument to check.
-	 * @return True if this argument is a trailing space, otherwise
-	 *         false.
-	 * @since 0.3.0
-	 */
-	static bool is_trailing_space(const std::string &argument);
+/**
+ * Identify arguments that indicate a trailing space.
+ *
+ * Trailing spaces are represented by a "\0" value.
+ *
+ * @param[in] argument Argument to check.
+ * @return True if this argument is a trailing space, otherwise
+ *         false.
+ * @since 0.4.0
+ */
+bool is_trailing_space(const std::string &argument);
 
-private:
-	CommandLine() = delete;
-};
+} // namespace command_line
 
 } // namespace console
 

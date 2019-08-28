@@ -25,7 +25,9 @@ namespace uuid {
 
 namespace console {
 
-std::list<std::string> CommandLine::parse(const std::string &line) {
+namespace command_line {
+
+std::list<std::string> parse(const std::string &line) {
 	std::list<std::string> items;
 	bool string_escape_double = false;
 	bool string_escape_single = false;
@@ -105,7 +107,7 @@ std::list<std::string> CommandLine::parse(const std::string &line) {
 	return items;
 }
 
-std::string CommandLine::format(const std::list<std::string> &items, size_t reserve) {
+std::string format(const std::list<std::string> &items, size_t reserve) {
 	std::string line;
 
 	line.reserve(reserve);
@@ -142,10 +144,12 @@ std::string CommandLine::format(const std::list<std::string> &items, size_t rese
 	return line;
 }
 
-bool CommandLine::is_trailing_space(const std::string &argument) {
+bool is_trailing_space(const std::string &argument) {
 	// A trailing space is represented by a NUL character
 	return argument.size() == 1 && argument[0] == '\0';
 }
+
+} // namespace command_line
 
 } // namespace console
 

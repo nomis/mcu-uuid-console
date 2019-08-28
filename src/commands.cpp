@@ -43,6 +43,8 @@ namespace uuid {
 
 namespace console {
 
+using command_line::is_trailing_space;
+
 void Commands::add_command(const flash_string_vector &name, command_function function) {
 	add_command(0, 0, name, flash_string_vector{}, function, nullptr);
 }
@@ -87,7 +89,7 @@ Commands::Execution Commands::execute_command(Shell &shell, const std::list<std:
 	} else if (commands.exact.count(longest->first) == 1) {
 		auto command_line_end = command_line.cend();
 
-		if (CommandLine::is_trailing_space(command_line.back())) {
+		if (is_trailing_space(command_line.back())) {
 			// Ignore a trailing space
 			command_line_end--;
 		}
@@ -254,7 +256,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 
 			// Remove the last argument so that it can be auto-completed
 			std::string last_argument = result.replacement.back();
-			bool last_argument_empty = last_argument.empty() || CommandLine::is_trailing_space(last_argument);
+			bool last_argument_empty = last_argument.empty() || is_trailing_space(last_argument);
 			result.replacement.pop_back();
 			if (!arguments.empty()) {
 				arguments.pop_back();
@@ -403,7 +405,7 @@ Commands::Match Commands::find_command(Shell &shell, const std::list<std::string
 	auto context_commands = commands_.equal_range(shell.context());
 	auto command_line_end = command_line.cend();
 
-	if (!command_line.empty() && CommandLine::is_trailing_space(command_line.back())) {
+	if (!command_line.empty() && is_trailing_space(command_line.back())) {
 		// Ignore a trailing space
 		command_line_end--;
 	}

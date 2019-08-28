@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+Changed
+~~~~~~~
+
+* Move ``CommandLine`` functions to the ``command_line`` namespace.
+
 0.3.0_ |--| 2019-08-28
 ----------------------
 
