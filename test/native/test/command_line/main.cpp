@@ -27,21 +27,6 @@
 #include <uuid/console.h>
 
 using ::uuid::console::CommandLine;
-using ::uuid::console::Commands;
-using ::uuid::console::Shell;
-
-class DummyShell: public Shell {
-public:
-	DummyShell() : Shell(std::make_shared<Commands>(), 0, 0) {};
-	~DummyShell() override = default;
-
-protected:
-	bool available_char() override { return true; }
-	int read_one_char() override { return '\n'; };
-	int peek_one_char() override { return '\n'; };
-	size_t write(uint8_t data __attribute__((unused))) override { return 1; }
-	size_t write(const uint8_t *buffer __attribute__((unused)), size_t size) override { return size; }
-};
 
 namespace uuid {
 
@@ -51,8 +36,6 @@ uint64_t get_uptime_ms() {
 }
 
 } // namespace uuid
-
-static DummyShell shell;
 
 /**
  * No escape characters or characters needing to be escaped.
