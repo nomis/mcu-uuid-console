@@ -1286,6 +1286,9 @@ public:
 	 * @since 0.3.0
 	 */
 	static bool is_trailing_space(const std::string &argument);
+
+private:
+	CommandLine() = delete;
 };
 
 } // namespace console
