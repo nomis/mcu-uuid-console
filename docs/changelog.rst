@@ -8,6 +8,8 @@ Added
 ~~~~~
 
 * Support for empty arguments using quotes (``""`` or ``''``).
+* Move command line parsing/formatting to a ``CommandLine`` utility
+  class.
 
 0.2.0_ |--| 2019-08-27
 ----------------------

@@ -26,6 +26,7 @@
 
 #include <uuid/console.h>
 
+using ::uuid::console::CommandLine;
 using ::uuid::console::Commands;
 using ::uuid::console::Shell;
 
@@ -33,9 +34,6 @@ class DummyShell: public Shell {
 public:
 	DummyShell() : Shell(std::make_shared<Commands>(), 0, 0) {};
 	~DummyShell() override = default;
-
-	using Shell::parse_line;
-	using Shell::format_line;
 
 protected:
 	bool available_char() override { return true; }
@@ -60,7 +58,7 @@ static DummyShell shell;
  * No escape characters or characters needing to be escaped.
  */
 static void test_simple1() {
-	auto command_line = shell.parse_line("Hello World!");
+	auto command_line = CommandLine::parse_line("Hello World!");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -69,14 +67,14 @@ static void test_simple1() {
 		TEST_ASSERT_EQUAL_STRING("World!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello World!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello World!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Preceding spaces are ignored.
  */
 static void test_space1a() {
-	auto command_line = shell.parse_line(" Hello World!");
+	auto command_line = CommandLine::parse_line(" Hello World!");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -85,14 +83,14 @@ static void test_space1a() {
 		TEST_ASSERT_EQUAL_STRING("World!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello World!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello World!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Trailing spaces are considered another parameter.
  */
 static void test_space1b() {
-	auto command_line = shell.parse_line("Hello World! ");
+	auto command_line = CommandLine::parse_line("Hello World! ");
 
 	TEST_ASSERT_EQUAL_INT(3, command_line.size());
 	if (command_line.size() == 3) {
@@ -102,14 +100,14 @@ static void test_space1b() {
 		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello World! ", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello World! ", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Multiple preceding spaces are ignored.
  */
 static void test_space2a() {
-	auto command_line = shell.parse_line("  Hello World!");
+	auto command_line = CommandLine::parse_line("  Hello World!");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -118,14 +116,14 @@ static void test_space2a() {
 		TEST_ASSERT_EQUAL_STRING("World!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello World!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello World!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Multiple spaces are collapsed to one.
  */
 static void test_space2b() {
-	auto command_line = shell.parse_line("Hello World!  ");
+	auto command_line = CommandLine::parse_line("Hello World!  ");
 
 	TEST_ASSERT_EQUAL_INT(3, command_line.size());
 	if (command_line.size() == 3) {
@@ -135,14 +133,14 @@ static void test_space2b() {
 		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello World! ", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello World! ", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Multiple spaces are collapsed to one.
  */
 static void test_space2c() {
-	auto command_line = shell.parse_line("Hello  World!");
+	auto command_line = CommandLine::parse_line("Hello  World!");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -151,14 +149,14 @@ static void test_space2c() {
 		TEST_ASSERT_EQUAL_STRING("World!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello World!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello World!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Spaces can be escaped with a backslash.
  */
 static void test_backslash_escaped1() {
-	auto command_line = shell.parse_line("Hello Escaped\\ World!");
+	auto command_line = CommandLine::parse_line("Hello Escaped\\ World!");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -167,14 +165,14 @@ static void test_backslash_escaped1() {
 		TEST_ASSERT_EQUAL_STRING("Escaped World!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ World!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ World!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Double quotes can be escaped with a backslash.
  */
 static void test_backslash_escaped2() {
-	auto command_line = shell.parse_line("Hello Escaped\\\" World!");
+	auto command_line = CommandLine::parse_line("Hello Escaped\\\" World!");
 
 	TEST_ASSERT_EQUAL_INT(3, command_line.size());
 	if (command_line.size() == 3) {
@@ -184,14 +182,14 @@ static void test_backslash_escaped2() {
 		TEST_ASSERT_EQUAL_STRING("World!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\\" World!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\\" World!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Single quotes can be escaped with a backslash.
  */
 static void test_backslash_escaped3() {
-	auto command_line = shell.parse_line("Hello Escaped\\' World!");
+	auto command_line = CommandLine::parse_line("Hello Escaped\\' World!");
 
 	TEST_ASSERT_EQUAL_INT(3, command_line.size());
 	if (command_line.size() == 3) {
@@ -201,14 +199,14 @@ static void test_backslash_escaped3() {
 		TEST_ASSERT_EQUAL_STRING("World!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\' World!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\' World!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Trailing backslashes are ignored.
  */
 static void test_backslash_escaped4() {
-	auto command_line = shell.parse_line("Hello World!\\");
+	auto command_line = CommandLine::parse_line("Hello World!\\");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -217,14 +215,14 @@ static void test_backslash_escaped4() {
 		TEST_ASSERT_EQUAL_STRING("World!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello World!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello World!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Backslash escapes of characters other than space or quotes are interpreted literally.
  */
 static void test_backslash_escaped5() {
-	auto command_line = shell.parse_line("\\H\\e\\l\\l\\o\\ \\n\\e\\w\\l\\i\\n\\e\\ \\W\\o\\r\\l\\d\\!");
+	auto command_line = CommandLine::parse_line("\\H\\e\\l\\l\\o\\ \\n\\e\\w\\l\\i\\n\\e\\ \\W\\o\\r\\l\\d\\!");
 
 	TEST_ASSERT_EQUAL_INT(1, command_line.size());
 	if (command_line.size() == 1) {
@@ -232,14 +230,14 @@ static void test_backslash_escaped5() {
 		TEST_ASSERT_EQUAL_STRING("\\H\\e\\l\\l\\o \\n\\e\\w\\l\\i\\n\\e \\W\\o\\r\\l\\d\\!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("\\\\H\\\\e\\\\l\\\\l\\\\o\\ \\\\n\\\\e\\\\w\\\\l\\\\i\\\\n\\\\e\\ \\\\W\\\\o\\\\r\\\\l\\\\d\\\\!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("\\\\H\\\\e\\\\l\\\\l\\\\o\\ \\\\n\\\\e\\\\w\\\\l\\\\i\\\\n\\\\e\\ \\\\W\\\\o\\\\r\\\\l\\\\d\\\\!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Spaces can be escaped by double quotes.
  */
 static void test_double_quote_escaped1() {
-	auto command_line = shell.parse_line("Hello \"Escaped World!\"");
+	auto command_line = CommandLine::parse_line("Hello \"Escaped World!\"");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -248,14 +246,14 @@ static void test_double_quote_escaped1() {
 		TEST_ASSERT_EQUAL_STRING("Escaped World!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ World!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ World!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Single quotes can be escaped by double quotes.
  */
 static void test_double_quote_escaped2() {
-	auto command_line = shell.parse_line("Hello \"Escaped 'World'!\"");
+	auto command_line = CommandLine::parse_line("Hello \"Escaped 'World'!\"");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -264,14 +262,14 @@ static void test_double_quote_escaped2() {
 		TEST_ASSERT_EQUAL_STRING("Escaped 'World'!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\'World\\'!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\'World\\'!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Double quote escapes are implicitly ended at the end of the command line.
  */
 static void test_double_quote_escaped3a() {
-	auto command_line = shell.parse_line("Hello \"Escaped 'World'!");
+	auto command_line = CommandLine::parse_line("Hello \"Escaped 'World'!");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -280,14 +278,14 @@ static void test_double_quote_escaped3a() {
 		TEST_ASSERT_EQUAL_STRING("Escaped 'World'!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\'World\\'!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\'World\\'!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Double quote escapes are implicitly ended at the end of the command line, even if there are trailing spaces.
  */
 static void test_double_quote_escaped3b() {
-	auto command_line = shell.parse_line("Hello \"Escaped 'World'!     ");
+	auto command_line = CommandLine::parse_line("Hello \"Escaped 'World'!     ");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -296,14 +294,14 @@ static void test_double_quote_escaped3b() {
 		TEST_ASSERT_EQUAL_STRING("Escaped 'World'!     ", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\'World\\'!\\ \\ \\ \\ \\ ", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\'World\\'!\\ \\ \\ \\ \\ ", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Backslash escapes of characters other than space or quotes are interpreted literally, even inside double quotes.
  */
 static void test_double_quote_escaped4() {
-	auto command_line = shell.parse_line("Hello \"\\E\\s\\c\\a\\p\\e\\d\\ \\'\\W\\o\\r\\l\\d\\'\\!");
+	auto command_line = CommandLine::parse_line("Hello \"\\E\\s\\c\\a\\p\\e\\d\\ \\'\\W\\o\\r\\l\\d\\'\\!");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -312,14 +310,14 @@ static void test_double_quote_escaped4() {
 		TEST_ASSERT_EQUAL_STRING("\\E\\s\\c\\a\\p\\e\\d\\ '\\W\\o\\r\\l\\d'\\!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello \\\\E\\\\s\\\\c\\\\a\\\\p\\\\e\\\\d\\\\\\ \\'\\\\W\\\\o\\\\r\\\\l\\\\d\\'\\\\!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello \\\\E\\\\s\\\\c\\\\a\\\\p\\\\e\\\\d\\\\\\ \\'\\\\W\\\\o\\\\r\\\\l\\\\d\\'\\\\!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Double quotes can be escaped with backslashes inside double quotes.
  */
 static void test_double_quote_escaped5() {
-	auto command_line = shell.parse_line("Hello \"Escaped \\\"World\\\"!\"");
+	auto command_line = CommandLine::parse_line("Hello \"Escaped \\\"World\\\"!\"");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -328,14 +326,14 @@ static void test_double_quote_escaped5() {
 		TEST_ASSERT_EQUAL_STRING("Escaped \"World\"!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\\"World\\\"!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\\"World\\\"!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Spaces can be escaped by single quotes.
  */
 static void test_single_quote_escaped1() {
-	auto command_line = shell.parse_line("Hello 'Escaped World!'");
+	auto command_line = CommandLine::parse_line("Hello 'Escaped World!'");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -344,14 +342,14 @@ static void test_single_quote_escaped1() {
 		TEST_ASSERT_EQUAL_STRING("Escaped World!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ World!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ World!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Double quotes can be escaped by single quotes.
  */
 static void test_single_quote_escaped2() {
-	auto command_line = shell.parse_line("Hello 'Escaped \"World\"!'");
+	auto command_line = CommandLine::parse_line("Hello 'Escaped \"World\"!'");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -360,14 +358,14 @@ static void test_single_quote_escaped2() {
 		TEST_ASSERT_EQUAL_STRING("Escaped \"World\"!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\\"World\\\"!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\\"World\\\"!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Single quote escapes are implicitly ended at the end of the command line.
  */
 static void test_single_quote_escaped3a() {
-	auto command_line = shell.parse_line("Hello 'Escaped \"World\"!");
+	auto command_line = CommandLine::parse_line("Hello 'Escaped \"World\"!");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -376,14 +374,14 @@ static void test_single_quote_escaped3a() {
 		TEST_ASSERT_EQUAL_STRING("Escaped \"World\"!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\\"World\\\"!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\\"World\\\"!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Single quote escapes are implicitly ended at the end of the command line, even if there are trailing spaces.
  */
 static void test_single_quote_escaped3b() {
-	auto command_line = shell.parse_line("Hello 'Escaped \"World\"!     ");
+	auto command_line = CommandLine::parse_line("Hello 'Escaped \"World\"!     ");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -392,14 +390,14 @@ static void test_single_quote_escaped3b() {
 		TEST_ASSERT_EQUAL_STRING("Escaped \"World\"!     ", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\\"World\\\"!\\ \\ \\ \\ \\ ", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\\"World\\\"!\\ \\ \\ \\ \\ ", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Backslash escapes of characters other than space or quotes are interpreted literally, even inside single quotes.
  */
 static void test_single_quote_escaped4() {
-	auto command_line = shell.parse_line("Hello '\\E\\s\\c\\a\\p\\e\\d\\ \\\"\\W\\o\\r\\l\\d\\\"\\!");
+	auto command_line = CommandLine::parse_line("Hello '\\E\\s\\c\\a\\p\\e\\d\\ \\\"\\W\\o\\r\\l\\d\\\"\\!");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -408,14 +406,14 @@ static void test_single_quote_escaped4() {
 		TEST_ASSERT_EQUAL_STRING("\\E\\s\\c\\a\\p\\e\\d\\ \"\\W\\o\\r\\l\\d\"\\!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello \\\\E\\\\s\\\\c\\\\a\\\\p\\\\e\\\\d\\\\\\ \\\"\\\\W\\\\o\\\\r\\\\l\\\\d\\\"\\\\!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello \\\\E\\\\s\\\\c\\\\a\\\\p\\\\e\\\\d\\\\\\ \\\"\\\\W\\\\o\\\\r\\\\l\\\\d\\\"\\\\!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Single quotes can be escaped with backslashes inside single quotes.
  */
 static void test_single_quote_escaped5() {
-	auto command_line = shell.parse_line("Hello 'Escaped \\'World\\'!'");
+	auto command_line = CommandLine::parse_line("Hello 'Escaped \\'World\\'!'");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -424,14 +422,14 @@ static void test_single_quote_escaped5() {
 		TEST_ASSERT_EQUAL_STRING("Escaped 'World'!", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\'World\\'!", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("Hello Escaped\\ \\'World\\'!", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Empty arguments can be created using double quotes.
  */
 static void test_empty_args_double_quotes1() {
-	auto command_line = shell.parse_line("\"\"");
+	auto command_line = CommandLine::parse_line("\"\"");
 
 	TEST_ASSERT_EQUAL_INT(1, command_line.size());
 	if (command_line.size() == 1) {
@@ -439,14 +437,14 @@ static void test_empty_args_double_quotes1() {
 		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("\"\"", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Empty arguments can be created using double quotes.
  */
 static void test_empty_args_double_quotes2() {
-	auto command_line = shell.parse_line("\"\" \"\"");
+	auto command_line = CommandLine::parse_line("\"\" \"\"");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -455,14 +453,14 @@ static void test_empty_args_double_quotes2() {
 		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("\"\" \"\"", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\" \"\"", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Empty arguments can be created using double quotes.
  */
 static void test_empty_args_double_quotes3() {
-	auto command_line = shell.parse_line("\"\" \"\" \"\"");
+	auto command_line = CommandLine::parse_line("\"\" \"\" \"\"");
 
 	TEST_ASSERT_EQUAL_INT(3, command_line.size());
 	if (command_line.size() == 3) {
@@ -472,14 +470,14 @@ static void test_empty_args_double_quotes3() {
 		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\"", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\"", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Empty arguments can be created using double quotes, extra spaces are ignored.
  */
 static void test_empty_args_double_quotes4() {
-	auto command_line = shell.parse_line(" \"\" \"\" \"\" ");
+	auto command_line = CommandLine::parse_line(" \"\" \"\" \"\" ");
 
 	TEST_ASSERT_EQUAL_INT(4, command_line.size());
 	if (command_line.size() == 4) {
@@ -490,14 +488,14 @@ static void test_empty_args_double_quotes4() {
 		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str()); // Trailing space
 	}
 
-	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\" ", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\" ", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Empty arguments can be created using double quotes, extra spaces are ignored.
  */
 static void test_empty_args_double_quotes5() {
-	auto command_line = shell.parse_line("  \"\"  \"\"  \"\"  ");
+	auto command_line = CommandLine::parse_line("  \"\"  \"\"  \"\"  ");
 
 	TEST_ASSERT_EQUAL_INT(4, command_line.size());
 	if (command_line.size() == 4) {
@@ -508,14 +506,14 @@ static void test_empty_args_double_quotes5() {
 		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str()); // Trailing space
 	}
 
-	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\" ", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\" ", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Empty arguments can be created using double quotes.
  */
 static void test_empty_args_double_quotes6() {
-	auto command_line = shell.parse_line("command \"\" test \"\"");
+	auto command_line = CommandLine::parse_line("command \"\" test \"\"");
 
 	TEST_ASSERT_EQUAL_INT(4, command_line.size());
 	if (command_line.size() == 4) {
@@ -526,14 +524,14 @@ static void test_empty_args_double_quotes6() {
 		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("command \"\" test \"\"", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("command \"\" test \"\"", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Empty arguments can be created using single quotes.
  */
 static void test_empty_args_single_quotes1() {
-	auto command_line = shell.parse_line("''");
+	auto command_line = CommandLine::parse_line("''");
 
 	TEST_ASSERT_EQUAL_INT(1, command_line.size());
 	if (command_line.size() == 1) {
@@ -541,14 +539,14 @@ static void test_empty_args_single_quotes1() {
 		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("\"\"", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Empty arguments can be created using single quotes.
  */
 static void test_empty_args_single_quotes2() {
-	auto command_line = shell.parse_line("'' ''");
+	auto command_line = CommandLine::parse_line("'' ''");
 
 	TEST_ASSERT_EQUAL_INT(2, command_line.size());
 	if (command_line.size() == 2) {
@@ -557,14 +555,14 @@ static void test_empty_args_single_quotes2() {
 		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("\"\" \"\"", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\" \"\"", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Empty arguments can be created using single quotes.
  */
 static void test_empty_args_single_quotes3() {
-	auto command_line = shell.parse_line("'' '' ''");
+	auto command_line = CommandLine::parse_line("'' '' ''");
 
 	TEST_ASSERT_EQUAL_INT(3, command_line.size());
 	if (command_line.size() == 3) {
@@ -574,14 +572,14 @@ static void test_empty_args_single_quotes3() {
 		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\"", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\"", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Empty arguments can be created using single quotes, extra spaces are ignored.
  */
 static void test_empty_args_single_quotes4() {
-	auto command_line = shell.parse_line(" '' '' '' ");
+	auto command_line = CommandLine::parse_line(" '' '' '' ");
 
 	TEST_ASSERT_EQUAL_INT(4, command_line.size());
 	if (command_line.size() == 4) {
@@ -592,14 +590,14 @@ static void test_empty_args_single_quotes4() {
 		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str()); // Trailing space
 	}
 
-	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\" ", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\" ", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Empty arguments can be created using single quotes, extra spaces are ignored.
  */
 static void test_empty_args_single_quotes5() {
-	auto command_line = shell.parse_line("  ''   ''   ''  ");
+	auto command_line = CommandLine::parse_line("  ''   ''   ''  ");
 
 	TEST_ASSERT_EQUAL_INT(4, command_line.size());
 	if (command_line.size() == 4) {
@@ -610,14 +608,14 @@ static void test_empty_args_single_quotes5() {
 		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str()); // Trailing space
 	}
 
-	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\" ", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\" \"\" \"\" ", CommandLine::format_line(command_line).c_str());
 }
 
 /**
  * Empty arguments can be created using single quotes.
  */
 static void test_empty_args_single_quotes6() {
-	auto command_line = shell.parse_line("command '' test ''");
+	auto command_line = CommandLine::parse_line("command '' test ''");
 
 	TEST_ASSERT_EQUAL_INT(4, command_line.size());
 	if (command_line.size() == 4) {
@@ -628,7 +626,7 @@ static void test_empty_args_single_quotes6() {
 		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
 	}
 
-	TEST_ASSERT_EQUAL_STRING("command \"\" test \"\"", shell.format_line(command_line).c_str());
+	TEST_ASSERT_EQUAL_STRING("command \"\" test \"\"", CommandLine::format_line(command_line).c_str());
 }
 
 int main(int argc, char *argv[]) {

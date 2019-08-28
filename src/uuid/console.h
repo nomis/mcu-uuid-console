@@ -222,9 +222,12 @@ public:
 	void add_command(unsigned int context, unsigned int flags,
 			const flash_string_vector &name, const flash_string_vector &arguments,
 			command_function function, argument_completion_function arg_function);
+
 	/**
 	 * Execute a command for a Shell if it exists in the specified
 	 * context and with the specified flags.
+	 *
+	 * Trailing spaces are represented by a "\0" parameter value.
 	 *
 	 * @param[in] shell Shell that is executing the command.
 	 * @param[in] command_line Command line as a space-delimited
@@ -234,9 +237,12 @@ public:
 	 * @since 0.1.0
 	 */
 	Execution execute_command(Shell &shell, const std::list<std::string> &command_line);
+
 	/**
 	 * Complete a partial command for a Shell if it exists in the
 	 * specified context and with the specified flags.
+	 *
+	 * Trailing spaces are represented by a "\0" parameter value.
 	 *
 	 * @param[in] shell Shell that is completing the command.
 	 * @param[in] command_line Command line as a space-delimited list
@@ -345,16 +351,6 @@ private:
 	 * @since 0.1.0
 	 */
 	std::string find_longest_common_prefix(const std::list<std::string> &arguments);
-
-	/**
-	 * Identify arguments that indicate a trailing space.
-	 *
-	 * @param[in] argument Argument to check.
-	 * @return True if this argument is a trailing space, otherwise
-	 *         false.
-	 * @since 0.3.0
-	 */
-	bool is_trailing_space(const std::string &argument);
 
 	std::multimap<unsigned int,Command> commands_; /*!< Commands stored in this container, separated by context. @since 0.1.0 */
 };
@@ -896,31 +892,6 @@ protected:
 	 */
 	void invoke_command(const std::string &line);
 
-	/**
-	 * Parse a command line into separate parameters using built-in
-	 * escaping rules.
-	 *
-	 * Trailing spaces are represented by a "\0" parameter value.
-	 *
-	 * @param[in] line Command line to parse.
-	 * @return A list of strings, one per command line parameter.
-	 * @since 0.1.0
-	 */
-	std::list<std::string> parse_line(const std::string &line);
-	/**
-	 * Format a command line from separate parameters using built-in
-	 * escaping rules.
-	 *
-	 * Trailing spaces are represented by a "\0" parameter value.
-	 *
-	 * @param[in] items Command line parameters.
-	 * @return A command line, with escaping of characters sufficient
-	 *         to reproduce the same command line parameters when
-	 *         parsed.
-	 * @since 0.1.0
-	 */
-	std::string format_line(const std::list<std::string> &items);
-
 private:
 	/**
 	 * Current mode of the shell.
@@ -1268,6 +1239,53 @@ private:
 	int peek_one_char() override;
 
 	Stream &stream_; /*!< Stream used for the input/output of this shell. @since 0.1.0 */
+};
+
+/**
+ * Utility class to parse and format command lines.
+ *
+ * @since 0.3.0
+ */
+class CommandLine {
+public:
+	/**
+	 * Parse a command line into separate parameters using built-in
+	 * escaping rules.
+	 *
+	 * Trailing spaces are represented by a "\0" parameter value.
+	 *
+	 * @param[in] line Command line to parse.
+	 * @return A list of strings, one per command line parameter.
+	 * @since 0.3.0
+	 */
+	static std::list<std::string> parse_line(const std::string &line);
+
+	/**
+	 * Format a command line from separate parameters using built-in
+	 * escaping rules.
+	 *
+	 * Trailing spaces are represented by a "\0" parameter value.
+	 *
+	 * @param[in] items Command line parameters.
+	 * @param[in] reserve String buffer size to preallocate.
+	 * @return A command line, with escaping of characters sufficient
+	 *         to reproduce the same command line parameters when
+	 *         parsed.
+	 * @since 0.3.0
+	 */
+	static std::string format_line(const std::list<std::string> &items, size_t reserve = Shell::MAX_COMMAND_LINE_LENGTH);
+
+	/**
+	 * Identify arguments that indicate a trailing space.
+	 *
+	 * Trailing spaces are represented by a "\0" value.
+	 *
+	 * @param[in] argument Argument to check.
+	 * @return True if this argument is a trailing space, otherwise
+	 *         false.
+	 * @since 0.3.0
+	 */
+	static bool is_trailing_space(const std::string &argument);
 };
 
 } // namespace console

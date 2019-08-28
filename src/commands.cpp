@@ -87,7 +87,7 @@ Commands::Execution Commands::execute_command(Shell &shell, const std::list<std:
 	} else if (commands.exact.count(longest->first) == 1) {
 		auto command_line_end = command_line.cend();
 
-		if (is_trailing_space(command_line.back())) {
+		if (CommandLine::is_trailing_space(command_line.back())) {
 			// Ignore a trailing space
 			command_line_end--;
 		}
@@ -254,7 +254,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 
 			// Remove the last argument so that it can be auto-completed
 			std::string last_argument = result.replacement.back();
-			bool last_argument_empty = last_argument.empty() || is_trailing_space(last_argument);
+			bool last_argument_empty = last_argument.empty() || CommandLine::is_trailing_space(last_argument);
 			result.replacement.pop_back();
 			if (!arguments.empty()) {
 				arguments.pop_back();
@@ -403,7 +403,7 @@ Commands::Match Commands::find_command(Shell &shell, const std::list<std::string
 	auto context_commands = commands_.equal_range(shell.context());
 	auto command_line_end = command_line.cend();
 
-	if (!command_line.empty() && is_trailing_space(command_line.back())) {
+	if (!command_line.empty() && CommandLine::is_trailing_space(command_line.back())) {
 		// Ignore a trailing space
 		command_line_end--;
 	}
@@ -454,11 +454,6 @@ Commands::Match Commands::find_command(Shell &shell, const std::list<std::string
 	}
 
 	return commands;
-}
-
-bool Commands::is_trailing_space(const std::string &argument) {
-	// A trailing space is represented by a NUL character
-	return !argument.empty() && argument[0] == '\0';
 }
 
 Commands::Command::Command(unsigned int flags,

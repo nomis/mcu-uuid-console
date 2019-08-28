@@ -25,7 +25,7 @@ namespace uuid {
 
 namespace console {
 
-std::list<std::string> Shell::parse_line(const std::string &line) {
+std::list<std::string> CommandLine::parse_line(const std::string &line) {
 	std::list<std::string> items;
 	bool string_escape_double = false;
 	bool string_escape_single = false;
@@ -105,10 +105,10 @@ std::list<std::string> Shell::parse_line(const std::string &line) {
 	return items;
 }
 
-std::string Shell::format_line(const std::list<std::string> &items) {
+std::string CommandLine::format_line(const std::list<std::string> &items, size_t reserve) {
 	std::string line;
 
-	line.reserve(maximum_command_line_length());
+	line.reserve(reserve);
 
 	for (auto &item : items) {
 		if (!line.empty()) {
@@ -121,12 +121,12 @@ std::string Shell::format_line(const std::list<std::string> &items) {
 			continue;
 		}
 
+		if (is_trailing_space(item)) {
+			continue;
+		}
+
 		for (char c : item) {
 			switch (c) {
-			case '\0':
-				// A trailing space is represented by a NUL character
-				continue;
-
 			case ' ':
 			case '\"':
 			case '\'':
@@ -140,6 +140,11 @@ std::string Shell::format_line(const std::list<std::string> &items) {
 	}
 
 	return line;
+}
+
+bool CommandLine::is_trailing_space(const std::string &argument) {
+	// A trailing space is represented by a NUL character
+	return argument.size() == 1 && argument[0] == '\0';
 }
 
 } // namespace console
