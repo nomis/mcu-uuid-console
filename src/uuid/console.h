@@ -1241,6 +1241,9 @@ private:
 	Stream &stream_; /*!< Stream used for the input/output of this shell. @since 0.1.0 */
 };
 
+/**
+ * Utility functions to parse and format command lines.
+ */
 namespace command_line {
 
 /**
