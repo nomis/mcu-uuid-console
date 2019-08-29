@@ -386,10 +386,8 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 	}
 
 	if (add_trailing_space) {
-		if (!result.replacement.back().empty()) {
-			// A trailing space is represented by a NUL character
-			result.replacement.emplace_back(1, '\0');
-		}
+		// A trailing space is represented by a NUL character
+		result.replacement.emplace_back(1, '\0');
 	}
 
 	// Don't try to shorten the command lines or offer an identical replacement
