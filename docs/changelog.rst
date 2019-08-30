@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+Added
+~~~~~
+
+* Support for printing all currently available commands.
+
 Changed
 ~~~~~~~
 

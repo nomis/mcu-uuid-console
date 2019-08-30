@@ -107,6 +107,12 @@ void setup() {
 		}
 	);
 
+	commands->add_command(flash_string_vector{F("help")},
+		[] (Shell &shell, const std::vector<std::string> &arguments __attribute__((unused))) {
+			shell.print_all_available_commands();
+		}
+	);
+
 	Serial.begin(115200);
 
 	std::shared_ptr<Shell> shell;

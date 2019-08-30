@@ -119,6 +119,13 @@ size_t Shell::vprintf(const __FlashStringHelper *format, va_list ap) {
 	return print_len;
 }
 
+void Shell::print_all_available_commands() {
+	commands_->for_each_available_command(*this,
+			[this] (std::vector<std::string> &name, std::vector<std::string> &arguments) {
+		println(CommandLine{name, arguments}.to_string(maximum_command_line_length()));
+	});
+}
+
 void Shell::erase_current_line() {
 	print(F("\033[0G\033[K"));
 }

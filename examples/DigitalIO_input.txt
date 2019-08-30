@@ -1,3 +1,4 @@
+help
 digitalRead 2
 digitalRead 3
 pinMode 4 OUTPUT

@@ -104,6 +104,12 @@ CommandLine::CommandLine(const std::string &line) {
 	}
 }
 
+CommandLine::CommandLine(std::initializer_list<const std::vector<std::string>> arguments) {
+	for (auto &argument : arguments) {
+		parameters_.insert(parameters_.end(), argument.begin(), argument.end());
+	}
+}
+
 std::string CommandLine::to_string(size_t reserve) {
 	std::string line;
 

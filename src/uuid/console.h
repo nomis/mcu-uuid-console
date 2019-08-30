@@ -437,6 +437,13 @@ public:
 	 */
 	size_t printfln(const __FlashStringHelper *format, ...) /* __attribute__((format(printf, 2, 3))) */;
 
+	/**
+	 * Output a list of all available commands with their arguments.
+	 *
+	 * @since 0.4.0
+	 */
+	void print_all_available_commands();
+
 protected:
 	/**
 	 * Default constructor used by intermediate derived classes for
@@ -873,6 +880,15 @@ public:
 	 */
 	explicit CommandLine(const std::string &line);
 
+	/**
+	 * Create a command line from one or more vectors of parameters.
+	 *
+	 * @param[in] arguments Vectors of parameters to add to the command
+	 *                      line.
+	 * @since 0.4.0
+	 */
+	CommandLine(std::initializer_list<const std::vector<std::string>> arguments);
+
 	~CommandLine() = default;
 
 	CommandLine(CommandLine&&) = default;
@@ -1011,6 +1027,16 @@ public:
 	using argument_completion_function = std::function<const std::list<std::string>(Shell &shell, const std::vector<std::string> &arguments)>;
 
 	/**
+	 * Function to apply an operation to a command.
+	 *
+	 * @param[in] name Name of the command as a std::vector of strings.
+	 * @param[in] arguments Help text for arguments that the command
+	 *                      accepts as a std::vector of strings.
+	 * @since 0.4.0
+	 */
+	using apply_function = std::function<void(std::vector<std::string> &name, std::vector<std::string> &arguments)>;
+
+	/**
 	 * Construct a new container of commands for use by a Shell.
 	 *
 	 * This should normally be stored in a std::shared_ptr and reused.
@@ -1132,10 +1158,8 @@ public:
 			command_function function, argument_completion_function arg_function);
 
 	/**
-	 * Execute a command for a Shell if it exists in the specified
-	 * context and with the specified flags.
-	 *
-	 * Trailing spaces are represented by a "\0" parameter value.
+	 * Execute a command for a Shell if it exists in the current
+	 * context and with the current flags.
 	 *
 	 * @param[in] shell Shell that is executing the command.
 	 * @param[in] command_line Command line parameters.
@@ -1147,9 +1171,7 @@ public:
 
 	/**
 	 * Complete a partial command for a Shell if it exists in the
-	 * specified context and with the specified flags.
-	 *
-	 * Trailing spaces are represented by a "\0" parameter value.
+	 * current context and with the current flags.
 	 *
 	 * @param[in] shell Shell that is completing the command.
 	 * @param[in] command_line Command line parameters.
@@ -1158,6 +1180,16 @@ public:
 	 * @since 0.1.0
 	 */
 	Completion complete_command(Shell &shell, const CommandLine &command_line);
+
+	/**
+	 * Applies the given function object f to all commands in the
+	 * current context and with the current flags.
+	 *
+	 * @param[in] shell Shell that is accessing commands.
+	 * @param[in] f Function to apply to each command.
+	 * @since 0.4.0
+	 */
+	void for_each_available_command(Shell &shell, apply_function f) const;
 
 private:
 	/**

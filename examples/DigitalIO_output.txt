@@ -1,3 +1,8 @@
+$ help
+pinMode <pin> <mode>
+digitalRead <pin>
+digitalWrite <pin> <value>
+help
 $ digitalRead 2
 Read value from pin 2: LOW
 $ digitalRead 3

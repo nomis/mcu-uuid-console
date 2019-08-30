@@ -443,6 +443,29 @@ Commands::Match Commands::find_command(Shell &shell, const CommandLine &command_
 	return commands;
 }
 
+void Commands::for_each_available_command(Shell &shell, apply_function f) const {
+	auto commands = commands_.equal_range(shell.context());
+
+	for (auto command_it = commands.first; command_it != commands.second; command_it++) {
+		if (shell.has_flags(command_it->second.flags_)) {
+			std::vector<std::string> name;
+			std::vector<std::string> arguments;
+
+			name.reserve(command_it->second.name_.size());
+			for (auto flash_name : command_it->second.name_) {
+				name.push_back(std::move(read_flash_string(flash_name)));
+			}
+
+			arguments.reserve(command_it->second.arguments_.size());
+			for (auto flash_argument : command_it->second.arguments_) {
+				arguments.push_back(std::move(read_flash_string(flash_argument)));
+			}
+
+			f(name, arguments);
+		}
+	}
+}
+
 Commands::Command::Command(unsigned int flags,
 		const flash_string_vector name, const flash_string_vector arguments,
 		command_function function, argument_completion_function arg_function)
