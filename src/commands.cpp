@@ -127,7 +127,7 @@ bool Commands::find_longest_common_prefix(const std::multimap<size_t,const Comma
 
 		auto name_it = shortest_first.begin();
 		for (size_t i = 0; i < component_prefix; i++) {
-			longest_name.emplace_back(read_flash_string(*name_it));
+			longest_name.push_back(std::move(read_flash_string(*name_it)));
 			name_it++;
 		}
 	}
@@ -155,7 +155,7 @@ bool Commands::find_longest_common_prefix(const std::multimap<size_t,const Comma
 		}
 
 		if (chars_prefix > 0) {
-			longest_name.emplace_back(read_flash_string(shortest_first).substr(0, chars_prefix));
+			longest_name.push_back(std::move(read_flash_string(shortest_first).substr(0, chars_prefix)));
 			return false;
 		}
 	}
@@ -233,7 +233,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 			}
 		} else {
 			for (auto &name : matching_command->name_) {
-				result.replacement->emplace_back(read_flash_string(name));
+				result.replacement->push_back(std::move(read_flash_string(name)));
 			}
 		}
 
@@ -248,7 +248,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 
 			if (!command_line.trailing_space) {
 				// Remove the last argument so that it can be auto-completed
-				last_argument = result.replacement->back();
+				last_argument = std::move(result.replacement->back());
 				result.replacement->pop_back();
 				if (!arguments.empty()) {
 					arguments.pop_back();
@@ -294,7 +294,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 
 			// Put the last argument back
 			if (!command_line.trailing_space) {
-				result.replacement->emplace_back(last_argument);
+				result.replacement->push_back(std::move(last_argument));
 			}
 
 			CommandLine remaining_help;
@@ -304,13 +304,13 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 			}
 			if (current_args_count < matching_command->maximum_arguments()) {
 				for (auto it = std::next(matching_command->arguments_.cbegin(), current_args_count); it != matching_command->arguments_.cend(); it++) {
-					remaining_help->emplace_back(read_flash_string(*it));
+					remaining_help->push_back(std::move(read_flash_string(*it)));
 				}
 			}
 
 			if (potential_arguments.empty()) {
 				if (!remaining_help->empty()) {
-					result.help.emplace_back(std::move(remaining_help));
+					result.help.push_back(std::move(remaining_help));
 				}
 			} else {
 				for (auto potential_argument : potential_arguments) {
@@ -321,7 +321,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 						help->insert(help->end(), remaining_help->begin(), remaining_help->end());
 					}
 
-					result.help.emplace_back(std::move(help));
+					result.help.push_back(std::move(help));
 				}
 			}
 		} else if (result.replacement->size() < command_name_size + matching_command->maximum_arguments()) {
@@ -362,10 +362,10 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 					continue;
 				}
 
-				help->emplace_back(read_flash_string(argument));
+				help->push_back(std::move(read_flash_string(argument)));
 			}
 
-			result.help.emplace_back(std::move(help));
+			result.help.push_back(std::move(help));
 		}
 	}
 
@@ -375,7 +375,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 
 		if (commands.exact.count(longest->first) == 1) {
 			for (auto &name : longest->second->name_) {
-				result.replacement->emplace_back(read_flash_string(name));
+				result.replacement->push_back(std::move(read_flash_string(name)));
 			}
 
 			// Add a space because there are sub-commands for a command that has matched exactly
