@@ -10,6 +10,11 @@ Changed
 * Move trailing space handling into instances of the ``CommandLine``
   class.
 
+Fixed
+~~~~~
+
+* Support tab completion of empty arguments.
+
 0.3.0_ |--| 2019-08-28
 ----------------------
 

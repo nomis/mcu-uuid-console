@@ -584,6 +584,23 @@ static void test_empty_args_double_quotes6() {
 }
 
 /**
+ * Empty arguments can be created using a double quote at the end of the line.
+ */
+static void test_empty_args_double_quotes7() {
+	CommandLine command_line("command \"");
+
+	TEST_ASSERT_EQUAL_INT(2, command_line->size());
+	if (command_line->size() == 2) {
+		auto it = command_line->begin();
+		TEST_ASSERT_EQUAL_STRING("command", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+	}
+	TEST_ASSERT_FALSE(command_line.trailing_space);
+
+	TEST_ASSERT_EQUAL_STRING("command \"\"", command_line.to_string().c_str());
+}
+
+/**
  * Empty arguments can be created using single quotes.
  */
 static void test_empty_args_single_quotes1() {
@@ -689,6 +706,23 @@ static void test_empty_args_single_quotes6() {
 	TEST_ASSERT_EQUAL_STRING("command \"\" test \"\"", command_line.to_string().c_str());
 }
 
+/**
+ * Empty arguments can be created using a single quote at the end of the line.
+ */
+static void test_empty_args_single_quotes7() {
+	CommandLine command_line("command '");
+
+	TEST_ASSERT_EQUAL_INT(2, command_line->size());
+	if (command_line->size() == 2) {
+		auto it = command_line->begin();
+		TEST_ASSERT_EQUAL_STRING("command", (*it++).c_str());
+		TEST_ASSERT_EQUAL_STRING("", (*it++).c_str());
+	}
+	TEST_ASSERT_FALSE(command_line.trailing_space);
+
+	TEST_ASSERT_EQUAL_STRING("command \"\"", command_line.to_string().c_str());
+}
+
 int main(int argc, char *argv[]) {
 	UNITY_BEGIN();
 	RUN_TEST(test_empty);
@@ -729,6 +763,7 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_empty_args_double_quotes4);
 	RUN_TEST(test_empty_args_double_quotes5);
 	RUN_TEST(test_empty_args_double_quotes6);
+	RUN_TEST(test_empty_args_double_quotes7);
 
 	RUN_TEST(test_empty_args_single_quotes1);
 	RUN_TEST(test_empty_args_single_quotes2);
@@ -736,6 +771,7 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_empty_args_single_quotes4);
 	RUN_TEST(test_empty_args_single_quotes5);
 	RUN_TEST(test_empty_args_single_quotes6);
+	RUN_TEST(test_empty_args_single_quotes7);
 
 	return UNITY_END();
 }

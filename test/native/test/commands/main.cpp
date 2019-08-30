@@ -65,7 +65,7 @@ static void test_completion0() {
 	auto completion = commands.complete_command(shell, CommandLine(""));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(22, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(25, completion.help.size());
 }
 
 /**
@@ -2405,13 +2405,14 @@ static void test_completion8s() {
 		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", (*it++).to_string().c_str());
 	}
 
+	// An empty string is a prefix of the known argument "test"
 	completion = commands.complete_command(shell, CommandLine("test_i \"\""));
 
-	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("test_i test", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
 	if (completion.help.size() == 1) {
 		auto it = completion.help.begin();
-		TEST_ASSERT_EQUAL_STRING("test [two] [three]", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
 }
 
@@ -2482,6 +2483,165 @@ static void test_completion8u() {
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
 }
+
+/**
+ * Argument completion should work as normal even with an empty string.
+ */
+static void test_completion9a() {
+	auto completion = commands.complete_command(shell, CommandLine("test_j "));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("\"\" [two]", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Argument completion should work as normal even with an empty string.
+ */
+static void test_completion9b() {
+	auto completion = commands.complete_command(shell, CommandLine("test_j \"\""));
+
+	TEST_ASSERT_EQUAL_STRING("test_j \"\" ", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two]", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Argument completion should work as normal even with an empty string.
+ */
+static void test_completion9c() {
+	auto completion = commands.complete_command(shell, CommandLine("test_j \"\" "));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two]", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Argument completion should work as normal even with a space.
+ */
+static void test_completion9d() {
+	auto completion = commands.complete_command(shell, CommandLine("test_k "));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("\\  [two]", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Argument completion should work as normal even with a space.
+ */
+static void test_completion9e() {
+	auto completion = commands.complete_command(shell, CommandLine("test_k \\ "));
+
+	TEST_ASSERT_EQUAL_STRING("test_k \\  ", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two]", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Argument completion should work as normal even with a space.
+ */
+static void test_completion9f() {
+	auto completion = commands.complete_command(shell, CommandLine("test_k \\  "));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two]", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Argument completion should work as normal even with an empty string and a space.
+ */
+static void test_completion9g() {
+	auto completion = commands.complete_command(shell, CommandLine("test_l "));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("\"\" [two]", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("\\  [two]", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * This is a special case because it's possible to end a command line with a quote
+ * and try to tab complete the argument. That shouldn't match an empty string unless
+ * it's the only possible option.
+ */
+static void test_completion9h() {
+	auto completion = commands.complete_command(shell, CommandLine("test_l \"\""));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("\"\" [two]", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("\\  [two]", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Argument completion should work as normal even with an empty string and a space.
+ */
+static void test_completion9i() {
+	auto completion = commands.complete_command(shell, CommandLine("test_l \\ "));
+
+	TEST_ASSERT_EQUAL_STRING("test_l \\  ", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two]", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Argument completion should work as normal even with an empty string and a space.
+ */
+static void test_completion9j() {
+	auto completion = commands.complete_command(shell, CommandLine("test_k \"\" "));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two]", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Argument completion should work as normal even with an empty string and a space.
+ */
+static void test_completion9k() {
+	auto completion = commands.complete_command(shell, CommandLine("test_k \\  "));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("[two]", (*it++).to_string().c_str());
+	}
+}
+
 
 int main(int argc, char *argv[]) {
 	commands.add_command(0, 0, flash_string_vector{F("help")},
@@ -2714,6 +2874,60 @@ int main(int argc, char *argv[]) {
 		return std::list<std::string>{"test"};
 	});
 
+	commands.add_command(0, 0, flash_string_vector{F("test_j")}, flash_string_vector{F("[one]"), F("[two]")},
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
+		run = "test_j";
+		for (auto& argument : arguments) {
+			run += " " + argument;
+			if (argument.empty()) {
+				run += "<empty>";
+			}
+		}
+	},
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
+		if (arguments.empty()) {
+			return std::list<std::string>{""};
+		} else {
+			return std::list<std::string>{};
+		}
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("test_k")}, flash_string_vector{F("[one]"), F("[two]")},
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
+		run = "test_k";
+		for (auto& argument : arguments) {
+			run += " " + argument;
+			if (argument.empty()) {
+				run += "<empty>";
+			}
+		}
+	},
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
+		if (arguments.empty()) {
+			return std::list<std::string>{" "};
+		} else {
+			return std::list<std::string>{};
+		}
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("test_l")}, flash_string_vector{F("[one]"), F("[two]")},
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
+		run = "test_l";
+		for (auto& argument : arguments) {
+			run += " " + argument;
+			if (argument.empty()) {
+				run += "<empty>";
+			}
+		}
+	},
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
+		if (arguments.empty()) {
+			return std::list<std::string>{"", " "};
+		} else {
+			return std::list<std::string>{};
+		}
+	});
+
 	UNITY_BEGIN();
 	RUN_TEST(test_completion0);
 	RUN_TEST(test_execution0);
@@ -2820,6 +3034,18 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_completion8s);
 	RUN_TEST(test_completion8t);
 	RUN_TEST(test_completion8u);
+
+	RUN_TEST(test_completion9a);
+	RUN_TEST(test_completion9b);
+	RUN_TEST(test_completion9c);
+	RUN_TEST(test_completion9d);
+	RUN_TEST(test_completion9e);
+	RUN_TEST(test_completion9f);
+	RUN_TEST(test_completion9g);
+	RUN_TEST(test_completion9h);
+	RUN_TEST(test_completion9i);
+	RUN_TEST(test_completion9j);
+	RUN_TEST(test_completion9k);
 
 	return UNITY_END();
 }

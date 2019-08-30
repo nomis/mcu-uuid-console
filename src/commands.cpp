@@ -261,7 +261,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 							: std::list<std::string>{};
 
 			// Remove arguments that can't match
-			if (!last_argument.empty()) {
+			if (!command_line.trailing_space) {
 				for (auto it = potential_arguments.begin(); it != potential_arguments.end(); ) {
 					if (it->rfind(last_argument, 0) == std::string::npos) {
 						it = potential_arguments.erase(it);
@@ -272,7 +272,8 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 			}
 
 			// Auto-complete if there's something present in the last argument
-			if (!last_argument.empty()) {
+			// or the only potential argument is an empty string.
+			if (!command_line.trailing_space) {
 				if (potential_arguments.size() == 1) {
 					if (last_argument == *potential_arguments.begin()) {
 						if (result.replacement->size() + 1 < command_name_size + matching_command->maximum_arguments()) {
