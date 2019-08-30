@@ -42,9 +42,6 @@ namespace uuid {
 
 namespace console {
 
-using command_line::format;
-using command_line::parse;
-
 // cppcheck-suppress passedByValue
 Shell::Shell(std::shared_ptr<Commands> commands, unsigned int context, unsigned int flags)
 		: commands_(std::move(commands)), flags_(flags) {
@@ -377,13 +374,13 @@ size_t Shell::maximum_command_line_length() const {
 }
 
 void Shell::process_command() {
-	std::list<std::string> command_line = parse(line_buffer_);
+	CommandLine command_line{line_buffer_};
 
 	line_buffer_.clear();
 	println();
 	prompt_displayed_ = false;
 
-	if (!command_line.empty() && commands_) {
+	if (!command_line->empty() && commands_) {
 		auto execution = commands_->execute_command(*this, command_line);
 
 		if (execution.error != nullptr) {
@@ -398,9 +395,9 @@ void Shell::process_command() {
 }
 
 void Shell::process_completion() {
-	std::list<std::string> command_line = parse(line_buffer_);
+	CommandLine command_line{line_buffer_};
 
-	if (!command_line.empty() && commands_) {
+	if (!command_line->empty() && commands_) {
 		auto completion = commands_->complete_command(*this, command_line);
 		bool redisplay = false;
 
@@ -409,20 +406,20 @@ void Shell::process_completion() {
 			redisplay = true;
 
 			for (auto &help : completion.help) {
-				std::string help_line = format(help);
+				std::string help_line = help.to_string(maximum_command_line_length());
 
 				println(help_line);
 			}
 		}
 
-		if (!completion.replacement.empty()) {
+		if (!completion.replacement->empty()) {
 			if (!redisplay) {
 				erase_current_line();
 				prompt_displayed_ = false;
 				redisplay = true;
 			}
 
-			line_buffer_ = format(completion.replacement, maximum_command_line_length());
+			line_buffer_ = completion.replacement.to_string(maximum_command_line_length());
 		}
 
 		if (redisplay) {

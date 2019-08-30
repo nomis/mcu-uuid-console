@@ -7,7 +7,8 @@ Unreleased_
 Changed
 ~~~~~~~
 
-* Move ``CommandLine`` functions to the ``command_line`` namespace.
+* Move trailing space handling into instances of the ``CommandLine``
+  class.
 
 0.3.0_ |--| 2019-08-28
 ----------------------

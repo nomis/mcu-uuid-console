@@ -43,8 +43,6 @@ namespace uuid {
 
 namespace console {
 
-using command_line::is_trailing_space;
-
 void Commands::add_command(const flash_string_vector &name, command_function function) {
 	add_command(0, 0, name, flash_string_vector{}, function, nullptr);
 }
@@ -77,7 +75,7 @@ void Commands::add_command(unsigned int context, unsigned int flags,
 			std::forward_as_tuple(flags, name, arguments, function, arg_function));
 }
 
-Commands::Execution Commands::execute_command(Shell &shell, const std::list<std::string> &command_line) {
+Commands::Execution Commands::execute_command(Shell &shell, const CommandLine &command_line) {
 	auto commands = find_command(shell, command_line);
 	auto longest = commands.exact.crbegin();
 	Execution result;
@@ -87,15 +85,8 @@ Commands::Execution Commands::execute_command(Shell &shell, const std::list<std:
 	if (commands.exact.empty()) {
 		result.error = F("Command not found");
 	} else if (commands.exact.count(longest->first) == 1) {
-		auto command_line_end = command_line.cend();
-
-		if (is_trailing_space(command_line.back())) {
-			// Ignore a trailing space
-			command_line_end--;
-		}
-
 		auto &command = longest->second;
-		std::vector<std::string> arguments{std::next(command_line.cbegin(), command->name_.size()), command_line_end};
+		std::vector<std::string> arguments{std::next(command_line->cbegin(), command->name_.size()), command_line->cend()};
 
 		if (commands.partial.upper_bound(longest->first) != commands.partial.end() && !arguments.empty()) {
 			result.error = F("Command not found");
@@ -195,7 +186,7 @@ std::string Commands::find_longest_common_prefix(const std::list<std::string> &a
 	return arguments.begin()->substr(0, chars_prefix);
 }
 
-Commands::Completion Commands::complete_command(Shell &shell, const std::list<std::string> &command_line) {
+Commands::Completion Commands::complete_command(Shell &shell, const CommandLine &command_line) {
 	auto commands = find_command(shell, command_line);
 	Completion result;
 
@@ -212,8 +203,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 		}
 	}
 
-	bool exact_match_wants_more = !commands.exact.empty() && command_line.size() > commands.exact.begin()->second->name_.size();
-	bool add_trailing_space = false;
+	bool exact_match_wants_more = !commands.exact.empty() && command_line.total_size() > commands.exact.begin()->second->name_.size();
 	std::unique_ptr<Command> temp_command;
 	std::list<std::string> temp_command_name;
 	std::multimap<size_t,const Command*>::iterator temp_command_it;
@@ -222,12 +212,12 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 		// There are multiple commands with the same shortest partial match length
 		bool whole_components = find_longest_common_prefix(commands.partial, shortest_match->first, temp_command_name);
 
-		if (!temp_command_name.empty() && command_line.size() <= temp_command_name.size()) {
+		if (!temp_command_name.empty() && command_line.total_size() <= temp_command_name.size()) {
 			temp_command = std::make_unique<Command>(0, flash_string_vector{}, flash_string_vector{}, nullptr, nullptr);
 			temp_command_it = commands.partial.emplace(temp_command_name.size(), temp_command.get());
 			shortest_count = 1;
 			shortest_match = commands.partial.find(temp_command_name.size());
-			add_trailing_space = whole_components;
+			result.replacement.trailing_space = whole_components;
 		}
 	}
 
@@ -239,28 +229,31 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 
 		if (temp_command) {
 			for (auto &name : temp_command_name) {
-				result.replacement.emplace_back(name);
+				result.replacement->emplace_back(name);
 			}
 		} else {
 			for (auto &name : matching_command->name_) {
-				result.replacement.emplace_back(read_flash_string(name));
+				result.replacement->emplace_back(read_flash_string(name));
 			}
 		}
 
-		if (command_line.size() > result.replacement.size() && command_line.size() <= command_name_size + matching_command->maximum_arguments()) {
+		if (command_line.total_size() > result.replacement->size() && command_line.total_size() <= command_name_size + matching_command->maximum_arguments()) {
 			// Try to auto-complete arguments
-			std::vector<std::string> arguments{std::next(command_line.cbegin(), result.replacement.size()), command_line.cend()};
-			result.replacement.insert(result.replacement.end(), arguments.cbegin(), arguments.cend());
+			std::vector<std::string> arguments{std::next(command_line->cbegin(), result.replacement->size()), command_line->cend()};
+			result.replacement->insert(result.replacement->end(), arguments.cbegin(), arguments.cend());
+			result.replacement.trailing_space = command_line.trailing_space;
 
 			auto current_args_count = arguments.size();
+			std::string last_argument;
 
-			// Remove the last argument so that it can be auto-completed
-			std::string last_argument = result.replacement.back();
-			bool last_argument_empty = last_argument.empty() || is_trailing_space(last_argument);
-			result.replacement.pop_back();
-			if (!arguments.empty()) {
-				arguments.pop_back();
-				current_args_count--;
+			if (!command_line.trailing_space) {
+				// Remove the last argument so that it can be auto-completed
+				last_argument = result.replacement->back();
+				result.replacement->pop_back();
+				if (!arguments.empty()) {
+					arguments.pop_back();
+					current_args_count--;
+				}
 			}
 
 			auto potential_arguments = matching_command->arg_function_
@@ -268,7 +261,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 							: std::list<std::string>{};
 
 			// Remove arguments that can't match
-			if (!last_argument_empty) {
+			if (!last_argument.empty()) {
 				for (auto it = potential_arguments.begin(); it != potential_arguments.end(); ) {
 					if (it->rfind(last_argument, 0) == std::string::npos) {
 						it = potential_arguments.erase(it);
@@ -279,12 +272,12 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 			}
 
 			// Auto-complete if there's something present in the last argument
-			if (!last_argument_empty) {
+			if (!last_argument.empty()) {
 				if (potential_arguments.size() == 1) {
 					if (last_argument == *potential_arguments.begin()) {
-						if (result.replacement.size() + 1 < command_name_size + matching_command->maximum_arguments()) {
+						if (result.replacement->size() + 1 < command_name_size + matching_command->maximum_arguments()) {
 							// Add a space because this argument is complete and there are more arguments for this command
-							add_trailing_space = true;
+							result.replacement.trailing_space = true;
 						}
 					}
 
@@ -299,38 +292,40 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 			}
 
 			// Put the last argument back
-			result.replacement.emplace_back(last_argument);
+			if (!command_line.trailing_space) {
+				result.replacement->emplace_back(last_argument);
+			}
 
-			std::list<std::string> remaining_help;
+			CommandLine remaining_help;
 			if (!potential_arguments.empty()) {
 				// Remaining help should skip the suggested argument
 				current_args_count++;
 			}
 			if (current_args_count < matching_command->maximum_arguments()) {
 				for (auto it = std::next(matching_command->arguments_.cbegin(), current_args_count); it != matching_command->arguments_.cend(); it++) {
-					remaining_help.emplace_back(read_flash_string(*it));
+					remaining_help->emplace_back(read_flash_string(*it));
 				}
 			}
 
 			if (potential_arguments.empty()) {
-				if (!remaining_help.empty()) {
-					result.help.emplace_back(remaining_help);
+				if (!remaining_help->empty()) {
+					result.help.emplace_back(std::move(remaining_help));
 				}
 			} else {
 				for (auto potential_argument : potential_arguments) {
-					std::list<std::string> help;
+					CommandLine help;
 
-					help.emplace_back(potential_argument);
-					if (!remaining_help.empty()) {
-						help.insert(help.end(), remaining_help.begin(), remaining_help.end());
+					help->emplace_back(potential_argument);
+					if (!remaining_help->empty()) {
+						help->insert(help->end(), remaining_help->begin(), remaining_help->end());
 					}
 
-					result.help.emplace_back(help);
+					result.help.emplace_back(std::move(help));
 				}
 			}
-		} else if (result.replacement.size() < command_name_size + matching_command->maximum_arguments()) {
+		} else if (result.replacement->size() < command_name_size + matching_command->maximum_arguments()) {
 			// Add a space because there are more arguments for this command
-			add_trailing_space = true;
+			result.replacement.trailing_space = true;
 		}
 	}
 
@@ -342,32 +337,34 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 	if (shortest_count > 1 || (temp_command && exact_match_wants_more)) {
 		// Provide help for all of the potential commands
 		for (auto command_it = commands.partial.begin(); command_it != commands.partial.end(); command_it++) {
-			std::list<std::string> help;
+			CommandLine help;
 
-			auto line_it = command_line.cbegin();
+			auto line_it = command_line->cbegin();
 
 			for (auto flash_name : command_it->second->name_) {
 				std::string name = read_flash_string(flash_name);
 
-				if (line_it != command_line.cend()) {
+				// Skip parts of the command name that match the command line
+				if (line_it != command_line->cend()) {
 					if (name == *line_it++) {
 						continue;
 					}
 				}
 
-				help.emplace_back(name);
+				help->emplace_back(name);
 			}
 
 			for (auto argument : command_it->second->arguments_) {
-				if (line_it != command_line.cend()) {
+				// Skip parts of the command arguments that exist in the command line
+				if (line_it != command_line->cend()) {
 					line_it++;
 					continue;
 				}
 
-				help.emplace_back(read_flash_string(argument));
+				help->emplace_back(read_flash_string(argument));
 			}
 
-			result.help.emplace_back(help);
+			result.help.emplace_back(std::move(help));
 		}
 	}
 
@@ -377,36 +374,25 @@ Commands::Completion Commands::complete_command(Shell &shell, const std::list<st
 
 		if (commands.exact.count(longest->first) == 1) {
 			for (auto &name : longest->second->name_) {
-				result.replacement.emplace_back(read_flash_string(name));
+				result.replacement->emplace_back(read_flash_string(name));
 			}
 
 			// Add a space because there are sub-commands for a command that has matched exactly
-			add_trailing_space = true;
+			result.replacement.trailing_space = true;
 		}
 	}
 
-	if (add_trailing_space) {
-		// A trailing space is represented by a NUL character
-		result.replacement.emplace_back(1, '\0');
-	}
-
-	// Don't try to shorten the command lines or offer an identical replacement
-	if (command_line.size() > result.replacement.size() || result.replacement == command_line) {
-		result.replacement.clear();
+	// Don't try to shorten the command line or offer an identical replacement
+	if (command_line.total_size() > result.replacement.total_size() || result.replacement == command_line) {
+		result.replacement.reset();
 	}
 
 	return result;
 }
 
-Commands::Match Commands::find_command(Shell &shell, const std::list<std::string> &command_line) {
+Commands::Match Commands::find_command(Shell &shell, const CommandLine &command_line) {
 	Match commands;
 	auto context_commands = commands_.equal_range(shell.context());
-	auto command_line_end = command_line.cend();
-
-	if (!command_line.empty() && is_trailing_space(command_line.back())) {
-		// Ignore a trailing space
-		command_line_end--;
-	}
 
 	for (auto it = context_commands.first; it != context_commands.second; it++) {
 		auto& command = it->second;
@@ -418,9 +404,9 @@ Commands::Match Commands::find_command(Shell &shell, const std::list<std::string
 		}
 
 		auto name_it = command.name_.cbegin();
-		auto line_it = command_line.cbegin();
+		auto line_it = command_line->cbegin();
 
-		for (; name_it != command.name_.cend() && line_it != command_line_end; name_it++, line_it++) {
+		for (; name_it != command.name_.cend() && line_it != command_line->cend(); name_it++, line_it++) {
 			std::string name = read_flash_string(*name_it);
 			size_t found = name.rfind(*line_it, 0);
 
@@ -428,7 +414,7 @@ Commands::Match Commands::find_command(Shell &shell, const std::list<std::string
 				match = false;
 				break;
 			} else if (line_it->length() != name.length()) {
-				for (auto line_check_it = std::next(line_it); line_check_it != command_line_end; line_check_it++) {
+				for (auto line_check_it = std::next(line_it); line_check_it != command_line->cend(); line_check_it++) {
 					if (!line_check_it->empty()) {
 						// If there's more in the command line then this can't match
 						match = false;

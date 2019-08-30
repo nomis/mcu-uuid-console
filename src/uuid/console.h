@@ -45,315 +45,7 @@ namespace uuid {
  */
 namespace console {
 
-class Shell;
-
-/**
- * Container of commands for use by a Shell.
- *
- * These should normally be stored in a std::shared_ptr and reused.
- *
- * @since 0.1.0
- */
-class Commands {
-public:
-	/**
-	 * Result of a command completion operation.
-	 *
-	 * Each space-delimited parameter is a separate string.
-	 *
-	 * @since 0.1.0
-	 */
-	struct Completion {
-		std::list<std::list<std::string>> help; /*!< Suggestions for matching commands. @since 0.1.0 */
-		std::list<std::string> replacement; /*!< Replacement matching full or partial command string. @since 0.1.0 */
-	};
-
-	/**
-	 * Result of a command execution operation.
-	 *
-	 * @since 0.1.0
-	 */
-	struct Execution {
-		const __FlashStringHelper *error; /*!< Error message if the command could not be executed. @since 0.1.0 */
-	};
-
-	/**
-	 * Function to handle a command.
-	 *
-	 * @param[in] shell Shell instance that is executing the command.
-	 * @param[in] arguments Command line arguments.
-	 * @since 0.1.0
-	 */
-	using command_function = std::function<void(Shell &shell, const std::vector<std::string> &arguments)>;
-	/**
-	 * Function to obtain completions for a command line.
-	 *
-	 * This is a list instead of set so that a custom sort order can be
-	 * used. It should normally be sorted lexicographically so that the
-	 * list of options is not confusing.
-	 *
-	 * @param[in] shell Shell instance that has a command line matching
-	 *                  this command.
-	 * @param[in] arguments Command line arguments prior to (but
-	 *                      excluding) the argument being completed.
-	 * @return List of possible values for the next argument on the
-	 *         command line.
-	 * @since 0.1.0
-	 */
-	using argument_completion_function = std::function<const std::list<std::string>(Shell &shell, const std::vector<std::string> &arguments)>;
-
-	/**
-	 * Construct a new container of commands for use by a Shell.
-	 *
-	 * This should normally be stored in a std::shared_ptr and reused.
-	 *
-	 * @since 0.1.0
-	 */
-	Commands() = default;
-	~Commands() = default;
-
-	/**
-	 * Add a command with no arguments to the list of commands in this
-	 * container.
-	 *
-	 * The shell context for the command will default to 0 and not
-	 * require any flags for it to be available.
-	 *
-	 * @param[in] name Name of the command as a std::vector of flash
-	 *                 strings.
-	 * @param[in] function Function to be used when the command is
-	 *                     executed.
-	 * @since 0.2.0
-	 */
-	void add_command(const flash_string_vector &name, command_function function);
-	/**
-	 * Add a command with arguments to the list of commands in this
-	 * container.
-	 *
-	 * The shell context for the command will default to 0 and not
-	 * require any flags for it to be available.
-	 *
-	 * @param[in] name Name of the command as a std::vector of flash
-	 *                 strings.
-	 * @param[in] arguments Help text for arguments that the command
-	 *                      accepts as a std::vector of flash strings
-	 *                      (use "<" to indicate a required argument).
-	 * @param[in] function Function to be used when the command is
-	 *                     executed.
-	 * @since 0.2.0
-	 */
-	void add_command(const flash_string_vector &name, const flash_string_vector &arguments,
-			command_function function);
-	/**
-	 * Add a command with arguments and automatic argument completion
-	 * to the list of commands in this container.
-	 *
-	 * The shell context for the command will default to 0 and not
-	 * require any flags for it to be available.
-	 *
-	 * @param[in] name Name of the command as a std::vector of flash
-	 *                 strings.
-	 * @param[in] arguments Help text for arguments that the command
-	 *                      accepts as a std::vector of flash strings
-	 *                      (use "<" to indicate a required argument).
-	 * @param[in] function Function to be used when the command is
-	 *                     executed.
-	 * @param[in] arg_function Function to be used to perform argument
-	 *                         completions for this command.
-	 * @since 0.2.0
-	 */
-	void add_command(const flash_string_vector &name, const flash_string_vector &arguments,
-			command_function function, argument_completion_function arg_function);
-	/**
-	 * Add a command with no arguments to the list of commands in this
-	 * container.
-	 *
-	 * @param[in] context Shell context in which this command is
-	 *                    available.
-	 * @param[in] flags Shell flags that must be set for this command
-	 *                  to be available.
-	 * @param[in] name Name of the command as a std::vector of flash
-	 *                 strings.
-	 * @param[in] function Function to be used when the command is
-	 *                     executed.
-	 * @since 0.1.0
-	 */
-	void add_command(unsigned int context, unsigned int flags,
-			const flash_string_vector &name, command_function function);
-	/**
-	 * Add a command with arguments to the list of commands in this
-	 * container.
-	 *
-	 * @param[in] context Shell context in which this command is
-	 *                    available.
-	 * @param[in] flags Shell flags that must be set for this command
-	 *                  to be available.
-	 * @param[in] name Name of the command as a std::vector of flash
-	 *                 strings.
-	 * @param[in] arguments Help text for arguments that the command
-	 *                      accepts as a std::vector of flash strings
-	 *                      (use "<" to indicate a required argument).
-	 * @param[in] function Function to be used when the command is
-	 *                     executed.
-	 * @since 0.1.0
-	 */
-	void add_command(unsigned int context, unsigned int flags,
-			const flash_string_vector &name, const flash_string_vector &arguments,
-			command_function function);
-	/**
-	 * Add a command with arguments and automatic argument completion
-	 * to the list of commands in this container.
-	 *
-	 * @param[in] context Shell context in which this command is
-	 *                    available.
-	 * @param[in] flags Shell flags that must be set for this command
-	 *                  to be available.
-	 * @param[in] name Name of the command as a std::vector of flash
-	 *                 strings.
-	 * @param[in] arguments Help text for arguments that the command
-	 *                      accepts as a std::vector of flash strings
-	 *                      (use "<" to indicate a required argument).
-	 * @param[in] function Function to be used when the command is
-	 *                     executed.
-	 * @param[in] arg_function Function to be used to perform argument
-	 *                         completions for this command.
-	 * @since 0.1.0
-	 */
-	void add_command(unsigned int context, unsigned int flags,
-			const flash_string_vector &name, const flash_string_vector &arguments,
-			command_function function, argument_completion_function arg_function);
-
-	/**
-	 * Execute a command for a Shell if it exists in the specified
-	 * context and with the specified flags.
-	 *
-	 * Trailing spaces are represented by a "\0" parameter value.
-	 *
-	 * @param[in] shell Shell that is executing the command.
-	 * @param[in] command_line Command line as a space-delimited
-	 *                         list of strings.
-	 * @return An object describing the result of the command execution
-	 *         operation.
-	 * @since 0.1.0
-	 */
-	Execution execute_command(Shell &shell, const std::list<std::string> &command_line);
-
-	/**
-	 * Complete a partial command for a Shell if it exists in the
-	 * specified context and with the specified flags.
-	 *
-	 * Trailing spaces are represented by a "\0" parameter value.
-	 *
-	 * @param[in] shell Shell that is completing the command.
-	 * @param[in] command_line Command line as a space-delimited list
-	 *                         of strings.
-	 * @return An object describing the result of the command
-	 *         completion operation.
-	 * @since 0.1.0
-	 */
-	Completion complete_command(Shell &shell, const std::list<std::string> &command_line);
-
-private:
-	/**
-	 * Command for execution on a Shell.
-	 * @since 0.1.0
-	 */
-	class Command {
-	public:
-		/**
-		 * Create a command for execution on a Shell.
-		 *
-		 * @param[in] flags Shell flags that must be set for this command
-		 *                  to be available.
-		 * @param[in] name Name of the command as a std::vector of flash
-		 *                 strings.
-		 * @param[in] arguments Help text for arguments that the command
-		 *                      accepts as a std::vector of flash strings
-		 *                      (use "<" to indicate a required argument).
-		 * @param[in] function Function to be used when the command is
-		 *                     executed.
-		 * @param[in] arg_function Function to be used to perform argument
-		 *                         completions for this command.
-		 * @since 0.1.0
-		 */
-		Command(unsigned int flags,
-				const flash_string_vector name, const flash_string_vector arguments,
-				command_function function, argument_completion_function arg_function);
-		~Command();
-
-		/**
-		 * Determine the minimum number of arguments for this command
-		 * based on the help text for the arguments that begin with the
-		 * "<" character.
-		 *
-		 * @return The minimum number of arguments for this command.
-		 * @since 0.1.0
-		 */
-		size_t minimum_arguments() const;
-		/**
-		 * Determine the maximum number of arguments for this command
-		 * based on the length of help text for the arguments.
-		 *
-		 * @return The maximum number of arguments for this command.
-		 * @since 0.1.0
-		 */
-		inline size_t maximum_arguments() const { return arguments_.size(); }
-
-		unsigned int flags_; /*!< Shell flags that must be set for this command to be available. @since 0.1.0 */
-		const flash_string_vector name_; /*!< Name of the command as a std::vector of flash strings. @since 0.1.0 */
-		const flash_string_vector arguments_; /*!< Help text for arguments that the command accepts as a std::vector of flash strings. @since 0.1.0 */
-		command_function function_; /*!< Function to be used when the command is executed. @since 0.1.0 */
-		argument_completion_function arg_function_; /*!< Function to be used to perform argument completions for this command. @since 0.1.0 */
-	};
-
-	/**
-	 * Result of a command find operation.
-	 *
-	 * Each matching command is returned in a map grouped by size.
-	 * @since 0.1.0
-	 */
-	struct Match {
-		std::multimap<size_t,const Command*> exact; /*!< Commands that match the command line exactly, grouped by the size of the command names. @since 0.1.0 */
-		std::multimap<size_t,const Command*> partial; /*!< Commands that the command line partially matches, grouped by the size of the command names. @since 0.1.0 */
-	};
-
-	/**
-	 * Find commands by matching them against the command line.
-	 *
-	 * @param[in] shell Shell that is accessing commands.
-	 * @param[in] command_line Command line as a space-delimited list
-	 *                         of strings.
-	 * @return An object describing the result of the command find
-	 *         operation.
-	 * @since 0.1.0
-	 */
-	Match find_command(Shell &shell, const std::list<std::string> &command_line);
-
-	/**
-	 * Find the longest common prefix from a shortest match of commands.
-	 *
-	 * @param[in] commands All commands that matched (at least 2).
-	 * @param[in] shortest_match The length of the shortest match.
-	 * @param[out] longest_name The longest common prefix as a list of
-	 *                          strings.
-	 * @return True if the longest common prefix is made up of whole
-	 *          components, false if the last part is constructed from
-	 *          a partial component.
-	 * @since 0.1.0
-	 */
-	bool find_longest_common_prefix(const std::multimap<size_t,const Command*> &commands, size_t shortest_match, std::list<std::string> &longest_name);
-
-	/**
-	 * Find the longest common prefix from a list of potential arguments.
-	 *
-	 * @param[in] arguments All potential arguments (at least 2).
-	 * @return The longest common prefix, which could be empty.
-	 * @since 0.1.0
-	 */
-	std::string find_longest_common_prefix(const std::list<std::string> &arguments);
-
-	std::multimap<unsigned int,Command> commands_; /*!< Commands stored in this container, separated by context. @since 0.1.0 */
-};
+class Commands;
 
 /**
  * Base class for a command shell.
@@ -1158,6 +850,417 @@ private:
 };
 
 /**
+ * Representation of a command line, with parameters separated by
+ * spaces and an optional trailing space.
+ *
+ * @since 0.4.0
+ */
+class CommandLine {
+public:
+	/**
+	 * Create an empty command line.
+	 *
+	 * @since 0.4.0
+	 */
+	CommandLine() = default;
+
+	/**
+	 * Parse a command line into separate parameters using built-in
+	 * escaping rules.
+	 *
+	 * @param[in] line Command line to parse.
+	 * @since 0.4.0
+	 */
+	explicit CommandLine(const std::string &line);
+
+	~CommandLine() = default;
+
+	CommandLine(CommandLine&&) = default;
+	CommandLine& operator=(CommandLine&&) = default;
+
+	/**
+	 * Format a command line from separate parameters using built-in
+	 * escaping rules.
+	 *
+	 * @param[in] reserve String buffer size to preallocate.
+	 * @return A command line, with escaping of characters sufficient
+	 *         to reproduce the same command line parameters when
+	 *         parsed.
+	 * @since 0.4.0
+	 */
+	std::string to_string(size_t reserve = Shell::MAX_COMMAND_LINE_LENGTH);
+
+	/**
+	 * Get the total size of the command line parameters, taking into
+	 * account the trailing space.
+	 *
+	 * @return The size of the command line parameters, plus 1 for
+	 *         a trailing space.
+	 * @since 0.4.0
+	 */
+	inline size_t total_size() const { return parameters_.size() + (trailing_space ? 1 : 0); }
+	/**
+	 * Reset this command line's data.
+	 *
+	 * Clears the parameter list and removes any trailing space.
+	 *
+	 * @since 0.4.0
+	 */
+	void reset();
+
+	/**
+	 * Obtain the parameters for this command line.
+	 *
+	 * @return A pointer to the parameters.
+	 * @since 0.4.0
+	 */
+	inline std::list<std::string>* operator->() { return &parameters_; }
+	/**
+	 * Obtain the parameters for this command line.
+	 *
+	 * @return A pointer to the parameters.
+	 * @since 0.4.0
+	 */
+	inline const std::list<std::string>* operator->() const { return &parameters_; }
+
+	/**
+	 * Compare a command line to another command line for equality.
+	 *
+	 * @param[in] lhs Left-hand side command line.
+	 * @param[in] rhs Right-hand side command line.
+	 * @return True if the command lines are equal, otherwise false.
+	 * @since 0.4.0
+	 */
+	friend inline bool operator==(const CommandLine& lhs, const CommandLine& rhs) {
+		return (lhs.trailing_space == rhs.trailing_space) && (lhs.parameters_ == rhs.parameters_);
+	}
+	/**
+	 * Compare this command line to another command line for inequality.
+	 *
+	 * @param[in] lhs Left-hand side command line.
+	 * @param[in] rhs Right-hand side command line.
+	 * @return True if the command lines are not equal, otherwise false.
+	 * @since 0.4.0
+	 */
+	friend inline bool operator!=(const CommandLine& lhs, const CommandLine& rhs) {
+		return !(lhs == rhs);
+	}
+
+	bool trailing_space = false; /*!< Command line has a trailing space. @since 0.4.0 */
+
+private:
+	CommandLine(const CommandLine&) = delete;
+	CommandLine& operator=(const CommandLine&) = delete;
+
+	std::list<std::string> parameters_; /*!< Separate command line parameters. @since 0.4.0 */
+};
+
+/**
+ * Container of commands for use by a Shell.
+ *
+ * These should normally be stored in a std::shared_ptr and reused.
+ *
+ * @since 0.1.0
+ */
+class Commands {
+public:
+	/**
+	 * Result of a command completion operation.
+	 *
+	 * Each space-delimited parameter is a separate string.
+	 *
+	 * @since 0.1.0
+	 */
+	struct Completion {
+		std::list<CommandLine> help; /*!< Suggestions for matching commands. @since 0.1.0 */
+		CommandLine replacement; /*!< Replacement matching full or partial command line. @since 0.1.0 */
+	};
+
+	/**
+	 * Result of a command execution operation.
+	 *
+	 * @since 0.1.0
+	 */
+	struct Execution {
+		const __FlashStringHelper *error; /*!< Error message if the command could not be executed. @since 0.1.0 */
+	};
+
+	/**
+	 * Function to handle a command.
+	 *
+	 * @param[in] shell Shell instance that is executing the command.
+	 * @param[in] arguments Command line arguments.
+	 * @since 0.1.0
+	 */
+	using command_function = std::function<void(Shell &shell, const std::vector<std::string> &arguments)>;
+	/**
+	 * Function to obtain completions for a command line.
+	 *
+	 * This is a list instead of set so that a custom sort order can be
+	 * used. It should normally be sorted lexicographically so that the
+	 * list of options is not confusing.
+	 *
+	 * @param[in] shell Shell instance that has a command line matching
+	 *                  this command.
+	 * @param[in] arguments Command line arguments prior to (but
+	 *                      excluding) the argument being completed.
+	 * @return List of possible values for the next argument on the
+	 *         command line.
+	 * @since 0.1.0
+	 */
+	using argument_completion_function = std::function<const std::list<std::string>(Shell &shell, const std::vector<std::string> &arguments)>;
+
+	/**
+	 * Construct a new container of commands for use by a Shell.
+	 *
+	 * This should normally be stored in a std::shared_ptr and reused.
+	 *
+	 * @since 0.1.0
+	 */
+	Commands() = default;
+	~Commands() = default;
+
+	/**
+	 * Add a command with no arguments to the list of commands in this
+	 * container.
+	 *
+	 * The shell context for the command will default to 0 and not
+	 * require any flags for it to be available.
+	 *
+	 * @param[in] name Name of the command as a std::vector of flash
+	 *                 strings.
+	 * @param[in] function Function to be used when the command is
+	 *                     executed.
+	 * @since 0.2.0
+	 */
+	void add_command(const flash_string_vector &name, command_function function);
+	/**
+	 * Add a command with arguments to the list of commands in this
+	 * container.
+	 *
+	 * The shell context for the command will default to 0 and not
+	 * require any flags for it to be available.
+	 *
+	 * @param[in] name Name of the command as a std::vector of flash
+	 *                 strings.
+	 * @param[in] arguments Help text for arguments that the command
+	 *                      accepts as a std::vector of flash strings
+	 *                      (use "<" to indicate a required argument).
+	 * @param[in] function Function to be used when the command is
+	 *                     executed.
+	 * @since 0.2.0
+	 */
+	void add_command(const flash_string_vector &name, const flash_string_vector &arguments,
+			command_function function);
+	/**
+	 * Add a command with arguments and automatic argument completion
+	 * to the list of commands in this container.
+	 *
+	 * The shell context for the command will default to 0 and not
+	 * require any flags for it to be available.
+	 *
+	 * @param[in] name Name of the command as a std::vector of flash
+	 *                 strings.
+	 * @param[in] arguments Help text for arguments that the command
+	 *                      accepts as a std::vector of flash strings
+	 *                      (use "<" to indicate a required argument).
+	 * @param[in] function Function to be used when the command is
+	 *                     executed.
+	 * @param[in] arg_function Function to be used to perform argument
+	 *                         completions for this command.
+	 * @since 0.2.0
+	 */
+	void add_command(const flash_string_vector &name, const flash_string_vector &arguments,
+			command_function function, argument_completion_function arg_function);
+	/**
+	 * Add a command with no arguments to the list of commands in this
+	 * container.
+	 *
+	 * @param[in] context Shell context in which this command is
+	 *                    available.
+	 * @param[in] flags Shell flags that must be set for this command
+	 *                  to be available.
+	 * @param[in] name Name of the command as a std::vector of flash
+	 *                 strings.
+	 * @param[in] function Function to be used when the command is
+	 *                     executed.
+	 * @since 0.1.0
+	 */
+	void add_command(unsigned int context, unsigned int flags,
+			const flash_string_vector &name, command_function function);
+	/**
+	 * Add a command with arguments to the list of commands in this
+	 * container.
+	 *
+	 * @param[in] context Shell context in which this command is
+	 *                    available.
+	 * @param[in] flags Shell flags that must be set for this command
+	 *                  to be available.
+	 * @param[in] name Name of the command as a std::vector of flash
+	 *                 strings.
+	 * @param[in] arguments Help text for arguments that the command
+	 *                      accepts as a std::vector of flash strings
+	 *                      (use "<" to indicate a required argument).
+	 * @param[in] function Function to be used when the command is
+	 *                     executed.
+	 * @since 0.1.0
+	 */
+	void add_command(unsigned int context, unsigned int flags,
+			const flash_string_vector &name, const flash_string_vector &arguments,
+			command_function function);
+	/**
+	 * Add a command with arguments and automatic argument completion
+	 * to the list of commands in this container.
+	 *
+	 * @param[in] context Shell context in which this command is
+	 *                    available.
+	 * @param[in] flags Shell flags that must be set for this command
+	 *                  to be available.
+	 * @param[in] name Name of the command as a std::vector of flash
+	 *                 strings.
+	 * @param[in] arguments Help text for arguments that the command
+	 *                      accepts as a std::vector of flash strings
+	 *                      (use "<" to indicate a required argument).
+	 * @param[in] function Function to be used when the command is
+	 *                     executed.
+	 * @param[in] arg_function Function to be used to perform argument
+	 *                         completions for this command.
+	 * @since 0.1.0
+	 */
+	void add_command(unsigned int context, unsigned int flags,
+			const flash_string_vector &name, const flash_string_vector &arguments,
+			command_function function, argument_completion_function arg_function);
+
+	/**
+	 * Execute a command for a Shell if it exists in the specified
+	 * context and with the specified flags.
+	 *
+	 * Trailing spaces are represented by a "\0" parameter value.
+	 *
+	 * @param[in] shell Shell that is executing the command.
+	 * @param[in] command_line Command line parameters.
+	 * @return An object describing the result of the command execution
+	 *         operation.
+	 * @since 0.1.0
+	 */
+	Execution execute_command(Shell &shell, const CommandLine &command_line);
+
+	/**
+	 * Complete a partial command for a Shell if it exists in the
+	 * specified context and with the specified flags.
+	 *
+	 * Trailing spaces are represented by a "\0" parameter value.
+	 *
+	 * @param[in] shell Shell that is completing the command.
+	 * @param[in] command_line Command line parameters.
+	 * @return An object describing the result of the command
+	 *         completion operation.
+	 * @since 0.1.0
+	 */
+	Completion complete_command(Shell &shell, const CommandLine &command_line);
+
+private:
+	/**
+	 * Command for execution on a Shell.
+	 * @since 0.1.0
+	 */
+	class Command {
+	public:
+		/**
+		 * Create a command for execution on a Shell.
+		 *
+		 * @param[in] flags Shell flags that must be set for this command
+		 *                  to be available.
+		 * @param[in] name Name of the command as a std::vector of flash
+		 *                 strings.
+		 * @param[in] arguments Help text for arguments that the command
+		 *                      accepts as a std::vector of flash strings
+		 *                      (use "<" to indicate a required argument).
+		 * @param[in] function Function to be used when the command is
+		 *                     executed.
+		 * @param[in] arg_function Function to be used to perform argument
+		 *                         completions for this command.
+		 * @since 0.1.0
+		 */
+		Command(unsigned int flags,
+				const flash_string_vector name, const flash_string_vector arguments,
+				command_function function, argument_completion_function arg_function);
+		~Command();
+
+		/**
+		 * Determine the minimum number of arguments for this command
+		 * based on the help text for the arguments that begin with the
+		 * "<" character.
+		 *
+		 * @return The minimum number of arguments for this command.
+		 * @since 0.1.0
+		 */
+		size_t minimum_arguments() const;
+		/**
+		 * Determine the maximum number of arguments for this command
+		 * based on the length of help text for the arguments.
+		 *
+		 * @return The maximum number of arguments for this command.
+		 * @since 0.1.0
+		 */
+		inline size_t maximum_arguments() const { return arguments_.size(); }
+
+		unsigned int flags_; /*!< Shell flags that must be set for this command to be available. @since 0.1.0 */
+		const flash_string_vector name_; /*!< Name of the command as a std::vector of flash strings. @since 0.1.0 */
+		const flash_string_vector arguments_; /*!< Help text for arguments that the command accepts as a std::vector of flash strings. @since 0.1.0 */
+		command_function function_; /*!< Function to be used when the command is executed. @since 0.1.0 */
+		argument_completion_function arg_function_; /*!< Function to be used to perform argument completions for this command. @since 0.1.0 */
+	};
+
+	/**
+	 * Result of a command find operation.
+	 *
+	 * Each matching command is returned in a map grouped by size.
+	 * @since 0.1.0
+	 */
+	struct Match {
+		std::multimap<size_t,const Command*> exact; /*!< Commands that match the command line exactly, grouped by the size of the command names. @since 0.1.0 */
+		std::multimap<size_t,const Command*> partial; /*!< Commands that the command line partially matches, grouped by the size of the command names. @since 0.1.0 */
+	};
+
+	/**
+	 * Find commands by matching them against the command line.
+	 *
+	 * @param[in] shell Shell that is accessing commands.
+	 * @param[in] command_line Command line parmeters.
+	 * @return An object describing the result of the command find
+	 *         operation.
+	 * @since 0.1.0
+	 */
+	Match find_command(Shell &shell, const CommandLine &command_line);
+
+	/**
+	 * Find the longest common prefix from a shortest match of commands.
+	 *
+	 * @param[in] commands All commands that matched (at least 2).
+	 * @param[in] shortest_match The length of the shortest match.
+	 * @param[out] longest_name The longest common prefix as a list of
+	 *                          strings.
+	 * @return True if the longest common prefix is made up of whole
+	 *          components, false if the last part is constructed from
+	 *          a partial component.
+	 * @since 0.1.0
+	 */
+	bool find_longest_common_prefix(const std::multimap<size_t,const Command*> &commands, size_t shortest_match, std::list<std::string> &longest_name);
+
+	/**
+	 * Find the longest common prefix from a list of potential arguments.
+	 *
+	 * @param[in] arguments All potential arguments (at least 2).
+	 * @return The longest common prefix, which could be empty.
+	 * @since 0.1.0
+	 */
+	std::string find_longest_common_prefix(const std::list<std::string> &arguments);
+
+	std::multimap<unsigned int,Command> commands_; /*!< Commands stored in this container, separated by context. @since 0.1.0 */
+};
+
+/**
  * A command shell console using a Stream for input/output.
  *
  * Must be constructed within a std::shared_ptr.
@@ -1240,52 +1343,6 @@ private:
 
 	Stream &stream_; /*!< Stream used for the input/output of this shell. @since 0.1.0 */
 };
-
-/**
- * Utility functions to parse and format command lines.
- */
-namespace command_line {
-
-/**
- * Parse a command line into separate parameters using built-in
- * escaping rules.
- *
- * Trailing spaces are represented by a "\0" parameter value.
- *
- * @param[in] line Command line to parse.
- * @return A list of strings, one per command line parameter.
- * @since 0.4.0
- */
-std::list<std::string> parse(const std::string &line);
-
-/**
- * Format a command line from separate parameters using built-in
- * escaping rules.
- *
- * Trailing spaces are represented by a "\0" parameter value.
- *
- * @param[in] items Command line parameters.
- * @param[in] reserve String buffer size to preallocate.
- * @return A command line, with escaping of characters sufficient
- *         to reproduce the same command line parameters when
- *         parsed.
- * @since 0.4.0
- */
-std::string format(const std::list<std::string> &items, size_t reserve = Shell::MAX_COMMAND_LINE_LENGTH);
-
-/**
- * Identify arguments that indicate a trailing space.
- *
- * Trailing spaces are represented by a "\0" value.
- *
- * @param[in] argument Argument to check.
- * @return True if this argument is a trailing space, otherwise
- *         false.
- * @since 0.4.0
- */
-bool is_trailing_space(const std::string &argument);
-
-} // namespace command_line
 
 } // namespace console
 

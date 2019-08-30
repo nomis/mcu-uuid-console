@@ -25,17 +25,14 @@ namespace uuid {
 
 namespace console {
 
-namespace command_line {
-
-std::list<std::string> parse(const std::string &line) {
-	std::list<std::string> items;
+CommandLine::CommandLine(const std::string &line) {
 	bool string_escape_double = false;
 	bool string_escape_single = false;
 	bool char_escape = false;
 	bool quoted_argument = false;
 
 	if (!line.empty()) {
-		items.emplace_back("");
+		parameters_.emplace_back("");
 	}
 
 	for (char c : line) {
@@ -43,18 +40,18 @@ std::list<std::string> parse(const std::string &line) {
 		case ' ':
 			if (string_escape_double || string_escape_single) {
 				if (char_escape) {
-					items.back().push_back('\\');
+					parameters_.back().push_back('\\');
 					char_escape = false;
 				}
-				items.back().push_back(' ');
+				parameters_.back().push_back(' ');
 			} else if (char_escape) {
-				items.back().push_back(' ');
+				parameters_.back().push_back(' ');
 				char_escape = false;
 			} else {
 				// Begin a new argument if the previous
 				// one is not empty or it was quoted
-				if (quoted_argument || !items.back().empty()) {
-					items.emplace_back("");
+				if (quoted_argument || !parameters_.back().empty()) {
+					parameters_.emplace_back("");
 				}
 				quoted_argument = false;
 			}
@@ -62,7 +59,7 @@ std::list<std::string> parse(const std::string &line) {
 
 		case '"':
 			if (char_escape || string_escape_single) {
-				items.back().push_back('"');
+				parameters_.back().push_back('"');
 				char_escape = false;
 			} else {
 				string_escape_double = !string_escape_double;
@@ -72,7 +69,7 @@ std::list<std::string> parse(const std::string &line) {
 
 		case '\'':
 			if (char_escape || string_escape_double) {
-				items.back().push_back('\'');
+				parameters_.back().push_back('\'');
 				char_escape = false;
 			} else {
 				string_escape_single = !string_escape_single;
@@ -82,7 +79,7 @@ std::list<std::string> parse(const std::string &line) {
 
 		case '\\':
 			if (char_escape) {
-				items.back().push_back('\\');
+				parameters_.back().push_back('\\');
 				char_escape = false;
 			} else {
 				char_escape = true;
@@ -91,28 +88,28 @@ std::list<std::string> parse(const std::string &line) {
 
 		default:
 			if (char_escape) {
-				items.back().push_back('\\');
+				parameters_.back().push_back('\\');
 				char_escape = false;
 			}
-			items.back().push_back(c);
+			parameters_.back().push_back(c);
 			break;
 		}
 	}
 
-	if (!items.empty() && items.back().empty() && !quoted_argument) {
-		// A trailing space is represented by a NUL character
-		items.back().push_back('\0');
+	if (!parameters_.empty() && parameters_.back().empty() && !quoted_argument) {
+		parameters_.pop_back();
+		if (!parameters_.empty()) {
+			trailing_space = true;
+		}
 	}
-
-	return items;
 }
 
-std::string format(const std::list<std::string> &items, size_t reserve) {
+std::string CommandLine::to_string(size_t reserve) {
 	std::string line;
 
 	line.reserve(reserve);
 
-	for (auto &item : items) {
+	for (auto &item : parameters_) {
 		if (!line.empty()) {
 			line += ' ';
 		}
@@ -120,10 +117,6 @@ std::string format(const std::list<std::string> &items, size_t reserve) {
 		if (item.empty()) {
 			line += '\"';
 			line += '\"';
-			continue;
-		}
-
-		if (is_trailing_space(item)) {
 			continue;
 		}
 
@@ -141,15 +134,17 @@ std::string format(const std::list<std::string> &items, size_t reserve) {
 		}
 	}
 
+	if (trailing_space && !line.empty()) {
+		line += ' ';
+	}
+
 	return line;
 }
 
-bool is_trailing_space(const std::string &argument) {
-	// A trailing space is represented by a NUL character
-	return argument.size() == 1 && argument[0] == '\0';
+void CommandLine::reset() {
+	parameters_.clear();
+	trailing_space = false;
 }
-
-} // namespace command_line
 
 } // namespace console
 
