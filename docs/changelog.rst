@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+0.4.0_ |--| 2019-08-30
+----------------------
+
+Support for printing all currently available commands.
+
 Added
 ~~~~~
 
@@ -95,7 +100,8 @@ Added
 
 .. |--| unicode:: U+2013 .. EN DASH
 
-.. _Unreleased: https://github.com/nomis/mcu-uuid-console/compare/0.3.0...HEAD
+.. _Unreleased: https://github.com/nomis/mcu-uuid-console/compare/0.4.0...HEAD
+.. _0.4.0: https://github.com/nomis/mcu-uuid-console/compare/0.3.0...0.4.0
 .. _0.3.0: https://github.com/nomis/mcu-uuid-console/compare/0.2.0...0.3.0
 .. _0.2.0: https://github.com/nomis/mcu-uuid-console/compare/0.1.0...0.2.0
 .. _0.1.0: https://github.com/nomis/mcu-uuid-console/commits/0.1.0
