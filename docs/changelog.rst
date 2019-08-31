@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+0.5.0_ |--| 2019-08-31
+----------------------
+
+Fix escaping of command line argument help text.
+
 Changed
 ~~~~~~~
 
@@ -113,7 +118,8 @@ Added
 
 .. |--| unicode:: U+2013 .. EN DASH
 
-.. _Unreleased: https://github.com/nomis/mcu-uuid-console/compare/0.4.0...HEAD
+.. _Unreleased: https://github.com/nomis/mcu-uuid-console/compare/0.5.0...HEAD
+.. _0.5.0: https://github.com/nomis/mcu-uuid-console/compare/0.4.0...0.5.0
 .. _0.4.0: https://github.com/nomis/mcu-uuid-console/compare/0.3.0...0.4.0
 .. _0.3.0: https://github.com/nomis/mcu-uuid-console/compare/0.2.0...0.3.0
 .. _0.2.0: https://github.com/nomis/mcu-uuid-console/compare/0.1.0...0.2.0
