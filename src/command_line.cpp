@@ -110,7 +110,7 @@ CommandLine::CommandLine(std::initializer_list<const std::vector<std::string>> a
 	}
 }
 
-std::string CommandLine::to_string(size_t reserve) {
+std::string CommandLine::to_string(size_t reserve) const {
 	std::string line;
 	size_t escape = escape_parameters_;
 

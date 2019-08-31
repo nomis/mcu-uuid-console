@@ -909,7 +909,7 @@ public:
 	 *         parsed.
 	 * @since 0.4.0
 	 */
-	std::string to_string(size_t reserve = Shell::MAX_COMMAND_LINE_LENGTH);
+	std::string to_string(size_t reserve = Shell::MAX_COMMAND_LINE_LENGTH) const;
 
 	/**
 	 * Get the total size of the command line parameters, taking into
