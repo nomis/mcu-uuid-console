@@ -1199,26 +1199,12 @@ public:
 	 * context and with the current flags.
 	 *
 	 * @param[in] shell Shell that is executing the command.
-	 * @param[in,out] command_line Command line parameters. (This will
-	 *                             be reset.)
+	 * @param[in] command_line Command line parameters.
 	 * @return An object describing the result of the command execution
 	 *         operation.
 	 * @since 0.1.0
 	 */
-	Execution execute_command(Shell &shell, CommandLine &command_line);
-	/**
-	 * Execute a command for a Shell if it exists in the current
-	 * context and with the current flags.
-	 *
-	 * @param[in] shell Shell that is executing the command.
-	 * @param[in] command_line Command line parameters.
-	 * @return An object describing the result of the command execution
-	 *         operation.
-	 * @since 0.5.0
-	 */
-	inline Execution execute_command(Shell &shell, CommandLine &&command_line) {
-		return execute_command(shell, command_line);
-	}
+	Execution execute_command(Shell &shell, CommandLine &&command_line);
 
 	/**
 	 * Complete a partial command for a Shell if it exists in the

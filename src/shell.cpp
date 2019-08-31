@@ -380,7 +380,7 @@ void Shell::process_command() {
 	prompt_displayed_ = false;
 
 	if (!command_line->empty() && commands_) {
-		auto execution = commands_->execute_command(*this, command_line);
+		auto execution = commands_->execute_command(*this, std::move(command_line));
 
 		if (execution.error != nullptr) {
 			println(execution.error);

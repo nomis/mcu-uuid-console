@@ -74,7 +74,7 @@ void Commands::add_command(unsigned int context, unsigned int flags,
 			std::forward_as_tuple(flags, name, arguments, function, arg_function));
 }
 
-Commands::Execution Commands::execute_command(Shell &shell, CommandLine &command_line) {
+Commands::Execution Commands::execute_command(Shell &shell, CommandLine &&command_line) {
 	auto commands = find_command(shell, command_line);
 	auto longest = commands.exact.crbegin();
 	Execution result;
