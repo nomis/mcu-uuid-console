@@ -636,7 +636,7 @@ private:
 		 *                              execution.
 		 * @since 0.1.0
 		 */
-		PasswordData(const __FlashStringHelper *password_prompt, password_function password_function);
+		PasswordData(const __FlashStringHelper *password_prompt, password_function &&password_function);
 		~PasswordData() override = default;
 
 		const __FlashStringHelper *password_prompt_; /*!< Prompt requesting password input. @since 0.1.0 */
@@ -660,7 +660,7 @@ private:
 		 *                           normal execution.
 		 * @since 0.1.0
 		 */
-		DelayData(uint64_t delay_time, delay_function delay_function);
+		DelayData(uint64_t delay_time, delay_function &&delay_function);
 		~DelayData() override = default;
 
 		uint64_t delay_time_; /*!< Future uptime to resume execution (in milliseconds). @since 0.1.0 */
@@ -682,7 +682,7 @@ private:
 		 *                              returns true.
 		 * @since 0.2.0
 		 */
-		explicit BlockingData(blocking_function blocking_function);
+		explicit BlockingData(blocking_function &&blocking_function);
 		~BlockingData() override = default;
 
 		blocking_function blocking_function_; /*!< Function execute on every loop_one(). @since 0.2.0 */
@@ -708,7 +708,7 @@ private:
 		 * @param[in] content Log message content.
 		 * @since 0.1.0
 		 */
-		QueuedLogMessage(unsigned long id, std::shared_ptr<uuid::log::Message> content);
+		QueuedLogMessage(unsigned long id, std::shared_ptr<uuid::log::Message> &&content);
 		~QueuedLogMessage() = default;
 
 		const unsigned long id_; /*!< Sequential identifier for this log message. @since 0.1.0 */
@@ -888,7 +888,7 @@ public:
 	 *                      line.
 	 * @since 0.4.0
 	 */
-	CommandLine(std::initializer_list<const std::vector<std::string>> arguments);
+	explicit CommandLine(std::initializer_list<const std::vector<std::string>> arguments);
 
 	~CommandLine() = default;
 
@@ -1319,7 +1319,7 @@ private:
 	 *          a partial component.
 	 * @since 0.1.0
 	 */
-	bool find_longest_common_prefix(const std::multimap<size_t,const Command*> &commands, size_t shortest_match, std::vector<std::string> &longest_name);
+	static bool find_longest_common_prefix(const std::multimap<size_t,const Command*> &commands, size_t shortest_match, std::vector<std::string> &longest_name);
 
 	/**
 	 * Find the longest common prefix from a list of potential arguments.
@@ -1328,7 +1328,7 @@ private:
 	 * @return The longest common prefix, which could be empty.
 	 * @since 0.1.0
 	 */
-	std::string find_longest_common_prefix(const std::vector<std::string> &arguments);
+	static std::string find_longest_common_prefix(const std::vector<std::string> &arguments);
 
 	std::multimap<unsigned int,Command> commands_; /*!< Commands stored in this container, separated by context. @since 0.1.0 */
 };

@@ -203,7 +203,7 @@ void Shell::loop_normal() {
 	previous_ = c;
 }
 
-Shell::PasswordData::PasswordData(const __FlashStringHelper *password_prompt, password_function password_function)
+Shell::PasswordData::PasswordData(const __FlashStringHelper *password_prompt, password_function &&password_function)
 		: password_prompt_(password_prompt), password_function_(password_function) {
 
 }
@@ -274,7 +274,7 @@ void Shell::loop_password() {
 	previous_ = c;
 }
 
-Shell::DelayData::DelayData(uint64_t delay_time, delay_function delay_function)
+Shell::DelayData::DelayData(uint64_t delay_time, delay_function &&delay_function)
 		: delay_time_(delay_time), delay_function_(delay_function) {
 
 }
@@ -296,7 +296,7 @@ void Shell::loop_delay() {
 	}
 }
 
-Shell::BlockingData::BlockingData(blocking_function blocking_function)
+Shell::BlockingData::BlockingData(blocking_function &&blocking_function)
 		: blocking_function_(blocking_function) {
 
 }
@@ -328,25 +328,25 @@ void Shell::loop_blocking() {
 void Shell::enter_password(const __FlashStringHelper *prompt, password_function function) {
 	if (mode_ == Mode::NORMAL) {
 		mode_ = Mode::PASSWORD;
-		mode_data_ = std::make_unique<Shell::PasswordData>(prompt, function);
+		mode_data_ = std::make_unique<Shell::PasswordData>(prompt, std::move(function));
 	}
 }
 
 void Shell::delay_for(unsigned long ms, delay_function function) {
-	delay_until(uuid::get_uptime_ms() + ms, function);
+	delay_until(uuid::get_uptime_ms() + ms, std::move(function));
 }
 
 void Shell::delay_until(uint64_t ms, delay_function function) {
 	if (mode_ == Mode::NORMAL) {
 		mode_ = Mode::DELAY;
-		mode_data_ = std::make_unique<Shell::DelayData>(ms, function);
+		mode_data_ = std::make_unique<Shell::DelayData>(ms, std::move(function));
 	}
 }
 
 void Shell::block_with(blocking_function function) {
 	if (mode_ == Mode::NORMAL) {
 		mode_ = Mode::BLOCKING;
-		mode_data_ = std::make_unique<Shell::BlockingData>(function);
+		mode_data_ = std::make_unique<Shell::BlockingData>(std::move(function));
 	}
 }
 
