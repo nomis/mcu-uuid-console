@@ -75,7 +75,7 @@ void Commands::add_command(unsigned int context, unsigned int flags,
 			std::forward_as_tuple(flags, name, arguments, function, arg_function));
 }
 
-Commands::Execution Commands::execute_command(Shell &shell, const CommandLine &command_line) {
+Commands::Execution Commands::execute_command(Shell &shell, CommandLine &command_line) {
 	auto commands = find_command(shell, command_line);
 	auto longest = commands.exact.crbegin();
 	Execution result;
@@ -86,7 +86,12 @@ Commands::Execution Commands::execute_command(Shell &shell, const CommandLine &c
 		result.error = F("Command not found");
 	} else if (commands.exact.count(longest->first) == 1) {
 		auto &command = longest->second;
-		std::vector<std::string> arguments{std::next(command_line->cbegin(), command->name_.size()), command_line->cend()};
+		std::vector<std::string> arguments;
+
+		for (auto it = std::next(command_line->cbegin(), command->name_.size()); it != command_line->cend(); it++) {
+			arguments.push_back(std::move(*it));
+		}
+		command_line.reset();
 
 		if (commands.partial.upper_bound(longest->first) != commands.partial.end() && !arguments.empty()) {
 			result.error = F("Command not found");

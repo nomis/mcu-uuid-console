@@ -4,6 +4,12 @@ Change log
 Unreleased_
 -----------
 
+Changed
+~~~~~~~
+
+* Avoid copying command line arguments when executing commands.
+* Executed commands can now modify their arguments.
+
 0.4.0_ |--| 2019-08-30
 ----------------------
 
