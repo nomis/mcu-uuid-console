@@ -157,6 +157,7 @@ next:
 
 void CommandLine::reset() {
 	parameters_.clear();
+	escape_all_parameters();
 	trailing_space = false;
 }
 
