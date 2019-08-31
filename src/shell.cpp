@@ -22,7 +22,6 @@
 #include <stdarg.h>
 
 #include <memory>
-#include <list>
 #include <set>
 #include <string>
 #include <vector>

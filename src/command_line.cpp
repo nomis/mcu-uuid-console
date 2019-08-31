@@ -18,8 +18,8 @@
 
 #include <uuid/console.h>
 
-#include <list>
 #include <string>
+#include <vector>
 
 namespace uuid {
 

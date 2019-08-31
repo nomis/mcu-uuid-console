@@ -969,14 +969,14 @@ public:
 	 * @return A pointer to the parameters.
 	 * @since 0.4.0
 	 */
-	inline std::list<std::string>* operator->() { return &parameters_; }
+	inline std::vector<std::string>* operator->() { return &parameters_; }
 	/**
 	 * Obtain the parameters for this command line.
 	 *
 	 * @return A pointer to the parameters.
 	 * @since 0.4.0
 	 */
-	inline const std::list<std::string>* operator->() const { return &parameters_; }
+	inline const std::vector<std::string>* operator->() const { return &parameters_; }
 
 	/**
 	 * Compare a command line to another command line for equality.
@@ -1004,7 +1004,7 @@ public:
 	bool trailing_space = false; /*!< Command line has a trailing space. @since 0.4.0 */
 
 private:
-	std::list<std::string> parameters_; /*!< Separate command line parameters. @since 0.4.0 */
+	std::vector<std::string> parameters_; /*!< Separate command line parameters. @since 0.4.0 */
 	size_t escape_parameters_ = std::numeric_limits<size_t>::max(); /*!< Number of initial arguments to escape in output. @since 0.5.0 */
 };
 
@@ -1049,19 +1049,19 @@ public:
 	/**
 	 * Function to obtain completions for a command line.
 	 *
-	 * This is a list instead of set so that a custom sort order can be
-	 * used. It should normally be sorted lexicographically so that the
-	 * list of options is not confusing.
+	 * This is a vector instead of set so that a custom sort order can
+	 * be used. It should normally be sorted lexicographically so that
+	 * the list of options is not confusing.
 	 *
 	 * @param[in] shell Shell instance that has a command line matching
 	 *                  this command.
 	 * @param[in] arguments Command line arguments prior to (but
 	 *                      excluding) the argument being completed.
-	 * @return List of possible values for the next argument on the
-	 *         command line.
+	 * @return Possible values for the next argument on the command
+	 *         line.
 	 * @since 0.1.0
 	 */
-	using argument_completion_function = std::function<const std::list<std::string>(Shell &shell, const std::vector<std::string> &arguments)>;
+	using argument_completion_function = std::function<const std::vector<std::string>(Shell &shell, const std::vector<std::string> &arguments)>;
 
 	/**
 	 * Function to apply an operation to a command.
@@ -1333,7 +1333,7 @@ private:
 	 *          a partial component.
 	 * @since 0.1.0
 	 */
-	bool find_longest_common_prefix(const std::multimap<size_t,const Command*> &commands, size_t shortest_match, std::list<std::string> &longest_name);
+	bool find_longest_common_prefix(const std::multimap<size_t,const Command*> &commands, size_t shortest_match, std::vector<std::string> &longest_name);
 
 	/**
 	 * Find the longest common prefix from a list of potential arguments.
@@ -1342,7 +1342,7 @@ private:
 	 * @return The longest common prefix, which could be empty.
 	 * @since 0.1.0
 	 */
-	std::string find_longest_common_prefix(const std::list<std::string> &arguments);
+	std::string find_longest_common_prefix(const std::vector<std::string> &arguments);
 
 	std::multimap<unsigned int,Command> commands_; /*!< Commands stored in this container, separated by context. @since 0.1.0 */
 };

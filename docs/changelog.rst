@@ -9,6 +9,8 @@ Changed
 
 * Avoid copying command line arguments when executing commands.
 * Executed commands can now modify their arguments.
+* Use ``std::vector`` instead of ``std::list`` for most containers to
+  reduce memory usage.
 
 Fixed
 ~~~~~

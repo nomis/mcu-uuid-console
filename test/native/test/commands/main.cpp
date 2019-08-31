@@ -19,7 +19,6 @@
 #include <Arduino.h>
 #include <unity.h>
 
-#include <list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -2808,8 +2807,8 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	},
-	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
-		std::list<std::string> potential_arguments;
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
+		std::vector<std::string> potential_arguments;
 
 		if (arguments.size() == 0) {
 			potential_arguments.emplace_back("aaaaa");
@@ -2840,8 +2839,8 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	},
-	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
-		std::list<std::string> potential_arguments;
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
+		std::vector<std::string> potential_arguments;
 
 		if (arguments.size() == 0) {
 			potential_arguments.emplace_back("aaaaa");
@@ -2872,8 +2871,8 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	},
-	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
-		std::list<std::string> potential_arguments;
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
+		std::vector<std::string> potential_arguments;
 
 		if (arguments.size() == 1) {
 			potential_arguments.emplace_back("aaaaa");
@@ -2904,8 +2903,8 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	},
-	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
-		return std::list<std::string>{"test"};
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
+		return std::vector<std::string>{"test"};
 	});
 
 	commands.add_command(0, 0, flash_string_vector{F("test_j")}, flash_string_vector{F("[one]"), F("[two]")},
@@ -2918,11 +2917,11 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	},
-	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
 		if (arguments.empty()) {
-			return std::list<std::string>{""};
+			return std::vector<std::string>{""};
 		} else {
-			return std::list<std::string>{};
+			return std::vector<std::string>{};
 		}
 	});
 
@@ -2936,11 +2935,11 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	},
-	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
 		if (arguments.empty()) {
-			return std::list<std::string>{" "};
+			return std::vector<std::string>{" "};
 		} else {
-			return std::list<std::string>{};
+			return std::vector<std::string>{};
 		}
 	});
 
@@ -2954,11 +2953,11 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	},
-	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
 		if (arguments.empty()) {
-			return std::list<std::string>{"", " "};
+			return std::vector<std::string>{"", " "};
 		} else {
-			return std::list<std::string>{};
+			return std::vector<std::string>{};
 		}
 	});
 
@@ -2972,11 +2971,11 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	},
-	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
 		if (arguments.empty()) {
-			return std::list<std::string>{"hello world"};
+			return std::vector<std::string>{"hello world"};
 		} else {
-			return std::list<std::string>{};
+			return std::vector<std::string>{};
 		}
 	});
 

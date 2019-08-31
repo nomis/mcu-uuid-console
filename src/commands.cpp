@@ -21,7 +21,6 @@
 #include <Arduino.h>
 
 #include <algorithm>
-#include <list>
 #include <memory>
 #include <map>
 #include <set>
@@ -109,8 +108,10 @@ Commands::Execution Commands::execute_command(Shell &shell, CommandLine &command
 	return result;
 }
 
-bool Commands::find_longest_common_prefix(const std::multimap<size_t,const Command*> &commands, size_t shortest_match, std::list<std::string> &longest_name) {
+bool Commands::find_longest_common_prefix(const std::multimap<size_t,const Command*> &commands, size_t shortest_match, std::vector<std::string> &longest_name) {
 	size_t component_prefix = 0;
+
+	longest_name.reserve(shortest_match);
 
 	if (shortest_match > 1) {
 		// Check if any of the commands have a common prefix of components
@@ -168,7 +169,7 @@ bool Commands::find_longest_common_prefix(const std::multimap<size_t,const Comma
 	return true;
 }
 
-std::string Commands::find_longest_common_prefix(const std::list<std::string> &arguments) {
+std::string Commands::find_longest_common_prefix(const std::vector<std::string> &arguments) {
 	auto& first = *arguments.begin();
 	bool all_match = true;
 	size_t chars_prefix = 0;
@@ -210,7 +211,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 
 	bool exact_match_wants_more = !commands.exact.empty() && command_line.total_size() > commands.exact.begin()->second->name_.size();
 	std::unique_ptr<Command> temp_command;
-	std::list<std::string> temp_command_name;
+	std::vector<std::string> temp_command_name;
 	std::multimap<size_t,const Command*>::iterator temp_command_it;
 
 	if (shortest_count > 1 && (commands.exact.empty() || exact_match_wants_more)) {
@@ -264,7 +265,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 
 			auto potential_arguments = matching_command->arg_function_
 					? matching_command->arg_function_(shell, arguments)
-							: std::list<std::string>{};
+							: std::vector<std::string>{};
 
 			// Remove arguments that can't match
 			if (!command_line.trailing_space) {
