@@ -33,7 +33,7 @@ using ::uuid::console::Shell;
 
 class DummyShell: public Shell {
 public:
-	DummyShell() : Shell(std::make_shared<Commands>(), 0, 0) {};
+	DummyShell(unsigned int context = 0) : Shell(std::make_shared<Commands>(), context, 0) {};
 	~DummyShell() override = default;
 
 protected:
@@ -65,7 +65,7 @@ static void test_completion0() {
 	auto completion = commands.complete_command(shell, CommandLine(""));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(25, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(26, completion.help.size());
 }
 
 /**
@@ -2642,6 +2642,40 @@ static void test_completion9k() {
 	}
 }
 
+/**
+ * Command names should be escaped but argument help should not.
+ */
+static void test_completion10a() {
+	auto completion = commands.complete_command(shell, CommandLine("test_m"));
+
+	TEST_ASSERT_EQUAL_STRING("test_m\\ with\\ spaces ", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
+/**
+ * Argument completion should be escaped but argument help should not.
+ */
+static void test_completion10b() {
+	auto completion = commands.complete_command(shell, CommandLine("test_m\\ with\\ spaces "));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("hello\\ world [another thing]", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Execute a command with spaces in its name.
+ */
+static void test_execution10a() {
+	run = "";
+	auto execution = commands.execute_command(shell, CommandLine("test_m\\ with\\ spaces hello world"));
+
+	TEST_ASSERT_NULL(execution.error);
+	TEST_ASSERT_EQUAL_STRING("test_m with spaces hello world", run.c_str());
+}
 
 int main(int argc, char *argv[]) {
 	commands.add_command(0, 0, flash_string_vector{F("help")},
@@ -2928,6 +2962,24 @@ int main(int argc, char *argv[]) {
 		}
 	});
 
+	commands.add_command(0, 0, flash_string_vector{F("test_m with spaces")}, flash_string_vector{F("[one thing]"), F("[another thing]")},
+			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) {
+		run = "test_m with spaces";
+		for (auto& argument : arguments) {
+			run += " " + argument;
+			if (argument.empty()) {
+				run += "<empty>";
+			}
+		}
+	},
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::list<std::string> {
+		if (arguments.empty()) {
+			return std::list<std::string>{"hello world"};
+		} else {
+			return std::list<std::string>{};
+		}
+	});
+
 	UNITY_BEGIN();
 	RUN_TEST(test_completion0);
 	RUN_TEST(test_execution0);
@@ -3046,6 +3098,10 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_completion9i);
 	RUN_TEST(test_completion9j);
 	RUN_TEST(test_completion9k);
+
+	RUN_TEST(test_completion10a);
+	RUN_TEST(test_completion10b);
+	RUN_TEST(test_execution10a);
 
 	return UNITY_END();
 }

@@ -245,6 +245,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 		if (command_line.total_size() > result.replacement->size() && command_line.total_size() <= command_name_size + matching_command->maximum_arguments()) {
 			// Try to auto-complete arguments
 			std::vector<std::string> arguments{std::next(command_line->cbegin(), result.replacement->size()), command_line->cend()};
+
 			result.replacement->insert(result.replacement->end(), arguments.cbegin(), arguments.cend());
 			result.replacement.trailing_space = command_line.trailing_space;
 
@@ -303,11 +304,15 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 			}
 
 			CommandLine remaining_help;
+
 			if (!potential_arguments.empty()) {
 				// Remaining help should skip the suggested argument
 				current_args_count++;
 			}
+
 			if (current_args_count < matching_command->maximum_arguments()) {
+				remaining_help.escape_initial_parameters();
+
 				for (auto it = std::next(matching_command->arguments_.cbegin(), current_args_count); it != matching_command->arguments_.cend(); it++) {
 					remaining_help->push_back(std::move(read_flash_string(*it)));
 				}
@@ -322,7 +327,9 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 					CommandLine help;
 
 					help->emplace_back(potential_argument);
+
 					if (!remaining_help->empty()) {
+						help.escape_initial_parameters();
 						help->insert(help->end(), remaining_help->begin(), remaining_help->end());
 					}
 
@@ -359,6 +366,8 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 
 				help->emplace_back(name);
 			}
+
+			help.escape_initial_parameters();
 
 			for (auto argument : command_it->second->arguments_) {
 				// Skip parts of the command arguments that exist in the command line

@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <deque>
 #include <functional>
+#include <limits>
 #include <list>
 #include <memory>
 #include <map>
@@ -929,6 +930,40 @@ public:
 	void reset();
 
 	/**
+	 * Escape all parameters when formatting the command line for
+	 * output.
+	 *
+	 * This is the default.
+	 *
+	 * @since 0.5.0
+	 */
+	inline void escape_all_parameters() { escape_parameters_ = std::numeric_limits<size_t>::max(); }
+	/**
+	 * Only escape the number of parameters that currently exist when
+	 * formatting the command line for output.
+	 *
+	 * Use this before appending argument help that should not be
+	 * escaped.
+	 *
+	 * Empty parameters will always be escaped.
+	 *
+	 * @since 0.5.0
+	 */
+	inline void escape_initial_parameters() { escape_parameters_ = parameters_.size(); }
+	/**
+	 * Escape the first count parameters when formatting the command
+	 * line for output.
+	 *
+	 * Use this to prevent argument help from being escaped.
+	 *
+	 * Empty parameters will always be escaped.
+	 *
+	 * @param[in] count Number of parameters to escape.
+	 * @since 0.5.0
+	 */
+	inline void escape_initial_parameters(size_t count) { escape_parameters_ = count; }
+
+	/**
 	 * Obtain the parameters for this command line.
 	 *
 	 * @return A pointer to the parameters.
@@ -970,6 +1005,7 @@ public:
 
 private:
 	std::list<std::string> parameters_; /*!< Separate command line parameters. @since 0.4.0 */
+	size_t escape_parameters_ = std::numeric_limits<size_t>::max(); /*!< Number of initial arguments to escape in output. @since 0.5.0 */
 };
 
 /**

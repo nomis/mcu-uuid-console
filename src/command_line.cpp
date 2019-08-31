@@ -112,6 +112,7 @@ CommandLine::CommandLine(std::initializer_list<const std::vector<std::string>> a
 
 std::string CommandLine::to_string(size_t reserve) {
 	std::string line;
+	size_t escape = escape_parameters_;
 
 	line.reserve(reserve);
 
@@ -123,7 +124,7 @@ std::string CommandLine::to_string(size_t reserve) {
 		if (item.empty()) {
 			line += '\"';
 			line += '\"';
-			continue;
+			goto next;
 		}
 
 		for (char c : item) {
@@ -132,11 +133,18 @@ std::string CommandLine::to_string(size_t reserve) {
 			case '\"':
 			case '\'':
 			case '\\':
-				line += '\\';
+				if (escape > 0) {
+					line += '\\';
+				}
 				break;
 			}
 
 			line += c;
+		}
+
+next:
+		if (escape > 0) {
+			escape--;
 		}
 	}
 

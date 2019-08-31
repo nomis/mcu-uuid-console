@@ -10,6 +10,11 @@ Changed
 * Avoid copying command line arguments when executing commands.
 * Executed commands can now modify their arguments.
 
+Fixed
+~~~~~
+
+* Don't escape command line argument help text.
+
 0.4.0_ |--| 2019-08-30
 ----------------------
 

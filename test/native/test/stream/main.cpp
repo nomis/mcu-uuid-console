@@ -983,6 +983,32 @@ static void test_no_stream() {
 	TEST_ASSERT_FALSE(console->running());
 }
 
+/**
+ * Test help output.
+ */
+static void test_help() {
+	TestStream stream{true};
+	auto console = std::make_shared<StreamConsole>(commands, stream);
+
+	console->start();
+	stream << "help\n";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"$ help\r\n"
+			"test\r\n"
+			"noop\r\n"
+			"command\\ with\\ spaces and\\ more\\ spaces <argument with spaces> [and more spaces] don't do this it's confusing\r\n"
+			"help\r\n"
+			"$ ", stream.output().c_str());
+
+	console->stop();
+	TEST_ASSERT_FALSE(console->running());
+}
+
 int main(int argc, char *argv[]) {
 	commands->add_command(0, 0, flash_string_vector{F("test")},
 			[&] (Shell &shell, const std::vector<std::string> &arguments __attribute__((unused))) {
@@ -993,6 +1019,15 @@ int main(int argc, char *argv[]) {
 	commands->add_command(0, 0, flash_string_vector{F("noop")},
 			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 
+	});
+	commands->add_command(0, 0, flash_string_vector{F("command with spaces"), F("and more spaces")},
+			flash_string_vector{F("<argument with spaces>"), F("[and more spaces]"), F("don't do this it's confusing")},
+			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+
+	});
+	commands->add_command(0, 0, flash_string_vector{F("help")},
+			[] (Shell &shell, const std::vector<std::string> &arguments __attribute__((unused))) {
+		shell.print_all_available_commands();
 	});
 
 	UNITY_BEGIN();
@@ -1034,6 +1069,7 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_blocking_lf_read_no_peek_with_data);
 	RUN_TEST(test_blocking_stop);
 	RUN_TEST(test_no_stream);
+	RUN_TEST(test_help);
 
 	return UNITY_END();
 }

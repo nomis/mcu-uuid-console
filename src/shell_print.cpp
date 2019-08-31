@@ -122,7 +122,13 @@ size_t Shell::vprintf(const __FlashStringHelper *format, va_list ap) {
 void Shell::print_all_available_commands() {
 	commands_->for_each_available_command(*this,
 			[this] (std::vector<std::string> &name, std::vector<std::string> &arguments) {
-		println(CommandLine{name, arguments}.to_string(maximum_command_line_length()));
+		CommandLine command_line{name, arguments};
+
+		command_line.escape_initial_parameters(name.size());
+		name.clear();
+		arguments.clear();
+
+		println(command_line.to_string(maximum_command_line_length()));
 	});
 }
 
