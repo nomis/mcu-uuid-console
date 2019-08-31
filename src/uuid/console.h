@@ -891,8 +891,12 @@ public:
 
 	~CommandLine() = default;
 
+#ifdef UNIT_TEST
 	CommandLine(CommandLine&&) = default;
 	CommandLine& operator=(CommandLine&&) = default;
+	CommandLine(const CommandLine&) __attribute__((deprecated)) = default;
+	CommandLine& operator=(const CommandLine&) __attribute__((deprecated)) = default;
+#endif
 
 	/**
 	 * Format a command line from separate parameters using built-in
@@ -965,9 +969,6 @@ public:
 	bool trailing_space = false; /*!< Command line has a trailing space. @since 0.4.0 */
 
 private:
-	CommandLine(const CommandLine&) = delete;
-	CommandLine& operator=(const CommandLine&) = delete;
-
 	std::list<std::string> parameters_; /*!< Separate command line parameters. @since 0.4.0 */
 };
 
@@ -1256,6 +1257,10 @@ private:
 		const flash_string_vector arguments_; /*!< Help text for arguments that the command accepts as a std::vector of flash strings. @since 0.1.0 */
 		command_function function_; /*!< Function to be used when the command is executed. @since 0.1.0 */
 		argument_completion_function arg_function_; /*!< Function to be used to perform argument completions for this command. @since 0.1.0 */
+
+	private:
+		Command(const Command&) = delete;
+		Command& operator=(const Command&) = delete;
 	};
 
 	/**
@@ -1364,6 +1369,7 @@ protected:
 private:
 	StreamConsole(const StreamConsole&) = delete;
 	StreamConsole& operator=(const StreamConsole&) = delete;
+
 	/**
 	 * Check for at least one character of available input.
 	 *
