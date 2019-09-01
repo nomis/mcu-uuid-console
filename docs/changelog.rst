@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+Fixed
+~~~~~
+
+* Remove messages from the log queue before processing them.
+
 0.5.0_ |--| 2019-08-31
 ----------------------
 
