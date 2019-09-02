@@ -211,14 +211,18 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 	std::unique_ptr<Command> temp_command;
 	std::vector<std::string> temp_command_name;
 	std::multimap<size_t,const Command*>::iterator temp_command_it;
-	bool temp_command_force_help = false;
 
 	if (commands.partial.size() > 1 && (commands.exact.empty() || command_line.total_size() > commands.exact.begin()->second->name_.size())) {
 		// There are multiple partial matching commands, find the longest common prefix
 		bool whole_components = find_longest_common_prefix(commands.partial, match->first, temp_command_name);
 
-		// Don't output help if the longest common prefix is the same as the shortest matching command
-		temp_command_force_help = count > 1 || (temp_command_name.size() - (whole_components ? 0 : 1)) != match->first;
+		if (count == 1 && whole_components && temp_command_name.size() == match->first) {
+			// If the longest common prefix is the same as the single shortest matching command
+			// then there's no need for a temporary command, but add a trailing space because
+			// there are longer commands that matched.
+			temp_command_name.clear();
+			result.replacement.trailing_space = true;
+		}
 
 		if (!temp_command_name.empty() && command_line.total_size() <= temp_command_name.size()) {
 			temp_command = std::make_unique<Command>(0, flash_string_vector{}, flash_string_vector{}, nullptr, nullptr);
@@ -351,7 +355,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 	}
 
 
-	if (count > 1 || temp_command_force_help) {
+	if (count > 1 || temp_command) {
 		// Provide help for all of the potential commands
 		for (auto command_it = commands.partial.begin(); command_it != commands.partial.end(); command_it++) {
 			CommandLine help;
