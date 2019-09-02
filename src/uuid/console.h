@@ -966,6 +966,20 @@ public:
 	/**
 	 * Obtain the parameters for this command line.
 	 *
+	 * @return A reference to the parameters.
+	 * @since 0.6.0
+	 */
+	inline std::vector<std::string>& operator*() { return parameters_; }
+	/**
+	 * Obtain the parameters for this command line.
+	 *
+	 * @return A reference to the parameters.
+	 * @since 0.6.0
+	 */
+	inline const std::vector<std::string>& operator*() const { return parameters_; }
+	/**
+	 * Obtain the parameters for this command line.
+	 *
 	 * @return A pointer to the parameters.
 	 * @since 0.4.0
 	 */
