@@ -85,7 +85,7 @@ static void test_execution0() {
 static void test_completion1a() {
 	auto completion = commands.complete_command(shell, CommandLine("sh"));
 
-	TEST_ASSERT_EQUAL_STRING("show", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("show ", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
@@ -585,7 +585,7 @@ static void test_execution3c() {
 static void test_completion4a() {
 	auto completion = commands.complete_command(shell, CommandLine("se"));
 
-	TEST_ASSERT_EQUAL_STRING("set", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("set ", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
@@ -1488,7 +1488,7 @@ static void test_execution5j() {
 static void test_completion6a() {
 	auto completion = commands.complete_command(shell, CommandLine("ge"));
 
-	TEST_ASSERT_EQUAL_STRING("get", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("get ", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 

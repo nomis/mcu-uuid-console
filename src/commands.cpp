@@ -113,21 +113,21 @@ bool Commands::find_longest_common_prefix(const std::multimap<size_t,const Comma
 
 	longest_name.reserve(shortest_match);
 
-	if (shortest_match > 1) {
+	{
 		// Check if any of the commands have a common prefix of components
 		auto &first = commands.begin()->second->name_;
 		bool all_match = true;
 
-		for (size_t length = 1; all_match && length < shortest_match; length++) {
+		for (size_t length = 0; all_match && length < shortest_match; length++) {
 			for (auto command_it = std::next(commands.begin()); command_it != commands.end(); command_it++) {
-				if (read_flash_string(*std::next(first.begin(), length - 1)) != read_flash_string(*std::next(command_it->second->name_.begin(), length - 1))) {
+				if (read_flash_string(*std::next(first.begin(), length)) != read_flash_string(*std::next(command_it->second->name_.begin(), length))) {
 					all_match = false;
 					break;
 				}
 			}
 
 			if (all_match) {
-				component_prefix = length;
+				component_prefix = length + 1;
 			}
 		}
 
@@ -137,7 +137,6 @@ bool Commands::find_longest_common_prefix(const std::multimap<size_t,const Comma
 			name_it++;
 		}
 	}
-
 
 	if (component_prefix < shortest_match) {
 		// Check if the next component has a common substring
@@ -209,14 +208,17 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 		return result;
 	}
 
-	bool exact_match_wants_more = !commands.exact.empty() && command_line.total_size() > commands.exact.begin()->second->name_.size();
 	std::unique_ptr<Command> temp_command;
 	std::vector<std::string> temp_command_name;
 	std::multimap<size_t,const Command*>::iterator temp_command_it;
+	bool temp_command_force_help = false;
 
-	if (commands.partial.size() > 1 && (commands.exact.empty() || exact_match_wants_more)) {
+	if (commands.partial.size() > 1 && (commands.exact.empty() || command_line.total_size() > commands.exact.begin()->second->name_.size())) {
 		// There are multiple partial matching commands, find the longest common prefix
 		bool whole_components = find_longest_common_prefix(commands.partial, match->first, temp_command_name);
+
+		// Don't output help if the longest common prefix is the same as the shortest matching command
+		temp_command_force_help = count > 1 || (temp_command_name.size() - (whole_components ? 0 : 1)) != match->first;
 
 		if (!temp_command_name.empty() && command_line.total_size() <= temp_command_name.size()) {
 			temp_command = std::make_unique<Command>(0, flash_string_vector{}, flash_string_vector{}, nullptr, nullptr);
@@ -348,7 +350,8 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 		commands.partial.erase(temp_command_it);
 	}
 
-	if (count > 1 || (temp_command && (commands.exact.empty() || exact_match_wants_more))) {
+
+	if (count > 1 || temp_command_force_help) {
 		// Provide help for all of the potential commands
 		for (auto command_it = commands.partial.begin(); command_it != commands.partial.end(); command_it++) {
 			CommandLine help;
