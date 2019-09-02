@@ -8,6 +8,9 @@ Fixed
 ~~~~~
 
 * Remove messages from the log queue before processing them.
+* Problems with tab completion of commands and arguments when there are
+  multiple exact matches or there is a single shortest partial match
+  with multiple longer partial matches.
 
 0.5.0_ |--| 2019-08-31
 ----------------------

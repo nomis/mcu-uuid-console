@@ -64,7 +64,7 @@ static void test_completion0() {
 	auto completion = commands.complete_command(shell, CommandLine(""));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(26, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(30, completion.help.size());
 }
 
 /**
@@ -257,13 +257,20 @@ static void test_execution1g() {
 
 /**
  * A partial command with multiple potential matches with a common prefix (that is not
- * itself a command) should be completed up to that point with a trailing space.
+ * itself a command) should be completed up to that point with a trailing space and
+ * return help for all the matching commands.
  */
 static void test_completion2a() {
 	auto completion = commands.complete_command(shell, CommandLine("cons"));
 
 	TEST_ASSERT_EQUAL_STRING("console log ", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
+	if (completion.help.size() == 3) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("err", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("warning", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("info", (*it++).to_string().c_str());
+	}
 }
 
 /**
@@ -279,13 +286,20 @@ static void test_execution2a() {
 
 /**
  * A partial command with multiple potential matches with a common prefix (that is not
- * itself a command) should be completed up to that point with a trailing space.
+ * itself a command) should be completed up to that point with a trailing space and
+ * return help for all the matching commands.
  */
 static void test_completion2b() {
 	auto completion = commands.complete_command(shell, CommandLine("console"));
 
 	TEST_ASSERT_EQUAL_STRING("console log ", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
+	if (completion.help.size() == 3) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("err", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("warning", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("info", (*it++).to_string().c_str());
+	}
 }
 
 /**
@@ -301,13 +315,20 @@ static void test_execution2b() {
 
 /**
  * A partial command with multiple potential matches with a common prefix (that is not
- * itself a command) should be completed up to that point with a trailing space.
+ * itself a command) should be completed up to that point with a trailing space and
+ * return help for all the matching commands.
  */
 static void test_completion2c() {
 	auto completion = commands.complete_command(shell, CommandLine("console "));
 
 	TEST_ASSERT_EQUAL_STRING("console log ", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
+	if (completion.help.size() == 3) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("err", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("warning", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("info", (*it++).to_string().c_str());
+	}
 }
 
 /**
@@ -323,13 +344,20 @@ static void test_execution2c() {
 
 /**
  * A partial command with multiple potential matches with a common prefix (that is not
- * itself a command) should be completed up to that point with a trailing space.
+ * itself a command) should be completed up to that point with a trailing space and
+ * return help for all the matching commands.
  */
 static void test_completion2d() {
 	auto completion = commands.complete_command(shell, CommandLine("console l"));
 
 	TEST_ASSERT_EQUAL_STRING("console log ", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
+	if (completion.help.size() == 3) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("err", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("warning", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("info", (*it++).to_string().c_str());
+	}
 }
 
 /**
@@ -345,13 +373,20 @@ static void test_execution2d() {
 
 /**
  * A partial command with multiple potential matches with a common prefix (that is not
- * itself a command) should be completed up to that point with a trailing space.
+ * itself a command) should be completed up to that point with a trailing space and
+ * return help for all the matching commands.
  */
 static void test_completion2e() {
 	auto completion = commands.complete_command(shell, CommandLine("console log"));
 
 	TEST_ASSERT_EQUAL_STRING("console log ", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
+	if (completion.help.size() == 3) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("err", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("warning", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("info", (*it++).to_string().c_str());
+	}
 }
 
 /**
@@ -2676,6 +2711,70 @@ static void test_execution10a() {
 	TEST_ASSERT_EQUAL_STRING("test_m with spaces hello world", run.c_str());
 }
 
+/**
+ * Completion with command parameters of different lengths can't go further than a common substring.
+ */
+static void test_completion11a() {
+	auto completion = commands.complete_command(shell, CommandLine("z"));
+
+	TEST_ASSERT_EQUAL_STRING("zy", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("zync", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("zyslog level", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Completion with command parameters of different lengths can't go further than a common substring.
+ */
+static void test_completion11b() {
+	auto completion = commands.complete_command(shell, CommandLine("zy"));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("zync", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("zyslog level", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Regression test.
+ */
+static void test_completion12a() {
+	auto completion = commands.complete_command(shell, CommandLine("yet wifi s"));
+
+	TEST_ASSERT_EQUAL_STRING("yet wifi ssid ", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
+/**
+ * Regression test.
+ */
+static void test_completion12b() {
+	auto completion = commands.complete_command(shell, CommandLine("yet wifi ssid "));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(1, completion.help.size());
+	if (completion.help.size() == 1) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("hello\\ world", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Regression test.
+ */
+static void test_completion12c() {
+	auto completion = commands.complete_command(shell, CommandLine("yet wifi ssid h"));
+
+	TEST_ASSERT_EQUAL_STRING("yet wifi ssid hello\\ world", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
 int main(int argc, char *argv[]) {
 	commands.add_command(0, 0, flash_string_vector{F("help")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
@@ -2979,6 +3078,26 @@ int main(int argc, char *argv[]) {
 		}
 	});
 
+	commands.add_command(0, 0, flash_string_vector{F("zync")},
+			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("zyslog"), F("level")},
+			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("yet")},
+			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("yet"), F("wifi"), F("ssid")}, flash_string_vector{F("<name>")},
+			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+	},
+
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
+		return std::vector<std::string>{"hello world"};
+	});
+
 	UNITY_BEGIN();
 	RUN_TEST(test_completion0);
 	RUN_TEST(test_execution0);
@@ -3101,6 +3220,13 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_completion10a);
 	RUN_TEST(test_completion10b);
 	RUN_TEST(test_execution10a);
+
+	RUN_TEST(test_completion11a);
+	RUN_TEST(test_completion11b);
+
+	RUN_TEST(test_completion12a);
+	RUN_TEST(test_completion12b);
+	RUN_TEST(test_completion12c);
 
 	return UNITY_END();
 }
