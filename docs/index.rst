@@ -13,6 +13,15 @@ Provides a framework for creating a console shell with commands. The
 container of commands (``uuid::console::Commands``) can be shared
 across multiple shell instances.
 
+Dependencies
+------------
+
+* `mcu-uuid-common <https://mcu-uuid-common.readthedocs.io/>`_
+* `mcu-uuid-log <https://mcu-uuid-log.readthedocs.io/>`_
+
+Refer to the :download:`library.json <../library.json>` file for more
+details.
+
 Contents
 --------
 
