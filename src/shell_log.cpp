@@ -45,11 +45,11 @@ void Shell::operator<<(std::shared_ptr<uuid::log::Message> message) {
 	log_messages_.emplace_back(log_message_id_++, std::move(message));
 }
 
-uuid::log::Level Shell::get_log_level() const {
+uuid::log::Level Shell::log_level() const {
 	return uuid::log::Logger::get_log_level(this);
 }
 
-void Shell::set_log_level(uuid::log::Level level) {
+void Shell::log_level(uuid::log::Level level) {
 	uuid::log::Logger::register_handler(this, level);
 }
 

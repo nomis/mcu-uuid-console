@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+Changed
+~~~~~~~
+
+* Remove ``get_`` and ``set_`` from function names.
+
 Fixed
 ~~~~~
 

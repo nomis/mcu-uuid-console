@@ -123,38 +123,6 @@ public:
 	 */
 	void start();
 	/**
-	 * Add a new log message.
-	 *
-	 * This will be put in a queue for output at the next loop_one()
-	 * process. The queue has a maximum size of maximum_log_messages()
-	 * and will discard the oldest message first.
-	 *
-	 * @param[in] message New log message, shared by all handlers.
-	 * @since 0.1.0
-	 */
-	virtual void operator<<(std::shared_ptr<uuid::log::Message> message);
-	/**
-	 * Get the current log level.
-	 *
-	 * This only affects newly received log messages, not messages that
-	 * have already been queued.
-	 *
-	 * @return The current log level.
-	 * @since 0.1.0
-	 */
-	uuid::log::Level get_log_level() const;
-	/**
-	 * Set the current log level.
-	 *
-	 * This only affects newly received log messages, not messages that
-	 * have already been queued.
-	 *
-	 * @param[in] level Minimum log level that the shell will receive
-	 *                  messages for.
-	 * @since 0.1.0
-	 */
-	void set_log_level(uuid::log::Level level);
-	/**
 	 * Perform one execution step of this shell.
 	 *
 	 * Depending on the current mode, either read input characters and
@@ -191,6 +159,38 @@ public:
 	 * @since 0.1.0
 	 */
 	static inline const uuid::log::Logger& logger() { return logger_; }
+	/**
+	 * Add a new log message.
+	 *
+	 * This will be put in a queue for output at the next loop_one()
+	 * process. The queue has a maximum size of maximum_log_messages()
+	 * and will discard the oldest message first.
+	 *
+	 * @param[in] message New log message, shared by all handlers.
+	 * @since 0.1.0
+	 */
+	virtual void operator<<(std::shared_ptr<uuid::log::Message> message);
+	/**
+	 * Get the current log level.
+	 *
+	 * This only affects newly received log messages, not messages that
+	 * have already been queued.
+	 *
+	 * @return The current log level.
+	 * @since 0.6.0
+	 */
+	uuid::log::Level log_level() const;
+	/**
+	 * Set the current log level.
+	 *
+	 * This only affects newly received log messages, not messages that
+	 * have already been queued.
+	 *
+	 * @param[in] level Minimum log level that the shell will receive
+	 *                  messages for.
+	 * @since 0.6.0
+	 */
+	void log_level(uuid::log::Level level);
 
 	/**
 	 * Get the context at the top of the stack.
