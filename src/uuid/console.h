@@ -193,6 +193,39 @@ public:
 	void log_level(uuid::log::Level level);
 
 	/**
+	 * Get the maximum length of a command line.
+	 *
+	 * @return The maximum length of a command line in bytes.
+	 * @since 0.6.0
+	 */
+	size_t maximum_command_line_length() const;
+	/**
+	 * Set the maximum length of a command line.
+	 *
+	 * Defaults to Shell::MAX_COMMAND_LINE_LENGTH.
+	 *
+	 * @param[in] length The maximum length of a command line in bytes.
+	 * @since 0.6.0
+	 */
+	void maximum_command_line_length(size_t length);
+	/**
+	 * Get the maximum number of queued log messages.
+	 *
+	 * @return The maximum number of queued log messages.
+	 * @since 0.6.0
+	 */
+	size_t maximum_log_messages() const;
+	/**
+	 * Set the maximum number of queued log messages.
+	 *
+	 * Defaults to Shell::MAX_LOG_MESSAGES.
+	 *
+	 * @param[in] count The maximum number of queued log messages.
+	 * @since 0.6.0
+	 */
+	void maximum_log_messages(size_t count);
+
+	/**
 	 * Get the context at the top of the stack.
 	 *
 	 * The current context affects which commands are available.
@@ -470,24 +503,6 @@ protected:
 	 */
 	Shell(std::shared_ptr<Commands> commands, unsigned int context = 0, unsigned int flags = 0);
 
-	/**
-	 * Get the maximum length of a command line.
-	 *
-	 * Defaults to Shell::MAX_COMMAND_LINE_LENGTH.
-	 *
-	 * @return The maximum length of a command line in bytes.
-	 * @since 0.1.0
-	 */
-	virtual size_t maximum_command_line_length() const;
-	/**
-	 * Get the maximum number of queued log messages.
-	 *
-	 * Defaults to Shell::MAX_LOG_MESSAGES.
-	 *
-	 * @return The maximum number of queued log messages.
-	 * @since 0.1.0
-	 */
-	virtual size_t maximum_log_messages() const;
 	/**
 	 * Output ANSI escape sequence to erase the current line.
 	 *
@@ -849,7 +864,9 @@ private:
 	unsigned int flags_ = 0; /*!< Current flags for this shell. Affects which commands are available. @since 0.1.0 */
 	unsigned long log_message_id_ = 0; /*!< The next identifier to use for queued log messages. @since 0.1.0 */
 	std::list<QueuedLogMessage> log_messages_; /*!< Queued log messages, in the order they were received. @since 0.1.0 */
+	size_t maximum_log_messages_ = MAX_LOG_MESSAGES; /*!< Maximum command line length in bytes. @since 0.6.0 */
 	std::string line_buffer_; /*!< Command line buffer. Limited to maximum_command_line_length() bytes. @since 0.1.0 */
+	size_t maximum_command_line_length_ = MAX_COMMAND_LINE_LENGTH; /*!< Maximum command line length in bytes. @since 0.6.0 */
 	unsigned char previous_ = 0; /*!< Previous character that was entered on the command line. Used to detect CRLF line endings. @since 0.1.0 */
 	Mode mode_ = Mode::NORMAL; /*!< Current execution mode. @since 0.1.0 */
 	std::unique_ptr<ModeData> mode_data_ = nullptr; /*!< Data associated with the current execution mode. @since 0.1.0 */

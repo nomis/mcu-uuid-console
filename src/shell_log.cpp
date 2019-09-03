@@ -20,6 +20,7 @@
 
 #include <Arduino.h>
 
+#include <algorithm>
 #include <memory>
 #include <string>
 
@@ -38,7 +39,7 @@ Shell::QueuedLogMessage::QueuedLogMessage(unsigned long id, std::shared_ptr<uuid
 }
 
 void Shell::operator<<(std::shared_ptr<uuid::log::Message> message) {
-	if (log_messages_.size() >= maximum_log_messages()) {
+	if (log_messages_.size() >= maximum_log_messages_) {
 		log_messages_.pop_front();
 	}
 
@@ -54,7 +55,14 @@ void Shell::log_level(uuid::log::Level level) {
 }
 
 size_t Shell::maximum_log_messages() const {
-	return MAX_LOG_MESSAGES;
+	return maximum_log_messages_;
+}
+
+void Shell::maximum_log_messages(size_t count) {
+	maximum_log_messages_ = std::max((size_t)1, count);
+	while (log_messages_.size() > maximum_log_messages_) {
+		log_messages_.pop_front();
+	}
 }
 
 void Shell::output_logs() {

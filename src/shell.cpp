@@ -21,6 +21,7 @@
 #include <Arduino.h>
 #include <stdarg.h>
 
+#include <algorithm>
 #include <memory>
 #include <set>
 #include <string>
@@ -53,7 +54,7 @@ Shell::~Shell() {
 
 void Shell::start() {
 	uuid::log::Logger::register_handler(this, uuid::log::Level::NOTICE);
-	line_buffer_.reserve(maximum_command_line_length());
+	line_buffer_.reserve(maximum_command_line_length_);
 	display_banner();
 	display_prompt();
 	shells_.insert(shared_from_this());
@@ -192,7 +193,7 @@ void Shell::loop_normal() {
 	default:
 		if (c >= '\x20' && c <= '\x7E') {
 			// ASCII text
-			if (line_buffer_.length() < maximum_command_line_length()) {
+			if (line_buffer_.length() < maximum_command_line_length_) {
 				line_buffer_.push_back(c);
 				write((uint8_t)c);
 			}
@@ -264,7 +265,7 @@ void Shell::loop_password() {
 	default:
 		if (c >= '\x20' && c <= '\x7E') {
 			// ASCII text
-			if (line_buffer_.length() < maximum_command_line_length()) {
+			if (line_buffer_.length() < maximum_command_line_length_) {
 				line_buffer_.push_back(c);
 			}
 		}
@@ -369,7 +370,12 @@ void Shell::delete_buffer_word(bool display) {
 }
 
 size_t Shell::maximum_command_line_length() const {
-	return MAX_COMMAND_LINE_LENGTH;
+	return maximum_command_line_length_;
+}
+
+void Shell::maximum_command_line_length(size_t length) {
+	maximum_command_line_length_ = std::max((size_t)1, length);
+	line_buffer_.reserve(maximum_command_line_length_);
 }
 
 void Shell::process_command() {
@@ -405,7 +411,7 @@ void Shell::process_completion() {
 			redisplay = true;
 
 			for (auto &help : completion.help) {
-				std::string help_line = help.to_string(maximum_command_line_length());
+				std::string help_line = help.to_string(maximum_command_line_length_);
 
 				println(help_line);
 			}
@@ -418,7 +424,7 @@ void Shell::process_completion() {
 				redisplay = true;
 			}
 
-			line_buffer_ = completion.replacement.to_string(maximum_command_line_length());
+			line_buffer_ = completion.replacement.to_string(maximum_command_line_length_);
 		}
 
 		if (redisplay) {

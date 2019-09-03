@@ -8,6 +8,8 @@ Changed
 ~~~~~~~
 
 * Remove ``get_`` and ``set_`` from function names.
+* Move maximum command line length and maximum log messages to
+  getter/setter functions.
 
 Fixed
 ~~~~~
