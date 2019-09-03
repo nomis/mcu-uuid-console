@@ -108,8 +108,9 @@ Commands::Execution Commands::execute_command(Shell &shell, CommandLine &&comman
 	return result;
 }
 
-bool Commands::find_longest_common_prefix(const std::multimap<size_t,const Command*> &commands, size_t shortest_match, std::vector<std::string> &longest_name) {
+bool Commands::find_longest_common_prefix(const std::multimap<size_t,const Command*> &commands, std::vector<std::string> &longest_name) {
 	size_t component_prefix = 0;
+	size_t shortest_match = commands.begin()->first;
 
 	longest_name.reserve(shortest_match);
 
@@ -214,7 +215,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 
 	if (commands.partial.size() > 1 && (commands.exact.empty() || command_line.total_size() > commands.exact.begin()->second->name_.size())) {
 		// There are multiple partial matching commands, find the longest common prefix
-		bool whole_components = find_longest_common_prefix(commands.partial, match->first, temp_command_name);
+		bool whole_components = find_longest_common_prefix(commands.partial, temp_command_name);
 
 		if (count == 1 && whole_components && temp_command_name.size() == match->first) {
 			// If the longest common prefix is the same as the single shortest matching command
