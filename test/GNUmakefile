@@ -1,6 +1,6 @@
-.PHONY: all build native
+.PHONY: all build native doxygen
 
-all: build native
+all: build native doxygen
 	python3 version_check.py
 
 build:
@@ -19,3 +19,8 @@ build:
 native:
 	rm -rf native/.pio
 	platformio test -d native
+
+doxygen:
+	wget https://raw.githubusercontent.com/nomis/mcu-uuid-doxygen/master/Doxyfile -O Doxyfile
+	rm -rf html
+	doxygen
