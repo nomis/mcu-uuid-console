@@ -1,4 +1,5 @@
 .pio/
 pio_local.ini
 test/Doxyfile
+test/doxygen.*
 test/html/
