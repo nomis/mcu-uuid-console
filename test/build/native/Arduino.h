@@ -47,6 +47,7 @@ class __FlashStringHelper;
 
 #define strlen_P strlen
 #define strncpy_P strncpy
+#define strcmp_P strcmp
 
 int snprintf_P(char *str, size_t size, const char *format, ...);
 int vsnprintf_P(char *str, size_t size, const char *format, va_list ap);
