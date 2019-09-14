@@ -34,7 +34,7 @@ static const char __pstr__logger_name[] __attribute__((__aligned__(sizeof(int)))
 const uuid::log::Logger Shell::logger_{reinterpret_cast<const __FlashStringHelper *>(__pstr__logger_name), uuid::log::Facility::LPR};
 
 Shell::QueuedLogMessage::QueuedLogMessage(unsigned long id, std::shared_ptr<uuid::log::Message> &&content)
-		: id_(id), content_(content) {
+		: id_(id), content_(std::move(content)) {
 
 }
 

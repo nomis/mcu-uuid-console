@@ -205,7 +205,7 @@ void Shell::loop_normal() {
 }
 
 Shell::PasswordData::PasswordData(const __FlashStringHelper *password_prompt, password_function &&password_function)
-		: password_prompt_(password_prompt), password_function_(password_function) {
+		: password_prompt_(password_prompt), password_function_(std::move(password_function)) {
 
 }
 
@@ -276,7 +276,7 @@ void Shell::loop_password() {
 }
 
 Shell::DelayData::DelayData(uint64_t delay_time, delay_function &&delay_function)
-		: delay_time_(delay_time), delay_function_(delay_function) {
+		: delay_time_(delay_time), delay_function_(std::move(delay_function)) {
 
 }
 
@@ -298,7 +298,7 @@ void Shell::loop_delay() {
 }
 
 Shell::BlockingData::BlockingData(blocking_function &&blocking_function)
-		: blocking_function_(blocking_function) {
+		: blocking_function_(std::move(blocking_function)) {
 
 }
 
