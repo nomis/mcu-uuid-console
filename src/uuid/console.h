@@ -224,6 +224,22 @@ public:
 	 * @since 0.6.0
 	 */
 	void maximum_log_messages(size_t count);
+	/**
+	 * Get the idle timeout.
+	 *
+	 * @return The idle timeout in seconds.
+	 * @since 0.7.0
+	 */
+	size_t idle_timeout() const;
+	/**
+	 * Set the idle timeout.
+	 *
+	 * Defaults to 0 (no idle timeout).
+	 *
+	 * @param[in] timeout Idle timeout in seconds.
+	 * @since 0.7.0
+	 */
+	void idle_timeout(unsigned long timeout);
 
 	/**
 	 * Get the context at the top of the stack.
@@ -877,6 +893,8 @@ private:
 	std::unique_ptr<ModeData> mode_data_ = nullptr; /*!< Data associated with the current execution mode. @since 0.1.0 */
 	bool stopped_ = false; /*!< Indicates that the shell has been stopped. @since 0.1.0 */
 	bool prompt_displayed_ = false; /*!< Indicates that a command prompt has been displayed, so that the output of invoke_command() is correct. @since 0.1.0 */
+	uint64_t idle_time_ = 0; /*!< Time the shell became idle. @since 0.7.0 */
+	uint64_t idle_timeout_ = 0; /*!< Idle timeout (in milliseconds). @since 0.7.0 */
 };
 
 /**

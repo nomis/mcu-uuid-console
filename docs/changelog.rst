@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+Added
+~~~~~
+
+* Configurable idle timeout.
+
 Fixed
 ~~~~~
 

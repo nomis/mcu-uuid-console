@@ -40,3 +40,9 @@ Logging
 Acts as a `log handler <https://mcu-uuid-log.readthedocs.io/>`_ in order
 to output log messages without interrupting the entry of commands at a
 prompt.
+
+Session
+-------
+
+An idle timeout can be configured to automatically stop the shell if it
+is waiting at a prompt for too long.

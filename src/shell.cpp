@@ -27,6 +27,9 @@
 #include <string>
 #include <vector>
 
+#include <uuid/common.h>
+#include <uuid/log.h>
+
 #ifndef __cpp_lib_make_unique
 namespace std {
 
@@ -58,6 +61,7 @@ void Shell::start() {
 	display_banner();
 	display_prompt();
 	shells_.insert(shared_from_this());
+	idle_time_ = uuid::get_uptime_ms();
 	started();
 };
 
@@ -122,6 +126,9 @@ void Shell::loop_normal() {
 	const int input = read_one_char();
 
 	if (input < 0) {
+		if (idle_timeout_ > 0 && uuid::get_uptime_ms() - idle_time_ >= idle_timeout_) {
+			stop();
+		}
 		return;
 	}
 
@@ -206,6 +213,8 @@ void Shell::loop_normal() {
 	// This is a hack to let TelnetStream know that command
 	// execution is complete and that output can be flushed.
 	available_char();
+
+	idle_time_ = uuid::get_uptime_ms();
 }
 
 Shell::PasswordData::PasswordData(const __FlashStringHelper *password_prompt, password_function &&password_function)
@@ -217,6 +226,9 @@ void Shell::loop_password() {
 	const int input = read_one_char();
 
 	if (input < 0) {
+		if (idle_timeout_ > 0 && uuid::get_uptime_ms() - idle_time_ >= idle_timeout_) {
+			stop();
+		}
 		return;
 	}
 
@@ -281,6 +293,8 @@ void Shell::loop_password() {
 	// This is a hack to let TelnetStream know that command
 	// execution is complete and that output can be flushed.
 	available_char();
+
+	idle_time_ = uuid::get_uptime_ms();
 }
 
 Shell::DelayData::DelayData(uint64_t delay_time, delay_function &&delay_function)
@@ -302,6 +316,8 @@ void Shell::loop_delay() {
 		if (running()) {
 			display_prompt();
 		}
+
+		idle_time_ = uuid::get_uptime_ms();
 	}
 }
 
@@ -331,6 +347,8 @@ void Shell::loop_blocking() {
 		if (running()) {
 			display_prompt();
 		}
+
+		idle_time_ = uuid::get_uptime_ms();
 	}
 }
 
@@ -471,6 +489,14 @@ void Shell::invoke_command(const std::string &line) {
 	line_buffer_ = line;
 	print(line_buffer_);
 	process_command();
+}
+
+size_t Shell::idle_timeout() const {
+	return idle_timeout_ / 1000;
+}
+
+void Shell::idle_timeout(unsigned long timeout) {
+	idle_timeout_ = (uint64_t)timeout * 1000;
 }
 
 } // namespace console
