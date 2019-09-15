@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+0.7.0_ |--| 2019-09-15
+----------------------
+
+Add idle timeout.
+
 Added
 ~~~~~
 
@@ -148,7 +153,8 @@ Added
 
 .. |--| unicode:: U+2013 .. EN DASH
 
-.. _Unreleased: https://github.com/nomis/mcu-uuid-console/compare/0.6.0...HEAD
+.. _Unreleased: https://github.com/nomis/mcu-uuid-console/compare/0.7.0...HEAD
+.. _0.7.0: https://github.com/nomis/mcu-uuid-console/compare/0.6.0...0.7.0
 .. _0.6.0: https://github.com/nomis/mcu-uuid-console/compare/0.5.0...0.6.0
 .. _0.5.0: https://github.com/nomis/mcu-uuid-console/compare/0.4.0...0.5.0
 .. _0.4.0: https://github.com/nomis/mcu-uuid-console/compare/0.3.0...0.4.0

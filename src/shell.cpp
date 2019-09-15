@@ -491,7 +491,7 @@ void Shell::invoke_command(const std::string &line) {
 	process_command();
 }
 
-size_t Shell::idle_timeout() const {
+unsigned long Shell::idle_timeout() const {
 	return idle_timeout_ / 1000;
 }
 

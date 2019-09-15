@@ -230,7 +230,7 @@ public:
 	 * @return The idle timeout in seconds.
 	 * @since 0.7.0
 	 */
-	size_t idle_timeout() const;
+	unsigned long idle_timeout() const;
 	/**
 	 * Set the idle timeout.
 	 *
