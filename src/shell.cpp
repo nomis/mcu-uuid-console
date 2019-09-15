@@ -202,6 +202,10 @@ void Shell::loop_normal() {
 	}
 
 	previous_ = c;
+
+	// This is a hack to let TelnetStream know that command
+	// execution is complete and that output can be flushed.
+	available_char();
 }
 
 Shell::PasswordData::PasswordData(const __FlashStringHelper *password_prompt, password_function &&password_function)
@@ -273,6 +277,10 @@ void Shell::loop_password() {
 	}
 
 	previous_ = c;
+
+	// This is a hack to let TelnetStream know that command
+	// execution is complete and that output can be flushed.
+	available_char();
 }
 
 Shell::DelayData::DelayData(uint64_t delay_time, delay_function &&delay_function)
