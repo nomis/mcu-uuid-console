@@ -4,6 +4,19 @@ Change log
 Unreleased_
 -----------
 
+0.7.1_ |--| 2019-09-16
+----------------------
+
+Tab completion bug fixes.
+
+Fixed
+~~~~~
+
+* Problem with tab completion when the partial match commands have
+  arguments and the longest common prefix is returned.
+* Incorrect partial tab completion matches when the command line has a
+  trailing space.
+
 0.7.0_ |--| 2019-09-15
 ----------------------
 
@@ -153,7 +166,8 @@ Added
 
 .. |--| unicode:: U+2013 .. EN DASH
 
-.. _Unreleased: https://github.com/nomis/mcu-uuid-console/compare/0.7.0...HEAD
+.. _Unreleased: https://github.com/nomis/mcu-uuid-console/compare/0.7.1...HEAD
+.. _0.7.1: https://github.com/nomis/mcu-uuid-console/compare/0.7.0...0.7.1
 .. _0.7.0: https://github.com/nomis/mcu-uuid-console/compare/0.6.0...0.7.0
 .. _0.6.0: https://github.com/nomis/mcu-uuid-console/compare/0.5.0...0.6.0
 .. _0.5.0: https://github.com/nomis/mcu-uuid-console/compare/0.4.0...0.5.0
