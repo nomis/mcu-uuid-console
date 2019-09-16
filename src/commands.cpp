@@ -448,6 +448,11 @@ Commands::Match Commands::find_command(Shell &shell, const CommandLine &command_
 					}
 				}
 
+				if (command_line.trailing_space) {
+					// If there's a trailing space in the command line then this can't be a partial match
+					match = false;
+				}
+
 				// Don't check the rest of the command if this is only a partial match
 				break;
 			}
