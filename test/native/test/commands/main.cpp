@@ -64,7 +64,7 @@ static void test_completion0() {
 	auto completion = commands.complete_command(shell, CommandLine(""));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(30, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(32, completion.help.size());
 }
 
 /**
@@ -2775,6 +2775,46 @@ static void test_completion12c() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * Regression test.
+ */
+static void test_completion13a() {
+	auto completion = commands.complete_command(shell, CommandLine("dig"));
+
+	TEST_ASSERT_EQUAL_STRING("digital", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("digitalRead <pin>", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("digitalWrite <pin> <value>", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Regression test.
+ */
+static void test_completion13b() {
+	auto completion = commands.complete_command(shell, CommandLine("digital"));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("digitalRead <pin>", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("digitalWrite <pin> <value>", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Regression test.
+ */
+static void test_completion13c() {
+	auto completion = commands.complete_command(shell, CommandLine("digital "));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+}
+
 int main(int argc, char *argv[]) {
 	commands.add_command(0, 0, flash_string_vector{F("help")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
@@ -3093,9 +3133,16 @@ int main(int argc, char *argv[]) {
 	commands.add_command(0, 0, flash_string_vector{F("yet"), F("wifi"), F("ssid")}, flash_string_vector{F("<name>")},
 			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 	},
-
 	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
 		return std::vector<std::string>{"hello world"};
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("digitalRead")}, flash_string_vector{F("<pin>")},
+			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("digitalWrite")}, flash_string_vector{F("<pin>"), F("<value>")},
+			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 	});
 
 	UNITY_BEGIN();
@@ -3227,6 +3274,10 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_completion12a);
 	RUN_TEST(test_completion12b);
 	RUN_TEST(test_completion12c);
+
+	RUN_TEST(test_completion13a);
+	RUN_TEST(test_completion13b);
+	RUN_TEST(test_completion13c);
 
 	return UNITY_END();
 }
