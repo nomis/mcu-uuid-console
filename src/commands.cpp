@@ -227,30 +227,25 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 
 		if (!temp_command_name.empty() && command_line.total_size() <= temp_command_name.size()) {
 			temp_command = std::make_unique<Command>(0, flash_string_vector{}, flash_string_vector{}, nullptr, nullptr);
-			temp_command_it = commands.partial.emplace(temp_command_name.size(), temp_command.get());
 			count = 1;
-			match = commands.partial.find(temp_command_name.size());
+			match = commands.partial.end();
 			result.replacement.trailing_space = whole_components;
-		}
-	}
 
-	if (count == 1) {
-		// Construct a replacement string for a single matching command
-		auto &matching_command = match->second;
-		// This is awkward but if temp_command is populated, then matching_command->name_ isn't.
-		size_t command_name_size = temp_command ? temp_command_name.size() : matching_command->name_.size();
-
-		if (temp_command) {
 			for (auto &name : temp_command_name) {
 				result.replacement->emplace_back(name);
 			}
-		} else {
-			for (auto &name : matching_command->name_) {
-				result.replacement->push_back(std::move(read_flash_string(name)));
-			}
+		}
+	}
+
+	if (count == 1 && !temp_command) {
+		// Construct a replacement string for a single matching command
+		auto &matching_command = match->second;
+
+		for (auto &name : matching_command->name_) {
+			result.replacement->push_back(std::move(read_flash_string(name)));
 		}
 
-		if (command_line.total_size() > result.replacement->size() && command_line.total_size() <= command_name_size + matching_command->maximum_arguments()) {
+		if (command_line.total_size() > result.replacement->size() && command_line.total_size() <= matching_command->name_.size() + matching_command->maximum_arguments()) {
 			// Try to auto-complete arguments
 			std::vector<std::string> arguments{std::next(command_line->cbegin(), result.replacement->size()), command_line->cend()};
 
@@ -290,7 +285,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 			if (!command_line.trailing_space) {
 				if (potential_arguments.size() == 1) {
 					if (last_argument == *potential_arguments.begin()) {
-						if (result.replacement->size() + 1 < command_name_size + matching_command->maximum_arguments()) {
+						if (result.replacement->size() + 1 < matching_command->name_.size() + matching_command->maximum_arguments()) {
 							// Add a space because this argument is complete and there are more arguments for this command
 							result.replacement.trailing_space = true;
 						}
@@ -344,19 +339,11 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 					result.help.push_back(std::move(help));
 				}
 			}
-		} else if (result.replacement->size() < command_name_size + matching_command->maximum_arguments()) {
+		} else if (result.replacement->size() < matching_command->name_.size() + matching_command->maximum_arguments()) {
 			// Add a space because there are more arguments for this command
 			result.replacement.trailing_space = true;
 		}
-	}
-
-	// Remove the temporary command from the multimap now so that it's not used to create help
-	if (temp_command) {
-		commands.partial.erase(temp_command_it);
-	}
-
-
-	if (count > 1 || temp_command) {
+	} else if (count > 1 || temp_command) {
 		// Provide help for all of the potential commands
 		for (auto command_it = commands.partial.begin(); command_it != commands.partial.end(); command_it++) {
 			CommandLine help;
