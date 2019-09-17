@@ -602,7 +602,8 @@ protected:
 	 * prompt. If the shell is stopped without invoking a command then
 	 * a blank line should usually be printed first.
 	 *
-	 * There is no default action.
+	 * If an idle timeout is set then the default action (since 0.7.2)
+	 * is to stop the shell, otherwise there is no default action.
 	 * @since 0.1.0
 	 */
 	virtual void end_of_transmission();
@@ -848,6 +849,13 @@ private:
 	 * @since 0.1.0
 	 */
 	void process_password(bool completed);
+
+	/**
+	 * Check idle timeout expiry.
+	 *
+	 * @since 0.7.2
+	 */
+	void check_idle_timeout();
 
 	/**
 	 * Delete a word from the command line buffer.

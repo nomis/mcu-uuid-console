@@ -45,7 +45,10 @@ std::string Shell::prompt_suffix() {
 }
 
 void Shell::end_of_transmission() {
-
+	if (idle_timeout_ > 0) {
+		println();
+		stop();
+	}
 }
 
 void Shell::display_prompt() {

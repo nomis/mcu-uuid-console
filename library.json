@@ -12,7 +12,7 @@
 		"type": "git",
 		"url": "https://github.com/nomis/mcu-uuid-console.git"
 	},
-	"version": "0.7.1",
+	"version": "0.7.2",
 	"license": "GPL-3.0-or-later",
 	"homepage": "https://mcu-uuid-console.readthedocs.io/",
 	"export": {

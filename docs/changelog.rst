@@ -4,6 +4,12 @@ Change log
 Unreleased_
 -----------
 
+Changed
+~~~~~~~
+
+* Automatically stop the shell on end of transmission character if an
+  idle timeout is set.
+
 0.7.1_ |--| 2019-09-16
 ----------------------
 

@@ -126,9 +126,7 @@ void Shell::loop_normal() {
 	const int input = read_one_char();
 
 	if (input < 0) {
-		if (idle_timeout_ > 0 && uuid::get_uptime_ms() - idle_time_ >= idle_timeout_) {
-			stop();
-		}
+		check_idle_timeout();
 		return;
 	}
 
@@ -226,9 +224,7 @@ void Shell::loop_password() {
 	const int input = read_one_char();
 
 	if (input < 0) {
-		if (idle_timeout_ > 0 && uuid::get_uptime_ms() - idle_time_ >= idle_timeout_) {
-			stop();
-		}
+		check_idle_timeout();
 		return;
 	}
 
@@ -497,6 +493,13 @@ unsigned long Shell::idle_timeout() const {
 
 void Shell::idle_timeout(unsigned long timeout) {
 	idle_timeout_ = (uint64_t)timeout * 1000;
+}
+
+void Shell::check_idle_timeout() {
+	if (idle_timeout_ > 0 && uuid::get_uptime_ms() - idle_time_ >= idle_timeout_) {
+		println();
+		stop();
+	}
 }
 
 } // namespace console
