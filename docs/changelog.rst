@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+Fixed
+~~~~~
+
+* Output an error message if the shell has no commands.
+
 0.7.2_ |--| 2019-09-17
 ----------------------
 

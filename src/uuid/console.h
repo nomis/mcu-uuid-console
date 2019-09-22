@@ -1399,6 +1399,8 @@ private:
  *
  * Must be constructed within a std::shared_ptr.
  *
+ * Derived classes must call the Shell constructor explicitly.
+ *
  * @since 0.1.0
  */
 class StreamConsole: virtual public Shell {

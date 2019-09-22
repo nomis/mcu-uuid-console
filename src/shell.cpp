@@ -407,11 +407,15 @@ void Shell::process_command() {
 	println();
 	prompt_displayed_ = false;
 
-	if (!command_line->empty() && commands_) {
-		auto execution = commands_->execute_command(*this, std::move(command_line));
+	if (!command_line->empty()) {
+		if (commands_) {
+			auto execution = commands_->execute_command(*this, std::move(command_line));
 
-		if (execution.error != nullptr) {
-			println(execution.error);
+			if (execution.error != nullptr) {
+				println(execution.error);
+			}
+		} else {
+			println(F("No commands configured"));
 		}
 	}
 
