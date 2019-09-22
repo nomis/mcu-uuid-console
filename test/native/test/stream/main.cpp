@@ -115,8 +115,26 @@ uint64_t get_uptime_ms() {
 
 } // namespace uuid
 
+class TestConsole;
+
 static std::shared_ptr<Commands> commands = std::make_shared<Commands>();
-static uuid::console::Shell::blocking_function test_fn;
+static Shell::blocking_function test_fn;
+static std::function<void(TestConsole &shell)> eot_fn;
+
+class TestConsole: public StreamConsole {
+public:
+	TestConsole(std::shared_ptr<Commands> commands, Stream &stream)
+			: uuid::console::Shell(std::move(commands)), StreamConsole(stream) {
+
+	}
+
+	using StreamConsole::invoke_command;
+
+protected:
+	void end_of_transmission() {
+		eot_fn(*this);
+	}
+};
 
 /**
  * Test with CR line endings.
@@ -1001,11 +1019,489 @@ static void test_help() {
 			"$ help\r\n"
 			"test\r\n"
 			"noop\r\n"
+			"exit\r\n"
 			"command\\ with\\ spaces and\\ more\\ spaces <argument with spaces> [and more spaces] don't do this it's confusing\r\n"
 			"help\r\n"
 			"$ ", stream.output().c_str());
 
 	console->stop();
+	TEST_ASSERT_FALSE(console->running());
+}
+
+/**
+ * Test end of transmission with no-op commands.
+ */
+static void test_end_of_transmission1() {
+	TestStream stream{true};
+	auto console = std::make_shared<TestConsole>(commands, stream);
+
+	eot_fn = [] (TestConsole &shell) {
+		shell.invoke_command("noop");
+	};
+
+	console->start();
+	stream << "\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"$ noop\r\n"
+			"$ ", stream.output().c_str());
+
+	stream << "\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"noop\r\n"
+			"$ ", stream.output().c_str());
+
+	stream << "noop\r\n";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"noop\r\n"
+			"$ ", stream.output().c_str());
+
+	stream << "\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"noop\r\n"
+			"$ ", stream.output().c_str());
+
+	stream << "noop\r\n";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"noop\r\n"
+			"$ ", stream.output().c_str());
+
+	stream << "\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"noop\r\n"
+			"$ ", stream.output().c_str());
+
+	stream << "\r\n";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"\r\n"
+			"$ ", stream.output().c_str());
+
+	stream << "\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"noop\r\n"
+			"$ ", stream.output().c_str());
+
+	console->stop();
+	TEST_ASSERT_FALSE(console->running());
+}
+
+/**
+ * Test end of transmission with no prior input and stopping command.
+ */
+static void test_end_of_transmission2a() {
+	TestStream stream{true};
+	auto console = std::make_shared<TestConsole>(commands, stream);
+
+	eot_fn = [] (TestConsole &shell) {
+		shell.invoke_command("exit");
+	};
+
+	console->start();
+	stream << "\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"$ exit\r\n", stream.output().c_str());
+
+	TEST_ASSERT_FALSE(console->running());
+}
+
+/**
+ * Test end of transmission with prior input and stopping command.
+ */
+static void test_end_of_transmission2b() {
+	TestStream stream{true};
+	auto console = std::make_shared<TestConsole>(commands, stream);
+
+	eot_fn = [] (TestConsole &shell) {
+		shell.invoke_command("exit");
+	};
+
+	console->start();
+	stream << "noop\r\n\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"$ noop\r\n"
+			"$ exit\r\n", stream.output().c_str());
+
+	TEST_ASSERT_FALSE(console->running());
+}
+
+/**
+ * Test end of transmission with prior input and stopping command.
+ */
+static void test_end_of_transmission2c() {
+	TestStream stream{true};
+	auto console = std::make_shared<TestConsole>(commands, stream);
+
+	eot_fn = [] (TestConsole &shell) {
+		shell.invoke_command("exit");
+	};
+
+	console->start();
+	stream << "noop\r\n\r\n\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"$ noop\r\n"
+			"$ \r\n"
+			"$ exit\r\n", stream.output().c_str());
+
+	TEST_ASSERT_FALSE(console->running());
+}
+
+/**
+ * Test end of transmission with interrupted input and stopping command.
+ */
+static void test_end_of_transmission2d() {
+	TestStream stream{true};
+	auto console = std::make_shared<TestConsole>(commands, stream);
+
+	eot_fn = [] (TestConsole &shell) {
+		shell.invoke_command("exit");
+	};
+
+	console->start();
+	stream << "noop\x03\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"$ noop\r\n"
+			"$ exit\r\n", stream.output().c_str());
+
+	TEST_ASSERT_FALSE(console->running());
+}
+
+/**
+ * Test end of transmission with no prior input and immediate stop.
+ */
+static void test_end_of_transmission3a() {
+	TestStream stream{true};
+	auto console = std::make_shared<TestConsole>(commands, stream);
+
+	eot_fn = [] (TestConsole &shell) {
+		shell.stop();
+	};
+
+	console->start();
+	stream << "\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"$ ", stream.output().c_str());
+
+	TEST_ASSERT_FALSE(console->running());
+}
+
+/**
+ * Test end of transmission with no prior input and immediate stop (with newline).
+ */
+static void test_end_of_transmission3b() {
+	TestStream stream{true};
+	auto console = std::make_shared<TestConsole>(commands, stream);
+
+	eot_fn = [] (TestConsole &shell) {
+		shell.println();
+		shell.stop();
+	};
+
+	console->start();
+	stream << "\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"$ \r\n", stream.output().c_str());
+
+	TEST_ASSERT_FALSE(console->running());
+}
+
+/**
+ * Test end of transmission with a non-empty buffer.
+ */
+static void test_end_of_transmission4() {
+	TestStream stream{true};
+	auto console = std::make_shared<TestConsole>(commands, stream);
+
+	eot_fn = [] (TestConsole &shell) {
+		shell.stop();
+	};
+
+	console->start();
+	stream << "noop\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"$ noop", stream.output().c_str());
+
+	TEST_ASSERT_TRUE(console->running());
+	console->stop();
+	TEST_ASSERT_FALSE(console->running());
+}
+
+/**
+ * Test end of transmission with deleted input and with no-op command.
+ */
+static void test_end_of_transmission5a() {
+	TestStream stream{true};
+	auto console = std::make_shared<TestConsole>(commands, stream);
+
+	eot_fn = [] (TestConsole &shell) {
+		shell.invoke_command("noop");
+	};
+
+	console->start();
+	stream << "noop\x15\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"$ noop\x1B[0G\x1B[K"
+			"$ noop\r\n"
+			"$ ", stream.output().c_str());
+
+	console->stop();
+	TEST_ASSERT_FALSE(console->running());
+}
+
+/**
+ * Test end of transmission with deleted input and stopping command.
+ */
+static void test_end_of_transmission5b() {
+	TestStream stream{true};
+	auto console = std::make_shared<TestConsole>(commands, stream);
+
+	eot_fn = [] (TestConsole &shell) {
+		shell.invoke_command("exit");
+	};
+
+	console->start();
+	stream << "noop\x15\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"$ noop\x1B[0G\x1B[K"
+			"$ exit\r\n", stream.output().c_str());
+
+	TEST_ASSERT_FALSE(console->running());
+}
+
+/**
+ * Test end of transmission with deleted input and immediate stop.
+ */
+static void test_end_of_transmission5c() {
+	TestStream stream{true};
+	auto console = std::make_shared<TestConsole>(commands, stream);
+
+	eot_fn = [] (TestConsole &shell) {
+		shell.stop();
+	};
+
+	console->start();
+	stream << "noop\x15\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"$ noop\x1B[0G\x1B[K"
+			"$ ", stream.output().c_str());
+
+	TEST_ASSERT_FALSE(console->running());
+}
+
+/**
+ * Test end of transmission with deleted input and immediate stop (with newline).
+ */
+static void test_end_of_transmission5d() {
+	TestStream stream{true};
+	auto console = std::make_shared<TestConsole>(commands, stream);
+
+	eot_fn = [] (TestConsole &shell) {
+		shell.println();
+		shell.stop();
+	};
+
+	console->start();
+	stream << "noop\x15\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"$ noop\x1B[0G\x1B[K"
+			"$ \r\n", stream.output().c_str());
+
+	TEST_ASSERT_FALSE(console->running());
+}
+
+/**
+ * Test end of transmission with deleted input and with no-op command.
+ */
+static void test_end_of_transmission5e() {
+	TestStream stream{true};
+	auto console = std::make_shared<TestConsole>(commands, stream);
+
+	eot_fn = [] (TestConsole &shell) {
+		shell.invoke_command("noop");
+	};
+
+	console->start();
+	stream << "noop\x17\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"$ noop\x1B[0G\x1B[K"
+			"$ noop\r\n"
+			"$ ", stream.output().c_str());
+
+	console->stop();
+	TEST_ASSERT_FALSE(console->running());
+}
+
+/**
+ * Test end of transmission with deleted input and stopping command.
+ */
+static void test_end_of_transmission5f() {
+	TestStream stream{true};
+	auto console = std::make_shared<TestConsole>(commands, stream);
+
+	eot_fn = [] (TestConsole &shell) {
+		shell.invoke_command("exit");
+	};
+
+	console->start();
+	stream << "noop\x17\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"$ noop\x1B[0G\x1B[K"
+			"$ exit\r\n", stream.output().c_str());
+
+	TEST_ASSERT_FALSE(console->running());
+}
+
+/**
+ * Test end of transmission with deleted input and immediate stop.
+ */
+static void test_end_of_transmission5g() {
+	TestStream stream{true};
+	auto console = std::make_shared<TestConsole>(commands, stream);
+
+	eot_fn = [] (TestConsole &shell) {
+		shell.stop();
+	};
+
+	console->start();
+	stream << "noop\x17\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"$ noop\x1B[0G\x1B[K"
+			"$ ", stream.output().c_str());
+
+	TEST_ASSERT_FALSE(console->running());
+}
+
+/**
+ * Test end of transmission with deleted input and immediate stop (with newline).
+ */
+static void test_end_of_transmission5h() {
+	TestStream stream{true};
+	auto console = std::make_shared<TestConsole>(commands, stream);
+
+	eot_fn = [] (TestConsole &shell) {
+		shell.println();
+		shell.stop();
+	};
+
+	console->start();
+	stream << "noop\x17\x04";
+
+	while (!stream.empty()) {
+		console->loop_one();
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"$ noop\x1B[0G\x1B[K"
+			"$ \r\n", stream.output().c_str());
+
 	TEST_ASSERT_FALSE(console->running());
 }
 
@@ -1019,6 +1515,10 @@ int main(int argc, char *argv[]) {
 	commands->add_command(0, 0, flash_string_vector{F("noop")},
 			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 
+	});
+	commands->add_command(0, 0, flash_string_vector{F("exit")},
+			[] (Shell &shell, const std::vector<std::string> &arguments __attribute__((unused))) {
+		shell.stop();
 	});
 	commands->add_command(0, 0, flash_string_vector{F("command with spaces"), F("and more spaces")},
 			flash_string_vector{F("<argument with spaces>"), F("[and more spaces]"), F("don't do this it's confusing")},
@@ -1070,6 +1570,22 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_blocking_stop);
 	RUN_TEST(test_no_stream);
 	RUN_TEST(test_help);
+	RUN_TEST(test_end_of_transmission1);
+	RUN_TEST(test_end_of_transmission2a);
+	RUN_TEST(test_end_of_transmission2b);
+	RUN_TEST(test_end_of_transmission2c);
+	RUN_TEST(test_end_of_transmission2d);
+	RUN_TEST(test_end_of_transmission3a);
+	RUN_TEST(test_end_of_transmission3b);
+	RUN_TEST(test_end_of_transmission4);
+	RUN_TEST(test_end_of_transmission5a);
+	RUN_TEST(test_end_of_transmission5b);
+	RUN_TEST(test_end_of_transmission5c);
+	RUN_TEST(test_end_of_transmission5d);
+	RUN_TEST(test_end_of_transmission5e);
+	RUN_TEST(test_end_of_transmission5f);
+	RUN_TEST(test_end_of_transmission5g);
+	RUN_TEST(test_end_of_transmission5h);
 
 	return UNITY_END();
 }
