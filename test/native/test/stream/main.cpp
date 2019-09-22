@@ -131,8 +131,30 @@ public:
 	using StreamConsole::invoke_command;
 
 protected:
-	void end_of_transmission() {
+	void end_of_transmission() override {
 		eot_fn(*this);
+	}
+};
+
+static size_t recursion_count = 0;
+
+class RecursionConsole: public StreamConsole {
+public:
+	RecursionConsole(std::shared_ptr<Commands> commands, Stream &stream, int level)
+			: uuid::console::Shell(std::move(commands)), StreamConsole(stream), level_(level) {
+
+	}
+
+	const int count_ = recursion_count++;
+	const int level_;
+
+protected:
+	void display_banner() override {
+		printfln("Recursion console %u started (level %d)", count_, level_);
+	}
+
+	void stopped() override {
+		printfln("Recursion console %u stopped (level %d)", count_, level_);
 	}
 };
 
@@ -1019,6 +1041,7 @@ static void test_help() {
 			"$ help\r\n"
 			"test\r\n"
 			"noop\r\n"
+			"sh\r\n"
 			"exit\r\n"
 			"command\\ with\\ spaces and\\ more\\ spaces <argument with spaces> [and more spaces] don't do this it's confusing\r\n"
 			"help\r\n"
@@ -1505,6 +1528,218 @@ static void test_end_of_transmission5h() {
 	TEST_ASSERT_FALSE(console->running());
 }
 
+/**
+ * Test shell recursion using exit commands to stop.
+ */
+static void test_recursion1() {
+	TestStream stream{true};
+	recursion_count = 0;
+	auto console = std::make_shared<RecursionConsole>(commands, stream, 0);
+
+	console->start();
+	stream << "sh\r\n"; /* In 1 */
+	stream << "exit\r\n"; /* Out 1 */
+	stream << "sh\r\nsh\r\n"; /* In 2 */
+	stream << "exit\r\nexit\r\n"; /* Out 2 */
+	stream << "sh\r\nsh\r\nsh\r\n"; /* In 3 */
+	stream << "exit\r\nexit\r\nexit\r\n"; /* Out 3 */
+	stream << "sh\r\nsh\r\nsh\r\nsh\r\n"; /* In 4 */
+	stream << "exit\r\nexit\r\nexit\r\nexit\r\n"; /* Out 4 */
+	stream << "sh\r\nsh\r\nsh\r\nsh\r\nsh\r\n"; /* In 5 */
+	stream << "exit\r\nexit\r\nexit\r\nexit\r\nexit\r\n"; /* Out 5 */
+
+	stream << "sh\r\nsh\r\nsh\r\nsh\r\nsh\r\n"; /* In 5 */
+	stream << "exit\r\n"; /* Out 1 */
+	stream << "sh\r\n"; /* In 1 */
+	stream << "exit\r\nexit\r\n"; /* Out 2 */
+	stream << "sh\r\nsh\r\n"; /* In 2 */
+	stream << "exit\r\nexit\r\nexit\r\n"; /* Out 3 */
+	stream << "sh\r\nsh\r\nsh\r\n"; /* In 3 */
+	stream << "exit\r\nexit\r\nexit\r\nexit\r\nexit\r\n"; /* Out 5 */
+
+	stream << "exit\r\n";
+
+	while (stream.input().length() > 1) {
+		Shell::loop_all(); /* This is unsafe if any of the earlier tests failed */
+	}
+	Shell::loop_all();
+	TEST_ASSERT_EQUAL_STRING("\n", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"Recursion console 0 started (level 0)\r\n"
+			"$ sh\r\n"
+			"Recursion console 1 started (level 1)\r\n"
+			"$ exit\r\n"
+			"Recursion console 1 stopped (level 1)\r\n"
+			"$ sh\r\n"
+			"Recursion console 2 started (level 1)\r\n"
+			"$ sh\r\n"
+			"Recursion console 3 started (level 2)\r\n"
+			"$ exit\r\n"
+			"Recursion console 3 stopped (level 2)\r\n"
+			"$ exit\r\n"
+			"Recursion console 2 stopped (level 1)\r\n"
+			"$ sh\r\n"
+			"Recursion console 4 started (level 1)\r\n"
+			"$ sh\r\n"
+			"Recursion console 5 started (level 2)\r\n"
+			"$ sh\r\n"
+			"Recursion console 6 started (level 3)\r\n"
+			"$ exit\r\n"
+			"Recursion console 6 stopped (level 3)\r\n"
+			"$ exit\r\n"
+			"Recursion console 5 stopped (level 2)\r\n"
+			"$ exit\r\n"
+			"Recursion console 4 stopped (level 1)\r\n"
+			"$ sh\r\n"
+			"Recursion console 7 started (level 1)\r\n"
+			"$ sh\r\n"
+			"Recursion console 8 started (level 2)\r\n"
+			"$ sh\r\n"
+			"Recursion console 9 started (level 3)\r\n"
+			"$ sh\r\n"
+			"Recursion console 10 started (level 4)\r\n"
+			"$ exit\r\n"
+			"Recursion console 10 stopped (level 4)\r\n"
+			"$ exit\r\n"
+			"Recursion console 9 stopped (level 3)\r\n"
+			"$ exit\r\n"
+			"Recursion console 8 stopped (level 2)\r\n"
+			"$ exit\r\n"
+			"Recursion console 7 stopped (level 1)\r\n"
+			"$ sh\r\n"
+			"Recursion console 11 started (level 1)\r\n"
+			"$ sh\r\n"
+			"Recursion console 12 started (level 2)\r\n"
+			"$ sh\r\n"
+			"Recursion console 13 started (level 3)\r\n"
+			"$ sh\r\n"
+			"Recursion console 14 started (level 4)\r\n"
+			"$ sh\r\n"
+			"Recursion console 15 started (level 5)\r\n"
+			"$ exit\r\n"
+			"Recursion console 15 stopped (level 5)\r\n"
+			"$ exit\r\n"
+			"Recursion console 14 stopped (level 4)\r\n"
+			"$ exit\r\n"
+			"Recursion console 13 stopped (level 3)\r\n"
+			"$ exit\r\n"
+			"Recursion console 12 stopped (level 2)\r\n"
+			"$ exit\r\n"
+			"Recursion console 11 stopped (level 1)\r\n"
+			"$ sh\r\n"
+			"Recursion console 16 started (level 1)\r\n"
+			"$ sh\r\n"
+			"Recursion console 17 started (level 2)\r\n"
+			"$ sh\r\n"
+			"Recursion console 18 started (level 3)\r\n"
+			"$ sh\r\n"
+			"Recursion console 19 started (level 4)\r\n"
+			"$ sh\r\n"
+			"Recursion console 20 started (level 5)\r\n"
+			"$ exit\r\n"
+			"Recursion console 20 stopped (level 5)\r\n"
+			"$ sh\r\n"
+			"Recursion console 21 started (level 5)\r\n"
+			"$ exit\r\n"
+			"Recursion console 21 stopped (level 5)\r\n"
+			"$ exit\r\n"
+			"Recursion console 19 stopped (level 4)\r\n"
+			"$ sh\r\n"
+			"Recursion console 22 started (level 4)\r\n"
+			"$ sh\r\n"
+			"Recursion console 23 started (level 5)\r\n"
+			"$ exit\r\n"
+			"Recursion console 23 stopped (level 5)\r\n"
+			"$ exit\r\n"
+			"Recursion console 22 stopped (level 4)\r\n"
+			"$ exit\r\n"
+			"Recursion console 18 stopped (level 3)\r\n"
+			"$ sh\r\n"
+			"Recursion console 24 started (level 3)\r\n"
+			"$ sh\r\n"
+			"Recursion console 25 started (level 4)\r\n"
+			"$ sh\r\n"
+			"Recursion console 26 started (level 5)\r\n"
+			"$ exit\r\n"
+			"Recursion console 26 stopped (level 5)\r\n"
+			"$ exit\r\n"
+			"Recursion console 25 stopped (level 4)\r\n"
+			"$ exit\r\n"
+			"Recursion console 24 stopped (level 3)\r\n"
+			"$ exit\r\n"
+			"Recursion console 17 stopped (level 2)\r\n"
+			"$ exit\r\n"
+			"Recursion console 16 stopped (level 1)\r\n"
+			"$ exit\r\n"
+			"Recursion console 0 stopped (level 0)\r\n", stream.output().c_str());
+
+	TEST_ASSERT_FALSE(console->running());
+}
+
+/**
+ * Test shell recursion using stop function.
+ */
+static void test_recursion2() {
+	TestStream stream{true};
+	recursion_count = 0;
+	auto console = std::make_shared<RecursionConsole>(commands, stream, 0);
+
+	console->start();
+	stream << "sh\r\nsh\r\nsh\r\nsh\r\nsh\r\nsh\r\nsh\r\nsh\r\nsh\r\nsh\r\n"; /* In 10 */
+
+	while (!stream.empty()) {
+		Shell::loop_all(); /* This is unsafe if any of the earlier tests failed */
+	}
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"Recursion console 0 started (level 0)\r\n"
+			"$ sh\r\n"
+			"Recursion console 1 started (level 1)\r\n"
+			"$ sh\r\n"
+			"Recursion console 2 started (level 2)\r\n"
+			"$ sh\r\n"
+			"Recursion console 3 started (level 3)\r\n"
+			"$ sh\r\n"
+			"Recursion console 4 started (level 4)\r\n"
+			"$ sh\r\n"
+			"Recursion console 5 started (level 5)\r\n"
+			"$ sh\r\n"
+			"Recursion console 6 started (level 6)\r\n"
+			"$ sh\r\n"
+			"Recursion console 7 started (level 7)\r\n"
+			"$ sh\r\n"
+			"Recursion console 8 started (level 8)\r\n"
+			"$ sh\r\n"
+			"Recursion console 9 started (level 9)\r\n"
+			"$ sh\r\n"
+			"Recursion console 10 started (level 10)\r\n"
+			"$ ", stream.output().c_str());
+
+	console->stop();
+	TEST_ASSERT_TRUE(console->running());
+
+	size_t maximum_iterations = 100;
+	while (console->running() && maximum_iterations-- != 0) {
+		Shell::loop_all(); /* This is unsafe if any of the earlier tests failed */
+	}
+
+	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
+	TEST_ASSERT_EQUAL_STRING(
+			"Recursion console 10 stopped (level 10)\r\n"
+			"Recursion console 9 stopped (level 9)\r\n"
+			"Recursion console 8 stopped (level 8)\r\n"
+			"Recursion console 7 stopped (level 7)\r\n"
+			"Recursion console 6 stopped (level 6)\r\n"
+			"Recursion console 5 stopped (level 5)\r\n"
+			"Recursion console 4 stopped (level 4)\r\n"
+			"Recursion console 3 stopped (level 3)\r\n"
+			"Recursion console 2 stopped (level 2)\r\n"
+			"Recursion console 1 stopped (level 1)\r\n"
+			"Recursion console 0 stopped (level 0)\r\n", stream.output().c_str());
+
+	TEST_ASSERT_FALSE(console->running());
+}
+
 int main(int argc, char *argv[]) {
 	commands->add_command(0, 0, flash_string_vector{F("test")},
 			[&] (Shell &shell, const std::vector<std::string> &arguments __attribute__((unused))) {
@@ -1515,6 +1750,17 @@ int main(int argc, char *argv[]) {
 	commands->add_command(0, 0, flash_string_vector{F("noop")},
 			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 
+	});
+	commands->add_command(0, 0, flash_string_vector{F("sh")},
+			[] (Shell &shell, const std::vector<std::string> &arguments __attribute__((unused))) {
+		auto console = std::make_shared<RecursionConsole>(commands, shell, dynamic_cast<RecursionConsole&>(shell).level_ + 1);
+		console->start();
+		shell.block_with([console] (Shell &shell, bool stop) -> bool {
+			if (stop) {
+				console->stop();
+			}
+			return !console->running();
+		});
 	});
 	commands->add_command(0, 0, flash_string_vector{F("exit")},
 			[] (Shell &shell, const std::vector<std::string> &arguments __attribute__((unused))) {
@@ -1586,6 +1832,8 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_end_of_transmission5f);
 	RUN_TEST(test_end_of_transmission5g);
 	RUN_TEST(test_end_of_transmission5h);
+	RUN_TEST(test_recursion1);
+	RUN_TEST(test_recursion2);
 
 	return UNITY_END();
 }
