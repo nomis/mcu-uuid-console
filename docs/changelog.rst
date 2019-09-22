@@ -8,6 +8,7 @@ Fixed
 ~~~~~
 
 * Output an error message if the shell has no commands.
+* Avoid running a shell loop if it has already stopped.
 
 0.7.2_ |--| 2019-09-17
 ----------------------

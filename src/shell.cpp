@@ -100,6 +100,10 @@ bool Shell::exit_context() {
 }
 
 void Shell::loop_one() {
+	if (!running()) {
+		return;
+	}
+
 	switch (mode_) {
 	case Mode::NORMAL:
 		output_logs();
