@@ -29,19 +29,19 @@ void Shell::display_banner() {
 }
 
 std::string Shell::hostname_text() {
-	return "";
+	return std::string{};
 }
 
 std::string Shell::context_text() {
-	return "";
+	return std::string{};
 }
 
 std::string Shell::prompt_prefix() {
-	return "";
+	return std::string{};
 }
 
 std::string Shell::prompt_suffix() {
-	return "$";
+	return std::string{'$'};
 }
 
 void Shell::end_of_transmission() {

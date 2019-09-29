@@ -32,7 +32,7 @@ CommandLine::CommandLine(const std::string &line) {
 	bool quoted_argument = false;
 
 	if (!line.empty()) {
-		parameters_.emplace_back("");
+		parameters_.emplace_back(std::string{});
 	}
 
 	for (char c : line) {
@@ -51,7 +51,7 @@ CommandLine::CommandLine(const std::string &line) {
 				// Begin a new argument if the previous
 				// one is not empty or it was quoted
 				if (quoted_argument || !parameters_.back().empty()) {
-					parameters_.emplace_back("");
+					parameters_.emplace_back(std::string{});
 				}
 				quoted_argument = false;
 			}

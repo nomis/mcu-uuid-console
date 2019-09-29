@@ -4,6 +4,12 @@ Change log
 Unreleased_
 -----------
 
+Changed
+~~~~~~~
+
+* Use less memory by not using empty or single character literal
+  strings.
+
 0.7.3_ |--| 2019-09-22
 ----------------------
 
