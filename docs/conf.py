@@ -24,3 +24,4 @@ highlight_language = 'c++'
 todo_include_todos = False
 
 linkcheck_timeout = 60
+linkcheck_ignore = [r'https://github.com/.+/.+/(compare|commits)/.+']
