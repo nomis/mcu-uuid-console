@@ -117,7 +117,6 @@ public:
 	 * The started() function will be called after startup is complete.
 	 *
 	 * Do not call this function more than once.
-	 * Do not call this function from a static initializer.
 	 *
 	 * @since 0.1.0
 	 */
@@ -158,7 +157,7 @@ public:
 	 * @return Logger instance.
 	 * @since 0.1.0
 	 */
-	static inline const uuid::log::Logger& logger() { return logger_; }
+	static const uuid::log::Logger& logger();
 	/**
 	 * Add a new log message.
 	 *
@@ -756,6 +755,14 @@ private:
 	Shell& operator=(const Shell&) = delete;
 
 	/**
+	 * Get registered running shells to be executed.
+	 *
+	 * @return Registered running shells to be executed.
+	 * @since 0.7.4
+	 */
+	static std::set<std::shared_ptr<Shell>>& registered_shells();
+
+	/**
 	 * Perform one execution step in Mode::NORMAL mode.
 	 *
 	 * Read characters and execute commands or invoke tab completion.
@@ -884,9 +891,6 @@ private:
 	 * @since 0.1.0
 	 */
 	size_t vprintf(const __FlashStringHelper *format, va_list ap);
-
-	static const uuid::log::Logger logger_; /*!< uuid::log::Logger instance for shells. @since 0.1.0 */
-	static std::set<std::shared_ptr<Shell>> shells_; /*!< Registered running shells to be executed. @since 0.1.0 */
 
 	std::shared_ptr<Commands> commands_; /*!< Commands available for execution in this shell. @since 0.1.0 */
 	std::deque<unsigned int> context_; /*!< Context stack for this shell. Should never be empty. @since 0.1.0 */

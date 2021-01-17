@@ -56,7 +56,7 @@ void Shell::start() {
 	line_buffer_.reserve(maximum_command_line_length_);
 	display_banner();
 	display_prompt();
-	shells_.insert(shared_from_this());
+	registered_shells().insert(shared_from_this());
 	idle_time_ = uuid::get_uptime_ms();
 	started();
 };
