@@ -21,7 +21,8 @@ Fixed
 ~~~~~
 
 * Make registration of shells safe during static initialization.
-* Make use of the built-in logger instance safe during static initialization.
+* Make use of the built-in logger instance safe during static
+  initialization.
 
 0.7.3_ |--| 2019-09-22
 ----------------------
