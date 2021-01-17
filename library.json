@@ -26,7 +26,7 @@
 	],
 	"dependencies": {
 		"uuid-common": "^1.0.0",
-		"uuid-log": "^2.0.3"
+		"uuid-log": "^2.1.2"
 	},
 	"build": {
 		"flags": "-Wall -Wextra",

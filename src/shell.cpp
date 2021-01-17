@@ -1,6 +1,6 @@
 /*
  * uuid-console - Microcontroller console shell
- * Copyright 2019  Simon Arlott
+ * Copyright 2019,2021  Simon Arlott
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,10 +49,6 @@ namespace console {
 Shell::Shell(std::shared_ptr<Commands> commands, unsigned int context, unsigned int flags)
 		: commands_(std::move(commands)), flags_(flags) {
 	enter_context(context);
-}
-
-Shell::~Shell() {
-	uuid::log::Logger::unregister_handler(this);
 }
 
 void Shell::start() {

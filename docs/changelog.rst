@@ -9,6 +9,8 @@ Changed
 
 * Use less memory by not using empty or single character literal
   strings.
+* Don't unregister log handler explicitly in the destructor, this is now
+  handled by the logging library.
 
 0.7.3_ |--| 2019-09-22
 ----------------------

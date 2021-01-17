@@ -1,6 +1,6 @@
 /*
  * uuid-console - Microcontroller console shell
- * Copyright 2019  Simon Arlott
+ * Copyright 2019,2021  Simon Arlott
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -95,7 +95,7 @@ public:
 	 */
 	using blocking_function = std::function<bool(Shell &shell, bool stop)>;
 
-	~Shell() override;
+	~Shell() = default;
 
 	/**
 	 * Loop through all registered shell objects.
