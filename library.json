@@ -17,7 +17,7 @@
 	"homepage": "https://mcu-uuid-console.readthedocs.io/",
 	"export": {
 		"exclude": [
-			".travis.yml",
+			".uuid-uk/*",
 			"test/*"
 		]
 	},
