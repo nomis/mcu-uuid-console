@@ -21,5 +21,4 @@ from the docs_ directory.
 
 .. _docs: docs/
 
-.. |Build Status| image:: https://travis-ci.org/nomis/mcu-uuid-console.svg?branch=master
-   :target: https://travis-ci.org/nomis/mcu-uuid-console
+.. |Build Status| image:: https://jenkins.uuid.uk/buildStatus/icon?job=mcu-uuid-console%2Fmain
