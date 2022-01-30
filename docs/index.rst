@@ -42,6 +42,6 @@ Resources
    Source code <https://github.com/nomis/mcu-uuid-console>
    Releases <https://github.com/nomis/mcu-uuid-console/releases>
    Namespace reference <https://mcu-doxygen.uuid.uk/namespaceuuid_1_1console.html>
-   PlatformIO library <https://platformio.org/lib/show/6654/uuid-console>
+   PlatformIO library <https://registry.platformio.org/libraries/nomis/uuid-console>
    changelog
    Issue tracker <https://github.com/nomis/mcu-uuid-console/issues>
