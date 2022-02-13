@@ -1,4 +1,4 @@
-.PHONY: all build native doxygen
+.PHONY: all build native coverage doxygen
 
 all: build native doxygen
 	python3 version_check.py
@@ -19,6 +19,11 @@ build:
 native:
 	rm -rf native/.pio
 	platformio test -d native
+
+coverage: native
+	lcov -d native/.pio/build/native/ -c -o native/.pio/coverage.info
+	rm -rf coverage/
+	genhtml -o coverage/ --demangle-cpp --ignore-errors source native/.pio/coverage.info
 
 doxygen:
 	wget https://raw.githubusercontent.com/nomis/mcu-uuid-doxygen/main/Doxyfile -O Doxyfile
