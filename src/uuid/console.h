@@ -1,6 +1,6 @@
 /*
  * uuid-console - Microcontroller console shell
- * Copyright 2019,2021  Simon Arlott
+ * Copyright 2019,2021-2022  Simon Arlott
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1403,7 +1403,8 @@ private:
  *
  * Must be constructed within a std::shared_ptr.
  *
- * Derived classes must call the Shell constructor explicitly.
+ * Derived classes must call the public Shell(std::shared_ptr<Commands>, unsigned int, unsigned int)
+ * constructor explicitly.
  *
  * @since 0.1.0
  */
@@ -1414,6 +1415,10 @@ public:
 	 * default context and initial flags.
 	 *
 	 * The default context is put on the stack and cannot be removed.
+	 *
+	 * Derived classes must not use this constructor. They must call both the
+	 * public Shell(std::shared_ptr<Commands>, unsigned int, unsigned int) and
+	 * StreamConsole(Stream&) constructors explicitly.
 	 *
 	 * @param[in] commands Commands available for execution in this shell.
 	 * @param[in] stream Stream used for the input/output of this shell.
@@ -1448,7 +1453,8 @@ protected:
 	 * inheritance.
 	 *
 	 * This does not initialise the shell completely so the outer
-	 * derived class must call the public constructor or there will be
+	 * derived class must call the public Shell(std::shared_ptr<Commands>, unsigned int, unsigned int)
+	 * constructor or there will be
 	 * no commands. Does not put any default context on the stack.
 	 *
 	 * @since 0.1.0
