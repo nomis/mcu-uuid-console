@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+0.7.6_ |--| 2022-02-19
+----------------------
+
+Tab completion bug fixes.
+
 Changed
 ~~~~~~~
 
@@ -236,7 +241,8 @@ Added
 
 .. |--| unicode:: U+2013 .. EN DASH
 
-.. _Unreleased: https://github.com/nomis/mcu-uuid-console/compare/0.7.5...HEAD
+.. _Unreleased: https://github.com/nomis/mcu-uuid-console/compare/0.7.6...HEAD
+.. _0.7.6: https://github.com/nomis/mcu-uuid-console/compare/0.7.5...0.7.6
 .. _0.7.5: https://github.com/nomis/mcu-uuid-console/compare/0.7.4...0.7.5
 .. _0.7.4: https://github.com/nomis/mcu-uuid-console/compare/0.7.3...0.7.4
 .. _0.7.3: https://github.com/nomis/mcu-uuid-console/compare/0.7.2...0.7.3
