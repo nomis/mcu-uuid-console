@@ -1,6 +1,6 @@
 /*
  * uuid-console - Microcontroller console shell
- * Copyright 2019  Simon Arlott
+ * Copyright 2019,2021-2022  Simon Arlott
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ static void test_completion0() {
 	auto completion = commands.complete_command(shell, CommandLine(""));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(32, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(40, completion.help.size());
 }
 
 /**
@@ -79,14 +79,22 @@ static void test_execution0() {
 }
 
 /**
- * A partial command with only one potential match (that is a prefix for multiple longer commands)
- * should be completed up to that point and no further.
+ * A partial command with only one potential match (that is a prefix for
+ * multiple longer commands) should be completed up to that point and no
+ * further and return those commands as well as itself.
  */
 static void test_completion1a() {
 	auto completion = commands.complete_command(shell, CommandLine("sh"));
 
 	TEST_ASSERT_EQUAL_STRING("show ", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(4, completion.help.size());
+	if (completion.help.size() == 4) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("thing1", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("thing2", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("thing3", (*it++).to_string().c_str());
+	}
 }
 
 /**
@@ -102,15 +110,16 @@ static void test_execution1a() {
 
 /**
  * An exact matching command that is a prefix for multiple longer commands should
- * append a space and return them.
+ * append a space and return them as well as itself.
  */
 static void test_completion1b() {
 	auto completion = commands.complete_command(shell, CommandLine("show"));
 
 	TEST_ASSERT_EQUAL_STRING("show ", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
-	if (completion.help.size() == 3) {
+	TEST_ASSERT_EQUAL_INT(4, completion.help.size());
+	if (completion.help.size() == 4) {
 		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("thing1", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("thing2", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("thing3", (*it++).to_string().c_str());
@@ -130,15 +139,16 @@ static void test_execution1b() {
 
 /**
  * An exact matching command that is a prefix (with a space) for multiple longer
- * commands should complete as far as possible and return the longer commands.
+ * commands should append a space and return them as well as itself.
  */
 static void test_completion1c() {
 	auto completion = commands.complete_command(shell, CommandLine("show "));
 
 	TEST_ASSERT_EQUAL_STRING("show thing", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
-	if (completion.help.size() == 3) {
+	TEST_ASSERT_EQUAL_INT(4, completion.help.size());
+	if (completion.help.size() == 4) {
 		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("thing1", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("thing2", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("thing3", (*it++).to_string().c_str());
@@ -158,15 +168,17 @@ static void test_execution1c() {
 
 /**
  * A partial matching command that is a prefix for multiple longer commands
- * should complete as far as possible and return the longer commands.
+ * should complete as far as possible and return the longer commands as well
+ * as itself.
  */
 static void test_completion1d() {
 	auto completion = commands.complete_command(shell, CommandLine("show th"));
 
 	TEST_ASSERT_EQUAL_STRING("show thing", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
-	if (completion.help.size() == 3) {
+	TEST_ASSERT_EQUAL_INT(4, completion.help.size());
+	if (completion.help.size() == 4) {
 		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("thing1", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("thing2", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("thing3", (*it++).to_string().c_str());
@@ -187,15 +199,17 @@ static void test_execution1d() {
 
 /**
  * A partial matching command that is a prefix for multiple longer commands
- * and is already complete as far as possible will return the longer commands.
+ * and is already complete as far as possible will return the longer commands
+ * as well as itself.
  */
 static void test_completion1e() {
 	auto completion = commands.complete_command(shell, CommandLine("show thing"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
-	if (completion.help.size() == 3) {
+	TEST_ASSERT_EQUAL_INT(4, completion.help.size());
+	if (completion.help.size() == 4) {
 		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("thing1", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("thing2", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("thing3", (*it++).to_string().c_str());
@@ -579,14 +593,20 @@ static void test_execution3c() {
 }
 
 /**
- * A partial command with only one potential match (that is a prefix for multiple longer commands)
- * should be completed up to that point and no further.
+ * A partial command with only one potential match (that is a prefix for one
+ * longer command) should be completed up to that point and no further and
+ * return that command as well as itself.
  */
 static void test_completion4a() {
 	auto completion = commands.complete_command(shell, CommandLine("se"));
 
 	TEST_ASSERT_EQUAL_STRING("set ", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("hostname", (*it++).to_string().c_str());
+	}
 }
 
 /**
@@ -602,13 +622,19 @@ static void test_execution4a() {
 
 /**
  * An exact matching command that is a prefix for one longer command (that has
- * no arguments or longer commands) should complete to that longer command.
+ * no arguments or longer commands) should add a space and return that
+ * command as well as itself.
  */
 static void test_completion4b() {
 	auto completion = commands.complete_command(shell, CommandLine("set"));
 
-	TEST_ASSERT_EQUAL_STRING("set hostname", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("set ", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("hostname", (*it++).to_string().c_str());
+	}
 }
 
 /**
@@ -1482,14 +1508,20 @@ static void test_execution5j() {
 }
 
 /**
- * A partial command with only one exact match (that is a prefix for multiple longer commands)
- * should be completed up to that point and no further.
+ * A partial command with only one exact match (that is a prefix for multiple
+ * longer commands) should be completed up to that point and no further and
+ * return those commands as well as itself.
  */
 static void test_completion6a() {
 	auto completion = commands.complete_command(shell, CommandLine("ge"));
 
 	TEST_ASSERT_EQUAL_STRING("get ", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	if (completion.help.size() == 3) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("hostname", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("uptime", (*it++).to_string().c_str());
+	}
 }
 
 /**
@@ -1504,16 +1536,17 @@ static void test_execution6a() {
 }
 
 /**
- * An exact matching command that is a prefix for multiple different longer commands should
- * add a space and return those commands.
+ * An exact matching command that is a prefix for multiple different longer
+ * commands should add a space and return those commands as well as itself.
  */
 static void test_completion6b() {
 	auto completion = commands.complete_command(shell, CommandLine("get"));
 
 	TEST_ASSERT_EQUAL_STRING("get ", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
-	if (completion.help.size() == 2) {
+	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
+	if (completion.help.size() == 3) {
 		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("hostname", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("uptime", (*it++).to_string().c_str());
 	}
@@ -1531,16 +1564,17 @@ static void test_execution6b() {
 }
 
 /**
- * An exact matching command with a space that is a prefix for multiple different longer
- * commands should return those commands.
+ * An exact matching command with a space that is a prefix for multiple
+ * different longer commands should return those commands as well as itself.
  */
 static void test_completion6c() {
 	auto completion = commands.complete_command(shell, CommandLine("get "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
-	if (completion.help.size() == 2) {
+	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
+	if (completion.help.size() == 3) {
 		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("hostname", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("uptime", (*it++).to_string().c_str());
 	}
@@ -2815,6 +2849,109 @@ static void test_completion13c() {
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 }
 
+/**
+ * Regression test.
+ */
+static void test_completion14a() {
+	auto completion = commands.complete_command(shell, CommandLine("xen"));
+
+	TEST_ASSERT_EQUAL_STRING("xensor ", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
+	if (completion.help.size() == 3) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("a d [thing]", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("b <thing>", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("c e [thing]", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Regression test.
+ */
+static void test_completion14b() {
+	auto completion = commands.complete_command(shell, CommandLine("xensor "));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
+	if (completion.help.size() == 3) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("a d [thing]", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("b <thing>", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("c e [thing]", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Regression test.
+ */
+static void test_completion15a() {
+	auto completion = commands.complete_command(shell, CommandLine("we"));
+
+	TEST_ASSERT_EQUAL_STRING("wet ", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(5, completion.help.size());
+	if (completion.help.size() == 5) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("hostname [name]", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("ota on", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("ota off", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("ota password", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Regression test.
+ */
+static void test_completion15b() {
+	auto completion = commands.complete_command(shell, CommandLine("wet"));
+
+	TEST_ASSERT_EQUAL_STRING("wet ", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(5, completion.help.size());
+	if (completion.help.size() == 4) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("hostname [name]", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("ota on", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("ota off", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("ota password", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Regression test.
+ */
+static void test_completion15c() {
+	auto completion = commands.complete_command(shell, CommandLine("wet "));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(5, completion.help.size());
+	if (completion.help.size() == 5) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("hostname [name]", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("ota on", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("ota off", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("ota password", (*it++).to_string().c_str());
+	}
+}
+
+/**
+ * Regression test.
+ */
+static void test_completion15d() {
+	auto completion = commands.complete_command(shell, CommandLine("wet ota"));
+
+	TEST_ASSERT_EQUAL_STRING("wet ota ", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(3, completion.help.size());
+	if (completion.help.size() == 3) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("on", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("off", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("password", (*it++).to_string().c_str());
+	}
+}
+
+
 int main(int argc, char *argv[]) {
 	commands.add_command(0, 0, flash_string_vector{F("help")},
 			[&] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
@@ -3145,6 +3282,38 @@ int main(int argc, char *argv[]) {
 			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 	});
 
+	commands.add_command(0, 0, flash_string_vector{F("xensor"), F("a"), F("d")}, flash_string_vector{F("[thing]")},
+			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("xensor"), F("b")}, flash_string_vector{F("<thing>")},
+			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("xensor"), F("c"), F("e")}, flash_string_vector{F("[thing]")},
+			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("wet")},
+			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("wet"), F("hostname")}, flash_string_vector{F("[name]")},
+			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("wet"), F("ota"), F("on")},
+			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("wet"), F("ota"), F("off")},
+			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("wet"), F("ota"), F("password")},
+			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+	});
+
 	UNITY_BEGIN();
 	RUN_TEST(test_completion0);
 	RUN_TEST(test_execution0);
@@ -3278,6 +3447,14 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_completion13a);
 	RUN_TEST(test_completion13b);
 	RUN_TEST(test_completion13c);
+
+	RUN_TEST(test_completion14a);
+	RUN_TEST(test_completion14b);
+
+	RUN_TEST(test_completion15a);
+	RUN_TEST(test_completion15b);
+	RUN_TEST(test_completion15c);
+	RUN_TEST(test_completion15d);
 
 	return UNITY_END();
 }

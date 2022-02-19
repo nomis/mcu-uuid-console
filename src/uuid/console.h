@@ -1360,6 +1360,7 @@ private:
 	struct Match {
 		std::multimap<size_t,const Command*> exact; /*!< Commands that match the command line exactly, grouped by the size of the command names. @since 0.1.0 */
 		std::multimap<size_t,const Command*> partial; /*!< Commands that the command line partially matches, grouped by the size of the command names. @since 0.1.0 */
+		std::vector<const Command*> all; /*!< Commands that match the command line, in defined order. @since 0.7.6 */
 	};
 
 	/**

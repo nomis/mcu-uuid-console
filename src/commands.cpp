@@ -1,6 +1,6 @@
 /*
  * uuid-console - Microcontroller console shell
- * Copyright 2019  Simon Arlott
+ * Copyright 2019,2022  Simon Arlott
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -199,12 +199,16 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 
 	auto match = commands.partial.begin();
 	size_t count;
+	bool multiple_matches;
 	if (match != commands.partial.end()) {
 		count = commands.partial.count(match->first);
+		multiple_matches = count > 1 || commands.partial.size() > count
+				|| (!commands.exact.empty() && commands.exact.rbegin()->first >= command_line.total_size());
 	} else if (!commands.exact.empty()) {
 		// Use prev() because both iterators must be forwards
 		match = std::prev(commands.exact.end());
 		count = commands.exact.count(match->first);
+		multiple_matches = false;
 	} else {
 		return result;
 	}
@@ -213,18 +217,11 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 	std::vector<std::string> temp_command_name;
 	std::multimap<size_t,const Command*>::iterator temp_command_it;
 
-	if (commands.partial.size() > 1 && (commands.exact.empty() || command_line.total_size() > commands.exact.begin()->second->name_.size())) {
-		// There are multiple partial matching commands, find the longest common prefix
+	if (multiple_matches && (commands.exact.empty() || command_line.total_size() > commands.exact.begin()->second->name_.size())) {
+		// There are multiple matching commands, find the longest common prefix
 		bool whole_components = find_longest_common_prefix(commands.partial, temp_command_name);
 
-		if (count == 1 && whole_components && temp_command_name.size() == match->first) {
-			// If the longest common prefix is the same as the single shortest matching command
-			// then there's no need for a temporary command, but add a trailing space because
-			// there are longer commands that matched.
-			temp_command_name.clear();
-			result.replacement.trailing_space = true;
-		}
-
+		// Construct a temporary command with the longest common prefix to use as the replacement
 		if (!temp_command_name.empty() && command_line.total_size() <= temp_command_name.size()) {
 			temp_command = std::make_unique<Command>(0, flash_string_vector{}, flash_string_vector{}, nullptr, nullptr);
 			count = 1;
@@ -237,7 +234,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 		}
 	}
 
-	if (count == 1 && !temp_command) {
+	if (count == 1 && !multiple_matches) {
 		// Construct a replacement string for a single matching command
 		auto &matching_command = match->second;
 
@@ -343,13 +340,13 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 			// Add a space because there are more arguments for this command
 			result.replacement.trailing_space = true;
 		}
-	} else if (count > 1 || temp_command) {
+	} else if (count != 0) {
 		// Provide help for all of the potential commands
-		for (auto command_it = commands.partial.begin(); command_it != commands.partial.end(); command_it++) {
+		for (auto command_it = commands.all.begin(); command_it != commands.all.end(); command_it++) {
 			CommandLine help;
 
 			auto line_it = command_line->cbegin();
-			auto flash_name_it = command_it->second->name_.cbegin();
+			auto flash_name_it = (*command_it)->name_.cbegin();
 
 			if (temp_command) {
 				// Skip parts of the command name/line when the longest common prefix was used
@@ -358,13 +355,18 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 					skip--;
 				}
 
+				// Exact match that is shorter than the replacement
+				if (flash_name_it + skip > (*command_it)->name_.cend()) {
+					continue;
+				}
+
 				flash_name_it += skip;
 				while (line_it != command_line->cend()) {
 					line_it++;
 				}
 			}
 
-			for (; flash_name_it != command_it->second->name_.cend(); flash_name_it++) {
+			for (; flash_name_it != (*command_it)->name_.cend(); flash_name_it++) {
 				std::string name = read_flash_string(*flash_name_it);
 
 				// Skip parts of the command name that match the command line
@@ -381,7 +383,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 
 			help.escape_initial_parameters();
 
-			for (auto argument : command_it->second->arguments_) {
+			for (auto argument : (*command_it)->arguments_) {
 				// Skip parts of the command arguments that exist in the command line
 				if (line_it != command_line->cend()) {
 					line_it++;
@@ -395,8 +397,8 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 		}
 	}
 
-	if (count > 1 && !commands.exact.empty()) {
-		// Try to add a space to exact matches
+	if (multiple_matches && !commands.exact.empty() && result.replacement.total_size() == 0) {
+		// Try to add a space to exact matches if there's no other partial match replacement
 		auto longest = commands.exact.crbegin();
 
 		if (commands.exact.count(longest->first) == 1) {
@@ -468,6 +470,7 @@ Commands::Match Commands::find_command(Shell &shell, const CommandLine &command_
 			} else {
 				commands.partial.emplace(command.name_.size(), &command);
 			}
+			commands.all.push_back(&command);
 		}
 	}
 

@@ -4,6 +4,24 @@ Change log
 Unreleased_
 -----------
 
+Changed
+~~~~~~~
+
+* Tab completion now shows an empty line as a suggestion when the
+  current command is an exact match but it also has longer partial
+  matches. Suggested commands will always be output and be less eager
+  to immediately skip to a single longer command.
+
+Fixed
+~~~~~
+
+* Tab completion now takes into account additional matching commands
+  with longer names when there is a single command with a shorter name
+  between them (``a`` will no longer complete to ``a b`` if ``a c d`` is
+  also present).
+* Always order suggested commands by insertion order instead of the
+  length of its name.
+
 0.7.5_ |--| 2021-04-18
 ----------------------
 
