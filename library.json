@@ -18,7 +18,9 @@
 	"export": {
 		"exclude": [
 			".uuid-uk/*",
-			"test/*"
+			"docs/build/*",
+			"test/*",
+			"*.sublime-*"
 		]
 	},
 	"frameworks": [
