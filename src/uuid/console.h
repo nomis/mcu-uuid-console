@@ -288,6 +288,22 @@ public:
 	 */
 	inline void add_flags(unsigned int flags) { flags_ |= flags; }
 	/**
+	 * Check if the current flags include all of the specified flags
+	 * and none of the specified not_flags.
+	 *
+	 * Flags are not affected by execution context. The current flags
+	 * affect which commands are available (for access control).
+	 *
+	 * @param[in] flags Flag bits to check for presence of.
+	 * @param[in] not_flags Flag bits to check for absence of.
+	 * @return True if the current flags includes all of the specified
+	 *         flags and none of the specified not_flags, otherwise false.
+	 * @since 0.8.0
+	 */
+	inline bool has_flags(unsigned int flags, unsigned int not_flags = 0) const {
+		return has_all_flags(flags) && !has_any_flags(not_flags);
+	}
+	/**
 	 * Check if the current flags include all of the specified flags.
 	 *
 	 * Flags are not affected by execution context. The current flags
@@ -296,9 +312,21 @@ public:
 	 * @param[in] flags Flag bits to check for.
 	 * @return True if the current flags includes all of the specified
 	 *         flags, otherwise false.
-	 * @since 0.1.0
+	 * @since 0.8.0
 	 */
-	inline bool has_flags(unsigned int flags) const { return (flags_ & flags) == flags; }
+	inline bool has_all_flags(unsigned int flags) const { return (flags_ & flags) == flags; }
+	/**
+	 * Check if the current flags include any of the specified flags.
+	 *
+	 * Flags are not affected by execution context. The current flags
+	 * affect which commands are available (for access control).
+	 *
+	 * @param[in] flags Flag bits to check for.
+	 * @return True if the current flags includes any of the specified
+	 *         flags, otherwise false.
+	 * @since 0.8.0
+	 */
+	inline bool has_any_flags(unsigned int flags) const { return (flags_ & flags) != 0; }
 	/**
 	 * Remove one or more flags from the current flags.
 	 *
@@ -1201,6 +1229,64 @@ public:
 	 */
 	void add_command(const flash_string_vector &name, const flash_string_vector &arguments,
 			command_function function, argument_completion_function arg_function);
+
+	/**
+	 * Add a command with no arguments to the list of commands in this
+	 * container.
+	 *
+	 * The command will not require any flags for it to be available.
+	 *
+	 * @param[in] context Shell context in which this command is
+	 *                    available.
+	 * @param[in] name Name of the command as a std::vector of flash
+	 *                 strings.
+	 * @param[in] function Function to be used when the command is
+	 *                     executed.
+	 * @since 0.8.0
+	 */
+	void add_command(unsigned int context, const flash_string_vector &name,
+			command_function function);
+	/**
+	 * Add a command with arguments to the list of commands in this
+	 * container.
+	 *
+	 * The command will not require any flags for it to be available.
+	 *
+	 * @param[in] context Shell context in which this command is
+	 *                    available.
+	 * @param[in] name Name of the command as a std::vector of flash
+	 *                 strings.
+	 * @param[in] arguments Help text for arguments that the command
+	 *                      accepts as a std::vector of flash strings
+	 *                      (use "<" to indicate a required argument).
+	 * @param[in] function Function to be used when the command is
+	 *                     executed.
+	 * @since 0.8.0
+	 */
+	void add_command(unsigned int context, const flash_string_vector &name,
+			const flash_string_vector &arguments, command_function function);
+	/**
+	 * Add a command with arguments and automatic argument completion
+	 * to the list of commands in this container.
+	 *
+	 * The command will not require any flags for it to be available.
+	 *
+	 * @param[in] context Shell context in which this command is
+	 *                    available.
+	 * @param[in] name Name of the command as a std::vector of flash
+	 *                 strings.
+	 * @param[in] arguments Help text for arguments that the command
+	 *                      accepts as a std::vector of flash strings
+	 *                      (use "<" to indicate a required argument).
+	 * @param[in] function Function to be used when the command is
+	 *                     executed.
+	 * @param[in] arg_function Function to be used to perform argument
+	 *                         completions for this command.
+	 * @since 0.8.0
+	 */
+	void add_command(unsigned int context, const flash_string_vector &name,
+			const flash_string_vector &arguments, command_function function,
+			argument_completion_function arg_function);
 	/**
 	 * Add a command with no arguments to the list of commands in this
 	 * container.
@@ -1259,6 +1345,70 @@ public:
 	void add_command(unsigned int context, unsigned int flags,
 			const flash_string_vector &name, const flash_string_vector &arguments,
 			command_function function, argument_completion_function arg_function);
+	/**
+	 * Add a command with no arguments to the list of commands in this
+	 * container.
+	 *
+	 * @param[in] context Shell context in which this command is
+	 *                    available.
+	 * @param[in] flags Shell flags that must be set for this command
+	 *                  to be available.
+	 * @param[in] not_flags Shell flags that must not be set for this command
+	 *                      to be available.
+	 * @param[in] name Name of the command as a std::vector of flash
+	 *                 strings.
+	 * @param[in] function Function to be used when the command is
+	 *                     executed.
+	 * @since 0.8.0
+	 */
+	void add_command(unsigned int context, unsigned int flags, unsigned int not_flags,
+			const flash_string_vector &name, command_function function);
+	/**
+	 * Add a command with arguments to the list of commands in this
+	 * container.
+	 *
+	 * @param[in] context Shell context in which this command is
+	 *                    available.
+	 * @param[in] flags Shell flags that must be set for this command
+	 *                  to be available.
+	 * @param[in] not_flags Shell flags that must not be set for this command
+	 *                      to be available.
+	 * @param[in] name Name of the command as a std::vector of flash
+	 *                 strings.
+	 * @param[in] arguments Help text for arguments that the command
+	 *                      accepts as a std::vector of flash strings
+	 *                      (use "<" to indicate a required argument).
+	 * @param[in] function Function to be used when the command is
+	 *                     executed.
+	 * @since 0.8.0
+	 */
+	void add_command(unsigned int context, unsigned int flags, unsigned int not_flags,
+			const flash_string_vector &name, const flash_string_vector &arguments,
+			command_function function);
+	/**
+	 * Add a command with arguments and automatic argument completion
+	 * to the list of commands in this container.
+	 *
+	 * @param[in] context Shell context in which this command is
+	 *                    available.
+	 * @param[in] flags Shell flags that must be set for this command
+	 *                  to be available.
+	 * @param[in] not_flags Shell flags that must not be set for this command
+	 *                      to be available.
+	 * @param[in] name Name of the command as a std::vector of flash
+	 *                 strings.
+	 * @param[in] arguments Help text for arguments that the command
+	 *                      accepts as a std::vector of flash strings
+	 *                      (use "<" to indicate a required argument).
+	 * @param[in] function Function to be used when the command is
+	 *                     executed.
+	 * @param[in] arg_function Function to be used to perform argument
+	 *                         completions for this command.
+	 * @since 0.8.0
+	 */
+	void add_command(unsigned int context, unsigned int flags, unsigned int not_flags,
+			const flash_string_vector &name, const flash_string_vector &arguments,
+			command_function function, argument_completion_function arg_function);
 
 	/**
 	 * Execute a command for a Shell if it exists in the current
@@ -1306,6 +1456,8 @@ private:
 		 *
 		 * @param[in] flags Shell flags that must be set for this command
 		 *                  to be available.
+		 * @param[in] not_flags Shell flags that must not be set for this
+		 *                      command to be available.
 		 * @param[in] name Name of the command as a std::vector of flash
 		 *                 strings.
 		 * @param[in] arguments Help text for arguments that the command
@@ -1315,9 +1467,9 @@ private:
 		 *                     executed.
 		 * @param[in] arg_function Function to be used to perform argument
 		 *                         completions for this command.
-		 * @since 0.1.0
+		 * @since 0.8.0
 		 */
-		Command(unsigned int flags,
+		Command(unsigned int flags, unsigned int not_flags,
 				const flash_string_vector name, const flash_string_vector arguments,
 				command_function function, argument_completion_function arg_function);
 		~Command();
@@ -1341,6 +1493,7 @@ private:
 		inline size_t maximum_arguments() const { return arguments_.size(); }
 
 		unsigned int flags_; /*!< Shell flags that must be set for this command to be available. @since 0.1.0 */
+		unsigned int not_flags_; /*!< Shell flags that must not be set for this command to be available. @since 0.8.0 */
 		const flash_string_vector name_; /*!< Name of the command as a std::vector of flash strings. @since 0.1.0 */
 		const flash_string_vector arguments_; /*!< Help text for arguments that the command accepts as a std::vector of flash strings. @since 0.1.0 */
 		command_function function_; /*!< Function to be used when the command is executed. @since 0.1.0 */

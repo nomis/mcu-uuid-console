@@ -4,6 +4,13 @@ Change log
 Unreleased_
 -----------
 
+Added
+~~~~~
+
+* Support for commands that are only available when specific flags are
+  absent. This makes it easier to have user and admin versions of
+  commands that would otherwise conflict with each other.
+
 0.7.6_ |--| 2022-02-19
 ----------------------
 

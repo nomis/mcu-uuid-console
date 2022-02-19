@@ -43,35 +43,68 @@ namespace uuid {
 namespace console {
 
 void Commands::add_command(const flash_string_vector &name, command_function function) {
-	add_command(0, 0, name, flash_string_vector{}, function, nullptr);
+	add_command(0, 0, 0, name, flash_string_vector{}, function, nullptr);
 }
 
 void Commands::add_command(const flash_string_vector &name, const flash_string_vector &arguments,
 		command_function function) {
-	add_command(0, 0, name, arguments, function, nullptr);
+	add_command(0, 0, 0, name, arguments, function, nullptr);
 }
 
 void Commands::add_command(const flash_string_vector &name, const flash_string_vector &arguments,
 		command_function function, argument_completion_function arg_function) {
-	add_command(0, 0, name, arguments, function, arg_function);
+	add_command(0, 0, 0, name, arguments, function, arg_function);
+}
+
+void Commands::add_command(unsigned int context, const flash_string_vector &name,
+		command_function function) {
+	add_command(context, 0, 0, name, flash_string_vector{}, function, nullptr);
+}
+
+void Commands::add_command(unsigned int context, const flash_string_vector &name,
+		const flash_string_vector &arguments, command_function function) {
+	add_command(context, 0, 0, name, arguments, function, nullptr);
+}
+
+void Commands::add_command(unsigned int context, const flash_string_vector &name,
+		const flash_string_vector &arguments, command_function function,
+		argument_completion_function arg_function) {
+	add_command(context, 0, 0, name, arguments, function, arg_function);
 }
 
 void Commands::add_command(unsigned int context, unsigned int flags,
 		const flash_string_vector &name, command_function function) {
-	add_command(context, flags, name, flash_string_vector{}, function, nullptr);
+	add_command(context, flags, 0, name, flash_string_vector{}, function, nullptr);
 }
 
 void Commands::add_command(unsigned int context, unsigned int flags,
 		const flash_string_vector &name, const flash_string_vector &arguments,
 		command_function function) {
-	add_command(context, flags, name, arguments, function, nullptr);
+	add_command(context, flags, 0, name, arguments, function, nullptr);
 }
 
 void Commands::add_command(unsigned int context, unsigned int flags,
 		const flash_string_vector &name, const flash_string_vector &arguments,
 		command_function function, argument_completion_function arg_function) {
+	add_command(context, flags, 0, name, arguments, function, arg_function);
+}
+
+void Commands::add_command(unsigned int context, unsigned int flags, unsigned int not_flags,
+		const flash_string_vector &name, command_function function) {
+	add_command(context, flags, not_flags, name, flash_string_vector{}, function, nullptr);
+}
+
+void Commands::add_command(unsigned int context, unsigned int flags, unsigned int not_flags,
+		const flash_string_vector &name, const flash_string_vector &arguments,
+		command_function function) {
+	add_command(context, flags, not_flags, name, arguments, function, nullptr);
+}
+
+void Commands::add_command(unsigned int context, unsigned int flags, unsigned int not_flags,
+		const flash_string_vector &name, const flash_string_vector &arguments,
+		command_function function, argument_completion_function arg_function) {
 	commands_.emplace(std::piecewise_construct, std::forward_as_tuple(context),
-			std::forward_as_tuple(flags, name, arguments, function, arg_function));
+			std::forward_as_tuple(flags, not_flags, name, arguments, function, arg_function));
 }
 
 Commands::Execution Commands::execute_command(Shell &shell, CommandLine &&command_line) {
@@ -223,7 +256,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 
 		// Construct a temporary command with the longest common prefix to use as the replacement
 		if (!temp_command_name.empty() && command_line.total_size() <= temp_command_name.size()) {
-			temp_command = std::make_unique<Command>(0, flash_string_vector{}, flash_string_vector{}, nullptr, nullptr);
+			temp_command = std::make_unique<Command>(0, 0, flash_string_vector{}, flash_string_vector{}, nullptr, nullptr);
 			count = 1;
 			match = commands.partial.end();
 			result.replacement.trailing_space = whole_components;
@@ -428,7 +461,7 @@ Commands::Match Commands::find_command(Shell &shell, const CommandLine &command_
 		bool match = true;
 		bool exact = true;
 
-		if (!shell.has_flags(command.flags_)) {
+		if (!shell.has_flags(command.flags_, command.not_flags_)) {
 			continue;
 		}
 
@@ -481,7 +514,7 @@ void Commands::for_each_available_command(Shell &shell, apply_function f) const 
 	auto commands = commands_.equal_range(shell.context());
 
 	for (auto command_it = commands.first; command_it != commands.second; command_it++) {
-		if (shell.has_flags(command_it->second.flags_)) {
+		if (shell.has_flags(command_it->second.flags_, command_it->second.not_flags_)) {
 			std::vector<std::string> name;
 			std::vector<std::string> arguments;
 
@@ -500,10 +533,10 @@ void Commands::for_each_available_command(Shell &shell, apply_function f) const 
 	}
 }
 
-Commands::Command::Command(unsigned int flags,
+Commands::Command::Command(unsigned int flags, unsigned int not_flags,
 		const flash_string_vector name, const flash_string_vector arguments,
 		command_function function, argument_completion_function arg_function)
-		: flags_(flags), name_(name), arguments_(arguments),
+		: flags_(flags), not_flags_(not_flags), name_(name), arguments_(arguments),
 		  function_(function), arg_function_(arg_function) {
 
 }
