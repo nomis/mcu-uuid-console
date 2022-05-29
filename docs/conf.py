@@ -17,7 +17,7 @@ master_doc = 'index'
 version = u''
 release = u''
 
-language = None
+language = 'en'
 exclude_patterns = ['build', 'Thumbs.db', '.DS_Store']
 pygments_style = 'sphinx'
 highlight_language = 'c++'
