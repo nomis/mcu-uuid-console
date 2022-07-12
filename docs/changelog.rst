@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+Added
+~~~~~
+
+* Support for iterating over all available commands in a shell.
+
 0.8.0_ |--| 2022-02-19
 ----------------------
 

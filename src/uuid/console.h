@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <deque>
 #include <functional>
+#include <iterator>
 #include <limits>
 #include <list>
 #include <memory>
@@ -58,6 +59,9 @@ class Shell;
  * @since 0.1.0
  */
 class Commands {
+private:
+	class Command;
+
 public:
 	struct Completion;
 
@@ -96,14 +100,247 @@ public:
 	using argument_completion_function = std::function<const std::vector<std::string>(Shell &shell, const std::vector<std::string> &arguments)>;
 
 	/**
-	 * Function to apply an operation to a command.
+	 * Available command for execution on a Shell.
 	 *
-	 * @param[in] name Name of the command as a std::vector of strings.
-	 * @param[in] arguments Help text for arguments that the command
-	 *                      accepts as a std::vector of strings.
-	 * @since 0.4.0
+	 * @since 0.9.0
 	 */
-	using apply_function = std::function<void(std::vector<std::string> &name, std::vector<std::string> &arguments)>;
+	class AvailableCommand {
+	public:
+		/**
+		 * Construct a new command that is available for execution on a Shell.
+		 *
+		 * @since 0.9.0
+		 */
+		AvailableCommand(const Command &command);
+
+		/**
+		 * Get the name of the command.
+		 *
+		 * @return Name of the command as a std::vector of strings.
+		 * @since 0.9.0
+		 */
+		inline const std::vector<std::string> &name() const { return name_; }
+
+		/**
+		 * Get the help text of the command's arguments.
+		 *
+		 * @return Help text for arguments that the command accepts as a std::vector of strings.
+		 * @since 0.9.0
+		 */
+		inline const std::vector<std::string> &arguments() const { return arguments_; }
+
+		/**
+		 * Get the function to be used when the command is executed.
+		 *
+		 * @return Function that can be used to execute the command.
+		 * @since 0.9.0
+		 */
+		inline const command_function &function() const { return command_.function_; };
+
+		/**
+		 * Get the function to be used to perform argument completions for the command.
+		 *
+		 * @return Function that can be used to perform argument completions for the command.
+		 * @since 0.9.0
+		 */
+		inline const argument_completion_function &arg_function() const { return command_.arg_function_; };
+
+		/**
+		 * Get the shell flags that must be set for this command to be available.
+		 *
+		 * @return Shell flags.
+		 * @since 0.9.0
+		 */
+		inline int flags() const { return command_.flags_; }
+
+		/**
+		 * Get the shell flags that must not be set for this command to be available.
+		 *
+		 * @return Shell flags.
+		 * @since 0.9.0
+		 */
+		inline int not_flags() const { return command_.not_flags_; }
+
+	private:
+		const Commands::Command &command_; /*!< Command that is available. @since 0.9.0 */
+		std::vector<std::string> name_; /*!< Name of the command. @since 0.9.0 */
+		std::vector<std::string> arguments_; /*!< Help text for arguments that the command accepts. @since 0.9.0 */
+	};
+
+	/**
+	 * Available commands in the shell's context with the current flags.
+	 *
+	 * Iterators are invalidated if the commands, context or flags for
+	 * the shell change.
+	 *
+	 * @since 0.9.0
+	 */
+	class AvailableCommands {
+	public:
+		using command_iterator = std::multimap<unsigned int,Command>::const_iterator; /*!< Type of the underlying command iterator. @since 0.9.0 */
+
+		/**
+		 * Iterator of available commands for execution on a Shell.
+		 *
+		 * @since 0.9.0
+		 */
+		class const_iterator {
+		public:
+			using iterator_category = std::bidirectional_iterator_tag; /*!< Category of this iterator (bidirectional).  @since 0.9.0 */
+			using difference_type = std::size_t; /*!< Type used by std::distance(). @since 0.9.0 */
+			using value_type = AvailableCommand; /*!< Type of this iterator's values. @since 0.9.0 */
+			using pointer = const value_type*; /*!< Pointer type of this iterator. @since 0.9.0 */
+			using reference = const value_type&; /*!< Reference type of this iterator. @since 0.9.0 */
+
+			/**
+			 * Create an iterator describing an available command in a
+			 * shell with the current flags.
+			 *
+			 * Iterators are invalidated if the commands, context or flags for
+			 * the shell change.
+			 *
+			 * @param[in] shell Shell that is accessing commands.
+			 * @param[in] begin Beginning of command iterators.
+			 * @param[in] command Initial command iterator.
+			 * @param[in] end End of command iterators.
+			 * @since 0.9.0
+			 */
+			const_iterator(const Shell &shell, const command_iterator &begin,
+					const command_iterator &command, const command_iterator &end);
+
+			/**
+			 * Dereference the current available command.
+			 *
+			 * @returns A pointer to the current available command,
+			 *          that remains valid only while the iterator at
+			 *          this position exists.
+			 * @since 0.9.0
+			 */
+			inline reference operator*() const { return *available_command_; }
+			/**
+			 * Access the current available command.
+			 *
+			 * @returns A reference to the current available command,
+			 *          that remains valid only while the iterator at
+			 *          this position exists.
+			 * @since 0.9.0
+			 */
+			inline pointer operator->() const { return available_command_.get(); }
+
+			/**
+			 * Pre-increment the current iterator to the next
+			 * available command.
+			 *
+			 * @returns The iterator to the next available command.
+			 * @since 0.9.0
+			 */
+			const_iterator& operator++();
+			/**
+			 * Post-increment the current iterator to the next
+			 * available command.
+			 *
+			 * @returns The current iterator.
+			 * @since 0.9.0
+			 */
+			const_iterator operator++(int);
+
+			/**
+			 * Pre-decrement the current iterator to the previous
+			 * available command.
+			 *
+			 * @returns The iterator to the previous available command.
+			 * @since 0.9.0
+			 */
+			const_iterator& operator--();
+			/**
+			 * Post-decrement the current iterator to the previous
+			 * available command.
+			 *
+			 * @returns The current iterator.
+			 * @since 0.9.0
+			 */
+			const_iterator operator--(int);
+
+			/**
+			 * Compare an available commands iterator to another available
+			 * commands iterator for equality.
+			 *
+			 * @param[in] lhs Left-hand side available commands iterator.
+			 * @param[in] rhs Right-hand side available commands iterator.
+			 * @return True if the available commands iterators are equal, otherwise false.
+			 * @since 0.9.0
+			 */
+			friend inline bool operator==(const const_iterator& lhs, const const_iterator& rhs) { return lhs.command_ == rhs.command_; }
+			/**
+			 * Compare an available commands iterator to another available
+			 * commands iterator for inequality.
+			 *
+			 * @param[in] lhs Left-hand side available commands iterator.
+			 * @param[in] rhs Right-hand side available commands iterator.
+			 * @return True if the available commands iterators are not equal, otherwise false.
+			 * @since 0.9.0
+			 */
+			friend inline bool operator!=(const const_iterator& lhs, const const_iterator& rhs) { return lhs.command_ != rhs.command_; }
+
+		private:
+			/**
+			 * Update the available command from the current command iterator.
+			 *
+			 * @since 0.9.0
+			 */
+			void update();
+
+			const Shell &shell_; /*!< Shell that is accessing commands. @since 0.9.0 */
+			const command_iterator begin_; /*!< Beginning of command iterators. @since 0.9.0 */
+			command_iterator command_; /*!< Current command iterator. @since 0.9.0 */
+			const command_iterator end_; /*!< End of command iterators. @since 0.9.0 */
+			std::shared_ptr<AvailableCommand> available_command_; /*!< Current available command. @since 0.9.0 */
+		};
+
+		/**
+		 * Create an iterable object describing available commands in a
+		 * shell with the current flags.
+		 *
+		 * Iterators are invalidated if the commands, context or flags for
+		 * the shell change.
+		 *
+		 * @param[in] shell Shell that is accessing commands.
+		 * @param[in] begin Beginning of command iterators.
+		 * @param[in] end End of command iterators.
+		 * @since 0.9.0
+		 */
+		AvailableCommands(const Shell &shell, const command_iterator &begin, const command_iterator &end);
+
+		/**
+		 * Returns an iterator to the first command.
+		 *
+		 * @since 0.9.0
+		 */
+		inline const_iterator begin() const { return cbegin(); }
+		/**
+		 * Returns an iterator to the first command.
+		 *
+		 * @since 0.9.0
+		 */
+		const_iterator cbegin() const;
+		/**
+		 * Returns an iterator to the element following the last command.
+		 *
+		 * @since 0.9.0
+		 */
+		inline const_iterator end() const { return cend(); }
+		/**
+		 * Returns an iterator to the element following the last command.
+		 *
+		 * @since 0.9.0
+		 */
+		const_iterator cend() const;
+
+	private:
+		const Shell &shell_; /*!< Shell that is accessing commands. @since 0.9.0 */
+		const command_iterator begin_; /*!< Beginning of command iterators. @since 0.9.0 */
+		const command_iterator end_; /*!< End of command iterators. @since 0.9.0 */
+	};
 
 	/**
 	 * Construct a new container of commands for use by a Shell.
@@ -373,14 +610,17 @@ public:
 	Completion complete_command(Shell &shell, const CommandLine &command_line);
 
 	/**
-	 * Applies the given function object f to all commands in the
-	 * current context and with the current flags.
+	 * Get the available commands in the current context and with the
+	 * current flags.
+	 *
+	 * This iterable object and its iterators are invalidated if the
+	 * commands, context or flags for the shell change.
 	 *
 	 * @param[in] shell Shell that is accessing commands.
-	 * @param[in] f Function to apply to each command.
-	 * @since 0.4.0
+	 * @return An iterable object describing the available commands.
+	 * @since 0.9.0
 	 */
-	void for_each_available_command(Shell &shell, apply_function f) const;
+	AvailableCommands available_commands(const Shell &shell) const;
 
 private:
 	/**
@@ -458,7 +698,7 @@ private:
 	 * Find commands by matching them against the command line.
 	 *
 	 * @param[in] shell Shell that is accessing commands.
-	 * @param[in] command_line Command line parmeters.
+	 * @param[in] command_line Command line parameters.
 	 * @return An object describing the result of the command find
 	 *         operation.
 	 * @since 0.1.0
@@ -961,6 +1201,17 @@ public:
 	 */
 	size_t printfln(const __FlashStringHelper *format, ...) /* __attribute__((format(printf, 2, 3))) */;
 
+	/**
+	 * Get the available commands in the current context and with the
+	 * current flags.
+	 *
+	 * The iterable object and its iterators are invalidated if the
+	 * commands, context or flags for the shell change.
+	 *
+	 * @return An iterable object describing the available commands.
+	 * @since 0.9.0
+	 */
+	Commands::AvailableCommands available_commands() const;
 	/**
 	 * Output a list of all available commands with their arguments.
 	 *

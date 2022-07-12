@@ -95,6 +95,10 @@ bool Shell::exit_context() {
 	}
 }
 
+Commands::AvailableCommands Shell::available_commands() const {
+	return commands_->available_commands(*this);
+}
+
 void Shell::loop_one() {
 	if (!running()) {
 		return;
