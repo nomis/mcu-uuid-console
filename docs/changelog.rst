@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+0.9.0_ |--| 2022-07-12
+----------------------
+
+Support for iterating over available commands.
+
 Added
 ~~~~~
 
@@ -258,7 +263,8 @@ Added
 
 .. |--| unicode:: U+2013 .. EN DASH
 
-.. _Unreleased: https://github.com/nomis/mcu-uuid-console/compare/0.8.0...HEAD
+.. _Unreleased: https://github.com/nomis/mcu-uuid-console/compare/0.9.0...HEAD
+.. _0.9.0: https://github.com/nomis/mcu-uuid-console/compare/0.8.0...0.9.0
 .. _0.8.0: https://github.com/nomis/mcu-uuid-console/compare/0.7.6...0.8.0
 .. _0.7.6: https://github.com/nomis/mcu-uuid-console/compare/0.7.5...0.7.6
 .. _0.7.5: https://github.com/nomis/mcu-uuid-console/compare/0.7.4...0.7.5
