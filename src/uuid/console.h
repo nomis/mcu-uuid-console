@@ -242,7 +242,7 @@ public:
 			 * @returns The current iterator.
 			 * @since 0.9.0
 			 */
-			const_iterator operator++(int);
+			inline const_iterator operator++(int) { auto tmp = *this; ++(*this); return tmp; }
 
 			/**
 			 * Pre-decrement the current iterator to the previous
@@ -259,7 +259,7 @@ public:
 			 * @returns The current iterator.
 			 * @since 0.9.0
 			 */
-			const_iterator operator--(int);
+			inline const_iterator operator--(int) { auto tmp = *this; --(*this); return tmp; }
 
 			/**
 			 * Compare an available commands iterator to another available

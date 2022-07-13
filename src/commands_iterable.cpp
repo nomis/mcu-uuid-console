@@ -72,32 +72,20 @@ void Commands::AvailableCommands::const_iterator::update() {
 
 Commands::AvailableCommands::const_iterator& Commands::AvailableCommands::const_iterator::operator++() {
 	do {
-		command_++;
+		++command_;
 	} while (command_ != end_ && !shell_.has_flags(command_->second.flags_, command_->second.not_flags_));
 
 	update();
 	return *this;
 }
 
-Commands::AvailableCommands::const_iterator Commands::AvailableCommands::const_iterator::operator++(int) {
-	AvailableCommands::const_iterator tmp = *this;
-	++(*this);
-	return tmp;
-}
-
 Commands::AvailableCommands::const_iterator& Commands::AvailableCommands::const_iterator::operator--() {
 	do {
-		command_--;
+		--command_;
 	} while (command_ != begin_ && !shell_.has_flags(command_->second.flags_, command_->second.not_flags_));
 
 	update();
 	return *this;
-}
-
-Commands::AvailableCommands::const_iterator Commands::AvailableCommands::const_iterator::operator--(int) {
-	AvailableCommands::const_iterator tmp = *this;
-	--(*this);
-	return tmp;
 }
 
 } // namespace console
