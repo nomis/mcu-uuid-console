@@ -1,6 +1,6 @@
 /*
  * uuid-console - Microcontroller console shell
- * Copyright 2019,2021  Simon Arlott
+ * Copyright 2019,2021-2022  Simon Arlott
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,9 @@ namespace uuid {
 
 namespace console {
 
+//! @cond false
 static const char __pstr__logger_name[] __attribute__((__aligned__(sizeof(int)))) PROGMEM = "shell";
+//! @endcond
 
 const uuid::log::Logger& Shell::logger() {
 	static const uuid::log::Logger logger_instance{reinterpret_cast<const __FlashStringHelper *>(__pstr__logger_name), uuid::log::Facility::LPR};
