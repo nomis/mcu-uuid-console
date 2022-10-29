@@ -11,7 +11,8 @@ Purpose
 
 Provides a framework for creating a console shell with commands. The
 container of commands (``uuid::console::Commands``) can be shared
-across multiple shell instances.
+across multiple shell instances. Thread-safe (for log messages only)
+on the ESP32.
 
 Dependencies
 ------------

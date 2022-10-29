@@ -27,8 +27,8 @@
 		"arduino"
 	],
 	"dependencies": {
-		"nomis/uuid-common": "^1.0.0",
-		"nomis/uuid-log": "^2.1.4"
+		"nomis/uuid-common": "^1.2.0",
+		"nomis/uuid-log": "^2.3.0"
 	},
 	"build": {
 		"flags": "-Wall -Wextra",

@@ -4,6 +4,18 @@ Change log
 Unreleased_
 -----------
 
+Added
+~~~~~
+
+* Indicate whether this version of the library is thread-safe or not
+  (``UUID_CONSOLE_THREAD_SAFE`` and ``uuid::console::thread_safe``).
+
+Changed
+~~~~~~~
+
+* Make the library thread-safe (for log messages only) when supported by
+  the platform.
+
 0.9.0_ |--| 2022-07-12
 ----------------------
 

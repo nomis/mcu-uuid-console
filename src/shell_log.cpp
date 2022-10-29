@@ -22,6 +22,9 @@
 
 #include <algorithm>
 #include <memory>
+#if UUID_CONSOLE_THREAD_SAFE
+# include <mutex>
+#endif
 #include <string>
 
 #include <uuid/log.h>
@@ -46,6 +49,10 @@ Shell::QueuedLogMessage::QueuedLogMessage(unsigned long id, std::shared_ptr<uuid
 }
 
 void Shell::operator<<(std::shared_ptr<uuid::log::Message> message) {
+#if UUID_CONSOLE_THREAD_SAFE
+	std::lock_guard<std::mutex> lock{mutex_};
+#endif
+
 	if (log_messages_.size() >= maximum_log_messages_) {
 		log_messages_.pop_front();
 	}
@@ -62,10 +69,18 @@ void Shell::log_level(uuid::log::Level level) {
 }
 
 size_t Shell::maximum_log_messages() const {
+#if UUID_CONSOLE_THREAD_SAFE
+	std::lock_guard<std::mutex> lock{mutex_};
+#endif
+
 	return maximum_log_messages_;
 }
 
 void Shell::maximum_log_messages(size_t count) {
+#if UUID_CONSOLE_THREAD_SAFE
+	std::lock_guard<std::mutex> lock{mutex_};
+#endif
+
 	maximum_log_messages_ = std::max((size_t)1, count);
 	while (log_messages_.size() > maximum_log_messages_) {
 		log_messages_.pop_front();
@@ -73,25 +88,52 @@ void Shell::maximum_log_messages(size_t count) {
 }
 
 void Shell::output_logs() {
-	if (!log_messages_.empty()) {
-		if (mode_ != Mode::DELAY) {
-			erase_current_line();
-			prompt_displayed_ = false;
-		}
+#if UUID_CONSOLE_THREAD_SAFE
+	std::unique_lock<std::mutex> lock{mutex_};
+#endif
 
-		while (!log_messages_.empty()) {
-			auto message = std::move(log_messages_.front());
-			log_messages_.pop_front();
+	if (log_messages_.empty())
+		return;
 
-			print(uuid::log::format_timestamp_ms(message.content_->uptime_ms, 3));
-			printf(F(" %c %lu: [%S] "), uuid::log::format_level_char(message.content_->level), message.id_, message.content_->name);
-			println(message.content_->text);
+	size_t count = std::max((size_t)1, MAX_LOG_MESSAGES);
+	auto message = log_messages_.front();
 
-			::yield();
-		}
+	log_messages_.pop_front();
+#if UUID_CONSOLE_THREAD_SAFE
+	lock.unlock();
+#endif
 
-		display_prompt();
+	if (mode_ != Mode::DELAY) {
+		erase_current_line();
+		prompt_displayed_ = false;
 	}
+
+	while (1) {
+		print(uuid::log::format_timestamp_ms(message.content_->uptime_ms, 3));
+		printf(F(" %c %lu: [%S] "), uuid::log::format_level_char(message.content_->level), message.id_, message.content_->name);
+		println(message.content_->text);
+
+		::yield();
+
+		count--;
+		if (count == 0) {
+			break;
+		}
+
+#if UUID_CONSOLE_THREAD_SAFE
+		lock.lock();
+#endif
+		if (log_messages_.empty())
+			break;
+
+		message = log_messages_.front();
+		log_messages_.pop_front();
+#if UUID_CONSOLE_THREAD_SAFE
+		lock.unlock();
+#endif
+	}
+
+	display_prompt();
 }
 
 } // namespace console

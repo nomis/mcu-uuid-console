@@ -37,6 +37,24 @@
 #include <uuid/common.h>
 #include <uuid/log.h>
 
+#ifndef UUID_LOG_THREAD_SAFE
+# define UUID_LOG_THREAD_SAFE 0
+#endif
+
+#ifndef UUID_COMMON_STD_MUTEX_AVAILABLE
+# define UUID_COMMON_STD_MUTEX_AVAILABLE 0
+#endif
+
+#if defined(DOXYGEN) || UUID_COMMON_STD_MUTEX_AVAILABLE
+# define UUID_CONSOLE_THREAD_SAFE 1
+#else
+# define UUID_CONSOLE_THREAD_SAFE 0
+#endif
+
+#if UUID_CONSOLE_THREAD_SAFE
+# include <mutex>
+#endif
+
 namespace uuid {
 
 /**
@@ -46,6 +64,17 @@ namespace uuid {
  * - <a href="https://mcu-uuid-console.readthedocs.io/">Documentation</a>
  */
 namespace console {
+
+/**
+ * Thread-safe status of the library.
+ *
+ * @since 1.0.0
+ */
+#if UUID_COMMON_THREAD_SAFE && UUID_LOG_THREAD_SAFE && UUID_CONSOLE_THREAD_SAFE
+static constexpr bool thread_safe = true;
+#else
+static constexpr bool thread_safe = false;
+#endif
 
 class Commands;
 class CommandLine;
@@ -1468,8 +1497,8 @@ private:
 		QueuedLogMessage(unsigned long id, std::shared_ptr<uuid::log::Message> &&content);
 		~QueuedLogMessage() = default;
 
-		const unsigned long id_; /*!< Sequential identifier for this log message. @since 0.1.0 */
-		const std::shared_ptr<const uuid::log::Message> content_; /*!< Log message content. @since 0.1.0 */
+		unsigned long id_; /*!< Sequential identifier for this log message. @since 0.1.0 */
+		std::shared_ptr<const uuid::log::Message> content_; /*!< Log message content. @since 0.1.0 */
 	};
 
 	Shell(const Shell&) = delete;
@@ -1616,6 +1645,9 @@ private:
 	std::shared_ptr<Commands> commands_; /*!< Commands available for execution in this shell. @since 0.1.0 */
 	std::deque<unsigned int> context_; /*!< Context stack for this shell. Affects which commands are available. Should never be empty. @since 0.1.0 */
 	unsigned int flags_ = 0; /*!< Current flags for this shell. Affects which commands are available. @since 0.1.0 */
+#if UUID_CONSOLE_THREAD_SAFE
+	mutable std::mutex mutex_; /*!< Mutex for queued log messages. @since 1.0.0 */
+#endif
 	unsigned long log_message_id_ = 0; /*!< The next identifier to use for queued log messages. @since 0.1.0 */
 	std::list<QueuedLogMessage> log_messages_; /*!< Queued log messages, in the order they were received. @since 0.1.0 */
 	size_t maximum_log_messages_ = MAX_LOG_MESSAGES; /*!< Maximum command line length in bytes. @since 0.6.0 */
