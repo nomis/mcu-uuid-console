@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+1.0.0_ |--| 2022-10-29
+----------------------
+
+Be thread-safe (for log messages) where possible.
+
 Added
 ~~~~~
 
@@ -275,7 +280,8 @@ Added
 
 .. |--| unicode:: U+2013 .. EN DASH
 
-.. _Unreleased: https://github.com/nomis/mcu-uuid-console/compare/0.9.0...HEAD
+.. _Unreleased: https://github.com/nomis/mcu-uuid-console/compare/1.0.0...HEAD
+.. _1.0.0: https://github.com/nomis/mcu-uuid-console/compare/0.9.0...1.0.0
 .. _0.9.0: https://github.com/nomis/mcu-uuid-console/compare/0.8.0...0.9.0
 .. _0.8.0: https://github.com/nomis/mcu-uuid-console/compare/0.7.6...0.8.0
 .. _0.7.6: https://github.com/nomis/mcu-uuid-console/compare/0.7.5...0.7.6
