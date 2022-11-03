@@ -29,12 +29,16 @@
 
 #include <uuid/log.h>
 
+#ifndef PSTR_ALIGN
+# define PSTR_ALIGN 4
+#endif
+
 namespace uuid {
 
 namespace console {
 
 //! @cond false
-static const char __pstr__logger_name[] __attribute__((__aligned__(sizeof(int)))) PROGMEM = "shell";
+static const char __pstr__logger_name[] __attribute__((__aligned__(PSTR_ALIGN))) PROGMEM = "shell";
 //! @endcond
 
 const uuid::log::Logger& Shell::logger() {

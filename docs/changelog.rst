@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+Changed
+~~~~~~~
+
+* Use ``PSTR_ALIGN`` for flash strings.
+
 1.0.0_ |--| 2022-10-29
 ----------------------
 
