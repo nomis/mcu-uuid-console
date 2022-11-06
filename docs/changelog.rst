@@ -9,6 +9,12 @@ Changed
 
 * Use ``PSTR_ALIGN`` for flash strings.
 
+Fixed
+~~~~~
+
+* Deadlock if a message is logged from ``display_prompt()`` and the
+  shell is a log handler for that message.
+
 1.0.0_ |--| 2022-10-29
 ----------------------
 

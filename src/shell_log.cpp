@@ -127,8 +127,12 @@ void Shell::output_logs() {
 #if UUID_CONSOLE_THREAD_SAFE
 		lock.lock();
 #endif
-		if (log_messages_.empty())
+		if (log_messages_.empty()) {
+#if UUID_CONSOLE_THREAD_SAFE
+			lock.unlock();
+#endif
 			break;
+		}
 
 		message = log_messages_.front();
 		log_messages_.pop_front();
