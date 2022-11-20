@@ -33,5 +33,8 @@
 	"build": {
 		"flags": "-Wall -Wextra",
 		"libLDFMode": "off"
-	}
+	},
+	"headers": [
+		"uuid/console.h"
+	]
 }
