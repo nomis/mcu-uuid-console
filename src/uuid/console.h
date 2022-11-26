@@ -126,7 +126,7 @@ public:
 	 * @param[in] next_argument Next argument (the one being completed).
 	 * @return Possible values for the next argument on the command
 	 *         line.
-	 * @since 3.0.0
+	 * @since 2.0.0
 	 */
 	using argument_completion_function = std::function<const std::vector<std::string>(
 		Shell &shell, const std::vector<std::string> &current_arguments, const std::string &next_argument)>;
