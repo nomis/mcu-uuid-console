@@ -4,6 +4,14 @@ Change log
 Unreleased_
 -----------
 
+Changed
+~~~~~~~
+
+* Provide the next argument (the one being completed) to the argument
+  completion function. This makes it possible to do filesystem lookups
+  based on what has been provided instead of having to traverse the
+  entire filesystem.
+
 1.0.1_ |--| 2022-11-06
 ----------------------
 

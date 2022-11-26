@@ -55,23 +55,29 @@ uint64_t get_uptime_ms() {
 static Commands commands;
 static DummyShell shell;
 static std::string run;
+static CommandLine complete_current;
+static CommandLine complete_next;
+
+void setUp(void) {
+	run = {};
+	complete_current = {};
+	complete_next = {};
+}
 
 /**
  * Completion with an empty command line returns all commands (but the shell does not allow this).
  */
 static void test_completion0() {
-	run = "";
 	auto completion = commands.complete_command(shell, CommandLine(""));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
-	TEST_ASSERT_EQUAL_INT(40, completion.help.size());
+	TEST_ASSERT_EQUAL_INT(41, completion.help.size());
 }
 
 /**
  * An empty command line is not executed.
  */
 static void test_execution0() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine(""));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
@@ -101,7 +107,6 @@ static void test_completion1a() {
  * Commands are not completed before being executed.
  */
 static void test_execution1a() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("sh"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
@@ -130,7 +135,6 @@ static void test_completion1b() {
  * Exact match commands are executed.
  */
 static void test_execution1b() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("show"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
@@ -159,7 +163,6 @@ static void test_completion1c() {
  * Exact match commands with a trailing space are executed.
  */
 static void test_execution1c() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("show "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
@@ -190,7 +193,6 @@ static void test_completion1d() {
  * will fail to find a command if arguments are used.
  */
 static void test_execution1d() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("show th"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
@@ -221,7 +223,6 @@ static void test_completion1e() {
  * will fail to find a command if arguments are used.
  */
 static void test_execution1e() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("show thing"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
@@ -242,7 +243,6 @@ static void test_completion1f() {
  * Exact match commands are executed.
  */
 static void test_execution1f() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("show thing1"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
@@ -262,7 +262,6 @@ static void test_completion1g() {
  * Exact match commands with a trailing space are executed.
  */
 static void test_execution1g() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("show thing1 "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
@@ -291,7 +290,6 @@ static void test_completion2a() {
  * Commands are not completed before being executed.
  */
 static void test_execution2a() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("cons"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
@@ -320,7 +318,6 @@ static void test_completion2b() {
  * Commands are not completed before being executed.
  */
 static void test_execution2b() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("console"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
@@ -349,7 +346,6 @@ static void test_completion2c() {
  * Commands are not completed before being executed.
  */
 static void test_execution2c() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("console "));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
@@ -378,7 +374,6 @@ static void test_completion2d() {
  * Commands are not completed before being executed.
  */
 static void test_execution2d() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("console l"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
@@ -407,7 +402,6 @@ static void test_completion2e() {
  * Commands are not completed before being executed.
  */
 static void test_execution2e() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("console log"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
@@ -436,7 +430,6 @@ static void test_completion2f() {
  * Commands are not completed before being executed.
  */
 static void test_execution2f() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("console log "));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
@@ -457,7 +450,6 @@ static void test_completion2g() {
  * Commands are not completed before being executed.
  */
 static void test_execution2g() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("console log a"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
@@ -479,7 +471,6 @@ static void test_completion2h() {
  * Commands are not completed before being executed.
  */
 static void test_execution2h() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("console log in"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
@@ -500,7 +491,6 @@ static void test_completion2i() {
  * Exact match commands are executed.
  */
 static void test_execution2i() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("console log info"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
@@ -521,7 +511,6 @@ static void test_completion2j() {
  * Exact match commands with a trailing space are executed.
  */
 static void test_execution2j() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("console log info "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
@@ -543,7 +532,6 @@ static void test_completion3a() {
  * Commands are not completed before being executed.
  */
 static void test_execution3a() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("h"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
@@ -564,7 +552,6 @@ static void test_completion3b() {
  * Exact match commands are executed.
  */
 static void test_execution3b() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("help"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
@@ -585,7 +572,6 @@ static void test_completion3c() {
  * Exact match commands with a trailing space are executed.
  */
 static void test_execution3c() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("help "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
@@ -613,7 +599,6 @@ static void test_completion4a() {
  * Commands are not completed before being executed.
  */
 static void test_execution4a() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("se"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
@@ -641,7 +626,6 @@ static void test_completion4b() {
  * Exact match commands are executed.
  */
 static void test_execution4b() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("set"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
@@ -664,7 +648,6 @@ static void test_completion4c() {
  * Exact match commands with a trailing space are executed.
  */
 static void test_execution4c() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("set "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
@@ -683,16 +666,19 @@ static void test_completion5a() {
 	TEST_ASSERT_EQUAL_STRING("test_a0 ", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_b"));
 
 	TEST_ASSERT_EQUAL_STRING("test_b1 ", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_c"));
 
 	TEST_ASSERT_EQUAL_STRING("test_c2 ", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_d"));
 
 	TEST_ASSERT_EQUAL_STRING("test_d3 ", completion.replacement.to_string().c_str());
@@ -703,25 +689,24 @@ static void test_completion5a() {
  * Commands are not completed before being executed.
  */
 static void test_execution5a() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("test_a"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_b"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_c"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_d"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
@@ -740,16 +725,19 @@ static void test_completion5b() {
 	TEST_ASSERT_EQUAL_STRING("test_a0 ", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_b1"));
 
 	TEST_ASSERT_EQUAL_STRING("test_b1 ", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_c2"));
 
 	TEST_ASSERT_EQUAL_STRING("test_c2 ", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_d3"));
 
 	TEST_ASSERT_EQUAL_STRING("test_d3 ", completion.replacement.to_string().c_str());
@@ -760,25 +748,24 @@ static void test_completion5b() {
  * Exact match commands are executed after checking for minimum arguments.
  */
 static void test_execution5b() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("test_a0"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_a0", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_b1"));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_c2"));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_d3"));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
@@ -802,6 +789,7 @@ static void test_completion5c() {
 		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_b1 "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -811,6 +799,7 @@ static void test_completion5c() {
 		TEST_ASSERT_EQUAL_STRING("<one> [two] [three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_c2 "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -820,6 +809,7 @@ static void test_completion5c() {
 		TEST_ASSERT_EQUAL_STRING("<one> <two> [three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_d3 "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -834,25 +824,24 @@ static void test_completion5c() {
  * Exact match commands are executed after checking for minimum arguments.
  */
 static void test_execution5c() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("test_a0 "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_a0", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_b1 "));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_c2 "));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_d3 "));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
@@ -875,6 +864,7 @@ static void test_completion5d() {
 		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_b1 un"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -884,6 +874,7 @@ static void test_completion5d() {
 		TEST_ASSERT_EQUAL_STRING("<one> [two] [three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_c2 un"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -893,6 +884,7 @@ static void test_completion5d() {
 		TEST_ASSERT_EQUAL_STRING("<one> <two> [three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_d3 un"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -907,49 +899,48 @@ static void test_completion5d() {
  * Exact match commands are executed after checking for minimum arguments.
  */
 static void test_execution5d() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("test_a0 un"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_a0 un", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_b1 un"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_b1 un", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_c2 un"));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_d3 un"));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_a0 \"\""));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_a0 <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_b1 \"\""));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_b1 <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_c2 \"\""));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_d3 \"\""));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
@@ -973,6 +964,7 @@ static void test_completion5e() {
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_b1 un "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -982,6 +974,7 @@ static void test_completion5e() {
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_c2 un "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -991,6 +984,7 @@ static void test_completion5e() {
 		TEST_ASSERT_EQUAL_STRING("<two> [three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_d3 un "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1005,49 +999,48 @@ static void test_completion5e() {
  * Exact match commands are executed after checking for minimum arguments.
  */
 static void test_execution5e() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("test_a0 un "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_a0 un", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_b1 un "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_b1 un", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_c2 un "));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_d3 un "));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_a0 \"\" "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_a0 <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_b1 \"\" "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_b1 <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_c2 \"\" "));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_d3 \"\" "));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
@@ -1070,6 +1063,7 @@ static void test_completion5f() {
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_b1 un deux"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1079,6 +1073,7 @@ static void test_completion5f() {
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_c2 un deux"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1088,6 +1083,7 @@ static void test_completion5f() {
 		TEST_ASSERT_EQUAL_STRING("<two> [three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_d3 un deux"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1102,49 +1098,48 @@ static void test_completion5f() {
  * Exact match commands are executed after checking for minimum arguments.
  */
 static void test_execution5f() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("test_a0 un deux"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_a0 un deux", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_b1 un deux"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_b1 un deux", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_c2 un deux"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_c2 un deux", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_d3 un deux"));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_a0 \"\" \"\""));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_a0 <empty> <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_b1 \"\" \"\""));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_b1 <empty> <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_c2 \"\" \"\""));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_c2 <empty> <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_d3 \"\" \"\""));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
@@ -1168,6 +1163,7 @@ static void test_completion5g() {
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_b1 un deux "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1177,6 +1173,7 @@ static void test_completion5g() {
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_c2 un deux "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1186,6 +1183,7 @@ static void test_completion5g() {
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_d3 un deux "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1200,49 +1198,48 @@ static void test_completion5g() {
  * Exact match commands are executed after checking for minimum arguments.
  */
 static void test_execution5g() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("test_a0 un deux "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_a0 un deux", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_b1 un deux "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_b1 un deux", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_c2 un deux "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_c2 un deux", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_d3 un deux "));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_a0 \"\" \"\" "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_a0 <empty> <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_b1 \"\" \"\" "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_b1 <empty> <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_c2 \"\" \"\" "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_c2 <empty> <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_d3 \"\" \"\" "));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
@@ -1265,6 +1262,7 @@ static void test_completion5h() {
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_b1 un deux trois"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1274,6 +1272,7 @@ static void test_completion5h() {
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_c2 un deux trois"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1283,6 +1282,7 @@ static void test_completion5h() {
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_d3 un deux trois"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1297,49 +1297,48 @@ static void test_completion5h() {
  * Exact match commands are executed after checking for minimum arguments.
  */
 static void test_execution5h() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("test_a0 un deux trois"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_a0 un deux trois", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_b1 un deux trois"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_b1 un deux trois", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_c2 un deux trois"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_c2 un deux trois", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_d3 un deux trois"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_d3 un deux trois", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_a0 \"\" \"\" \"\""));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_a0 <empty> <empty> <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_b1 \"\" \"\" \"\""));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_b1 <empty> <empty> <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_c2 \"\" \"\" \"\""));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_c2 <empty> <empty> <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_d3 \"\" \"\" \"\""));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
@@ -1358,16 +1357,19 @@ static void test_completion5i() {
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_b1 un deux trois "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_c2 un deux trois "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_d3 un deux trois "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1378,49 +1380,48 @@ static void test_completion5i() {
  * Exact match commands are executed after checking for minimum arguments.
  */
 static void test_execution5i() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("test_a0 un deux trois "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_a0 un deux trois", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_b1 un deux trois "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_b1 un deux trois", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_c2 un deux trois "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_c2 un deux trois", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_d3 un deux trois "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_d3 un deux trois", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_a0 \"\" \"\" \"\" "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_a0 <empty> <empty> <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_b1 \"\" \"\" \"\" "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_b1 <empty> <empty> <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_c2 \"\" \"\" \"\" "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_c2 <empty> <empty> <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_d3 \"\" \"\" \"\" "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
@@ -1438,16 +1439,19 @@ static void test_completion5j() {
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_b1 un deux trois quatre"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_c2 un deux trois quatre"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_d3 un deux trois quatre"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1458,49 +1462,48 @@ static void test_completion5j() {
  * Exact match commands are not executed if they have more than the maximum arguments.
  */
 static void test_execution5j() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("test_a0 un deux trois quatre"));
 
 	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_b1 un deux trois quatre"));
 
 	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_c2 un deux trois quatre"));
 
 	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_d3 un deux trois quatre"));
 
 	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_a0 \"\" \"\" \"\" \"\""));
 
 	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_b1 \"\" \"\" \"\" \"\""));
 
 	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_c2 \"\" \"\" \"\" \"\""));
 
 	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_d3 \"\" \"\" \"\" \"\""));
 
 	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
@@ -1528,7 +1531,6 @@ static void test_completion6a() {
  * Commands are not completed before being executed.
  */
 static void test_execution6a() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("ge"));
 
 	TEST_ASSERT_EQUAL_STRING("Command not found", execution.error);
@@ -1556,7 +1558,6 @@ static void test_completion6b() {
  * Exact match commands are executed.
  */
 static void test_execution6b() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("get"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
@@ -1584,7 +1585,6 @@ static void test_completion6c() {
  * Exact match commands with a trailing space are executed.
  */
 static void test_execution6c() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("get "));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
@@ -1595,37 +1595,36 @@ static void test_execution6c() {
  * Required arguments can appear anywhere in the list of arguments.
  */
 static void test_execution7a() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("test_e"));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_e un"));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_e un deux"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_e un deux", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_e un deux trois"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_e un deux trois", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_e un deux trois quatre"));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_e un deux trois quatre", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_e un deux trois quatre cinq"));
 
 	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
@@ -1637,37 +1636,36 @@ static void test_execution7a() {
  * and empty arguments are valid arguments.
  */
 static void test_execution7b() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("test_e"));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_e \"\""));
 
 	TEST_ASSERT_EQUAL_STRING("Not enough arguments for command", execution.error);
 	TEST_ASSERT_EQUAL_STRING("", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_e \"\" \"\""));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_e <empty> <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_e \"\" \"\" \"\""));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_e <empty> <empty> <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_e \"\" \"\" \"\" \"\""));
 
 	TEST_ASSERT_NULL_MESSAGE(execution.error, (const char *)execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_e <empty> <empty> <empty> <empty>", run.c_str());
 
-	run = "";
+	setUp();
 	execution = commands.execute_command(shell, CommandLine("test_e \"\" \"\" \"\" \"\" \"\""));
 
 	TEST_ASSERT_EQUAL_STRING("Too many arguments for command", execution.error);
@@ -1682,21 +1680,32 @@ static void test_completion8a() {
 
 	TEST_ASSERT_EQUAL_STRING("test_f ", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g"));
 
 	TEST_ASSERT_EQUAL_STRING("test_g ", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h"));
 
 	TEST_ASSERT_EQUAL_STRING("test_h ", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i"));
 
 	TEST_ASSERT_EQUAL_STRING("test_i ", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_next.to_string().c_str());
 }
 
 /**
@@ -1718,7 +1727,10 @@ static void test_completion8b() {
 		TEST_ASSERT_EQUAL_STRING("cccc2c [two] [three]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("cccc3c [two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1732,7 +1744,10 @@ static void test_completion8b() {
 		TEST_ASSERT_EQUAL_STRING("cccc2c [two] [three]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("cccc3c [two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1741,7 +1756,10 @@ static void test_completion8b() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1749,6 +1767,8 @@ static void test_completion8b() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("test [two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 }
 
 /**
@@ -1764,7 +1784,10 @@ static void test_completion8c() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("a", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g a"));
 
 	TEST_ASSERT_EQUAL_STRING("test_g aaaaa", completion.replacement.to_string().c_str());
@@ -1773,7 +1796,10 @@ static void test_completion8c() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("a", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h a"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1782,7 +1808,10 @@ static void test_completion8c() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("a", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i t"));
 
 	TEST_ASSERT_EQUAL_STRING("test_i test", completion.replacement.to_string().c_str());
@@ -1791,6 +1820,8 @@ static void test_completion8c() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("t", complete_next.to_string().c_str());
 }
 
 /**
@@ -1807,7 +1838,10 @@ static void test_completion8d() {
 		TEST_ASSERT_EQUAL_STRING("bbb1 [two] [three]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("bbb2 [two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("b", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g b"));
 
 	TEST_ASSERT_EQUAL_STRING("test_g bbb", completion.replacement.to_string().c_str());
@@ -1817,7 +1851,10 @@ static void test_completion8d() {
 		TEST_ASSERT_EQUAL_STRING("bbb1 [two] [three]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("bbb2 [two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("b", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h b"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1826,7 +1863,10 @@ static void test_completion8d() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("b", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i b"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1835,6 +1875,8 @@ static void test_completion8d() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("b", complete_next.to_string().c_str());
 }
 
 /**
@@ -1852,7 +1894,10 @@ static void test_completion8e() {
 		TEST_ASSERT_EQUAL_STRING("cccc2c [two] [three]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("cccc3c [two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g c"));
 
 	TEST_ASSERT_EQUAL_STRING("test_g cccc", completion.replacement.to_string().c_str());
@@ -1863,7 +1908,10 @@ static void test_completion8e() {
 		TEST_ASSERT_EQUAL_STRING("cccc2c [two] [three]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("cccc3c [two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h c"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1872,7 +1920,10 @@ static void test_completion8e() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i c"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1881,6 +1932,8 @@ static void test_completion8e() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("c", complete_next.to_string().c_str());
 }
 
 /**
@@ -1896,7 +1949,10 @@ static void test_completion8f() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("cccc1c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g cccc2c"));
 
 	TEST_ASSERT_EQUAL_STRING("test_g cccc2c ", completion.replacement.to_string().c_str());
@@ -1905,7 +1961,10 @@ static void test_completion8f() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("cccc2c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h cccc3c"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1914,7 +1973,10 @@ static void test_completion8f() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("cccc3c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i test"));
 
 	TEST_ASSERT_EQUAL_STRING("test_i test ", completion.replacement.to_string().c_str());
@@ -1923,6 +1985,8 @@ static void test_completion8f() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("test", complete_next.to_string().c_str());
 }
 
 /**
@@ -1944,7 +2008,10 @@ static void test_completion8g() {
 		TEST_ASSERT_EQUAL_STRING("ccCc2c [three]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("ccCc3c [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g ddd "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1953,7 +2020,10 @@ static void test_completion8g() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h ddd "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1967,7 +2037,10 @@ static void test_completion8g() {
 		TEST_ASSERT_EQUAL_STRING("cccc2c [three]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("cccc3c [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i ddd "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -1976,6 +2049,8 @@ static void test_completion8g() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("test [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 }
 
 /**
@@ -1991,7 +2066,10 @@ static void test_completion8h() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("a", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g ddd a"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2000,7 +2078,10 @@ static void test_completion8h() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("a", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h ddd a"));
 
 	TEST_ASSERT_EQUAL_STRING("test_h ddd aaaaa", completion.replacement.to_string().c_str());
@@ -2009,7 +2090,10 @@ static void test_completion8h() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("a", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i ddd t"));
 
 	TEST_ASSERT_EQUAL_STRING("test_i ddd test", completion.replacement.to_string().c_str());
@@ -2018,6 +2102,8 @@ static void test_completion8h() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("t", complete_next.to_string().c_str());
 }
 
 /**
@@ -2034,7 +2120,10 @@ static void test_completion8i() {
 		TEST_ASSERT_EQUAL_STRING("bbB1 [three]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("bbB2 [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("b", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h ddd b"));
 
 	TEST_ASSERT_EQUAL_STRING("test_h ddd bbb", completion.replacement.to_string().c_str());
@@ -2044,7 +2133,10 @@ static void test_completion8i() {
 		TEST_ASSERT_EQUAL_STRING("bbb1 [three]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("bbb2 [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("b", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g ddd b"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2053,7 +2145,10 @@ static void test_completion8i() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("b", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i ddd b"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2062,6 +2157,8 @@ static void test_completion8i() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("b", complete_next.to_string().c_str());
 }
 
 /**
@@ -2079,7 +2176,10 @@ static void test_completion8j() {
 		TEST_ASSERT_EQUAL_STRING("ccCc2c [three]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("ccCc3c [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g ddd c"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2088,7 +2188,10 @@ static void test_completion8j() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h ddd c"));
 
 	TEST_ASSERT_EQUAL_STRING("test_h ddd cccc", completion.replacement.to_string().c_str());
@@ -2099,7 +2202,10 @@ static void test_completion8j() {
 		TEST_ASSERT_EQUAL_STRING("cccc2c [three]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("cccc3c [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i ddd c"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2108,6 +2214,8 @@ static void test_completion8j() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("c", complete_next.to_string().c_str());
 }
 
 /**
@@ -2123,7 +2231,10 @@ static void test_completion8k() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("ccCc1c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g ddd cccc2c"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2132,7 +2243,10 @@ static void test_completion8k() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("cccc2c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h ddd cccc3c"));
 
 	TEST_ASSERT_EQUAL_STRING("test_h ddd cccc3c ", completion.replacement.to_string().c_str());
@@ -2141,7 +2255,10 @@ static void test_completion8k() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("cccc3c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i ddd test"));
 
 	TEST_ASSERT_EQUAL_STRING("test_i ddd test ", completion.replacement.to_string().c_str());
@@ -2150,6 +2267,8 @@ static void test_completion8k() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("test", complete_next.to_string().c_str());
 }
 
 /**
@@ -2166,7 +2285,10 @@ static void test_completion8l() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g ddd eee "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2180,6 +2302,10 @@ static void test_completion8l() {
 		TEST_ASSERT_EQUAL_STRING("ccCc2c", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("ccCc3c", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
+
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h ddd eee "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2193,7 +2319,10 @@ static void test_completion8l() {
 		TEST_ASSERT_EQUAL_STRING("ccCc2c", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("ccCc3c", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i ddd eee "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2202,6 +2331,8 @@ static void test_completion8l() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("test", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 }
 
 /**
@@ -2217,21 +2348,32 @@ static void test_completion8m() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("a", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g ddd eee a"));
 
 	TEST_ASSERT_EQUAL_STRING("test_g ddd eee aaAaa", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("a", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h ddd eee a"));
 
 	TEST_ASSERT_EQUAL_STRING("test_h ddd eee aaAaa", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("a", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i ddd eee t"));
 
 	TEST_ASSERT_EQUAL_STRING("test_i ddd eee test", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("t", complete_next.to_string().c_str());
 }
 
 /**
@@ -2247,7 +2389,10 @@ static void test_completion8n() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("b", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g ddd eee b"));
 
 	TEST_ASSERT_EQUAL_STRING("test_g ddd eee bbB", completion.replacement.to_string().c_str());
@@ -2257,7 +2402,10 @@ static void test_completion8n() {
 		TEST_ASSERT_EQUAL_STRING("bbB1", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("bbB2", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("b", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h ddd eee b"));
 
 	TEST_ASSERT_EQUAL_STRING("test_h ddd eee bbB", completion.replacement.to_string().c_str());
@@ -2267,7 +2415,10 @@ static void test_completion8n() {
 		TEST_ASSERT_EQUAL_STRING("bbB1", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("bbB2", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("b", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i ddd eee b"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2276,6 +2427,8 @@ static void test_completion8n() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("b", complete_next.to_string().c_str());
 }
 
 /**
@@ -2291,7 +2444,10 @@ static void test_completion8o() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g ddd eee c"));
 
 	TEST_ASSERT_EQUAL_STRING("test_g ddd eee ccCc", completion.replacement.to_string().c_str());
@@ -2302,7 +2458,10 @@ static void test_completion8o() {
 		TEST_ASSERT_EQUAL_STRING("ccCc2c", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("ccCc3c", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h ddd eee c"));
 
 	TEST_ASSERT_EQUAL_STRING("test_h ddd eee ccCc", completion.replacement.to_string().c_str());
@@ -2313,7 +2472,10 @@ static void test_completion8o() {
 		TEST_ASSERT_EQUAL_STRING("ccCc2c", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("ccCc3c", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i ddd eee c"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2322,6 +2484,8 @@ static void test_completion8o() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("c", complete_next.to_string().c_str());
 }
 
 /**
@@ -2338,12 +2502,18 @@ static void test_completion8p() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("ccCc1c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g ddd eee ccCc2c"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("ccCc2c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g ddd eee fff"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2352,12 +2522,18 @@ static void test_completion8p() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("fff", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h ddd eee ccCc3c"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("ccCc3c", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h ddd eee fff"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2366,12 +2542,18 @@ static void test_completion8p() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("fff", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i ddd eee test"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("test", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i ddd eee fff"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2380,6 +2562,8 @@ static void test_completion8p() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("ddd eee", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("fff", complete_next.to_string().c_str());
 }
 
 /**
@@ -2390,21 +2574,32 @@ static void test_completion8q() {
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g ddd eee fff "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h ddd eee fff "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i ddd eee fff "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_next.to_string().c_str());
 }
 
 /**
@@ -2415,21 +2610,32 @@ static void test_completion8r() {
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g ddd eee fff ggg"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h ddd eee fff ggg"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i ddd eee fff ggg"));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_next.to_string().c_str());
 }
 
 /**
@@ -2449,7 +2655,10 @@ static void test_completion8s() {
 		TEST_ASSERT_EQUAL_STRING("cccc2c [two] [three]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("cccc3c [two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g \"\""));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2463,7 +2672,10 @@ static void test_completion8s() {
 		TEST_ASSERT_EQUAL_STRING("cccc2c [two] [three]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("cccc3c [two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h \"\""));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2472,6 +2684,8 @@ static void test_completion8s() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[one] [two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 
 	// An empty string is a prefix of the known argument "test"
 	completion = commands.complete_command(shell, CommandLine("test_i \"\""));
@@ -2482,6 +2696,8 @@ static void test_completion8s() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 }
 
 /**
@@ -2503,7 +2719,10 @@ static void test_completion8t() {
 		TEST_ASSERT_EQUAL_STRING("ccCc2c [three]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("ccCc3c [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_g \"\" "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2512,7 +2731,10 @@ static void test_completion8t() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two] [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_h \"\" "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2526,7 +2748,10 @@ static void test_completion8t() {
 		TEST_ASSERT_EQUAL_STRING("cccc2c [three]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("cccc3c [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 
+	setUp();
 	completion = commands.complete_command(shell, CommandLine("test_i \"\" "));
 
 	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
@@ -2535,6 +2760,8 @@ static void test_completion8t() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("test [three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 }
 
 /**
@@ -2550,6 +2777,8 @@ static void test_completion8u() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[three]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("a", complete_next.to_string().c_str());
 }
 
 /**
@@ -2564,6 +2793,8 @@ static void test_completion9a() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("\"\" [two]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 }
 
 /**
@@ -2578,6 +2809,8 @@ static void test_completion9b() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 }
 
 /**
@@ -2592,6 +2825,8 @@ static void test_completion9c() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 }
 
 /**
@@ -2606,6 +2841,8 @@ static void test_completion9d() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("\\  [two]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 }
 
 /**
@@ -2620,6 +2857,8 @@ static void test_completion9e() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\\ ", complete_next.to_string().c_str());
 }
 
 /**
@@ -2634,6 +2873,8 @@ static void test_completion9f() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("\\ ", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 }
 
 /**
@@ -2649,6 +2890,8 @@ static void test_completion9g() {
 		TEST_ASSERT_EQUAL_STRING("\"\" [two]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("\\  [two]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 }
 
 /**
@@ -2666,6 +2909,8 @@ static void test_completion9h() {
 		TEST_ASSERT_EQUAL_STRING("\"\" [two]", (*it++).to_string().c_str());
 		TEST_ASSERT_EQUAL_STRING("\\  [two]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 }
 
 /**
@@ -2680,6 +2925,8 @@ static void test_completion9i() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\\ ", complete_next.to_string().c_str());
 }
 
 /**
@@ -2694,6 +2941,8 @@ static void test_completion9j() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 }
 
 /**
@@ -2708,6 +2957,8 @@ static void test_completion9k() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("[two]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("\\ ", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 }
 
 /**
@@ -2718,6 +2969,8 @@ static void test_completion10a() {
 
 	TEST_ASSERT_EQUAL_STRING("test_m\\ with\\ spaces ", completion.replacement.to_string().c_str());
 	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_next.to_string().c_str());
 }
 
 /**
@@ -2732,17 +2985,20 @@ static void test_completion10b() {
 		auto it = completion.help.begin();
 		TEST_ASSERT_EQUAL_STRING("hello\\ world [another thing]", (*it++).to_string().c_str());
 	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
 }
 
 /**
  * Execute a command with spaces in its name.
  */
 static void test_execution10a() {
-	run = "";
 	auto execution = commands.execute_command(shell, CommandLine("test_m\\ with\\ spaces hello world"));
 
 	TEST_ASSERT_NULL(execution.error);
 	TEST_ASSERT_EQUAL_STRING("test_m with spaces hello world", run.c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_next.to_string().c_str());
 }
 
 /**
@@ -2951,6 +3207,215 @@ static void test_completion15d() {
 	}
 }
 
+/**
+ * Auto-complete partial filenames.
+ */
+static void test_completion16a() {
+	auto completion = commands.complete_command(shell, CommandLine("ls"));
+
+	TEST_ASSERT_EQUAL_STRING("ls ", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_next.to_string().c_str());
+}
+
+/**
+ * Auto-complete partial filenames.
+ */
+static void test_completion16b() {
+	auto completion = commands.complete_command(shell, CommandLine("ls "));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(5, completion.help.size());
+	if (completion.help.size() == 5) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("/", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/aaa", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/filename", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/subdir", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/zzz", (*it++).to_string().c_str());
+	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("\"\"", complete_next.to_string().c_str());
+}
+
+/**
+ * Auto-complete partial filenames.
+ */
+static void test_completion16c() {
+	auto completion = commands.complete_command(shell, CommandLine("ls /"));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(5, completion.help.size());
+	if (completion.help.size() == 5) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("/", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/aaa", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/filename", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/subdir", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/zzz", (*it++).to_string().c_str());
+	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("/", complete_next.to_string().c_str());
+}
+
+/**
+ * Auto-complete partial filenames.
+ */
+static void test_completion16d() {
+	auto completion = commands.complete_command(shell, CommandLine("ls /filen"));
+
+	TEST_ASSERT_EQUAL_STRING("ls /filename", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("/filen", complete_next.to_string().c_str());
+}
+
+/**
+ * Auto-complete partial filenames.
+ */
+static void test_completion16e() {
+	auto completion = commands.complete_command(shell, CommandLine("ls /filename"));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("/filename", complete_next.to_string().c_str());
+}
+
+/**
+ * Auto-complete partial filenames.
+ */
+static void test_completion16f() {
+	auto completion = commands.complete_command(shell, CommandLine("ls /filename "));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_next.to_string().c_str());
+}
+
+/**
+ * Auto-complete partial filenames.
+ */
+static void test_completion16g() {
+	auto completion = commands.complete_command(shell, CommandLine("ls /sub"));
+
+	TEST_ASSERT_EQUAL_STRING("ls /subdir", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("/sub", complete_next.to_string().c_str());
+}
+
+/**
+ * Auto-complete partial filenames.
+ */
+static void test_completion16h() {
+	auto completion = commands.complete_command(shell, CommandLine("ls /subdir"));
+
+	TEST_ASSERT_EQUAL_STRING("ls /subdir/", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(5, completion.help.size());
+	if (completion.help.size() == 5) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("/subdir/", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/subdir/aaa", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/subdir/example123", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/subdir/example456", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/subdir/zzz", (*it++).to_string().c_str());
+	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("/subdir", complete_next.to_string().c_str());
+}
+
+/**
+ * Auto-complete partial filenames.
+ */
+static void test_completion16i() {
+	auto completion = commands.complete_command(shell, CommandLine("ls /subdir/"));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(5, completion.help.size());
+	if (completion.help.size() == 5) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("/subdir/", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/subdir/aaa", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/subdir/example123", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/subdir/example456", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/subdir/zzz", (*it++).to_string().c_str());
+	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("/subdir/", complete_next.to_string().c_str());
+}
+
+/**
+ * Auto-complete partial filenames.
+ */
+static void test_completion16j() {
+	auto completion = commands.complete_command(shell, CommandLine("ls /subdir/exa"));
+
+	TEST_ASSERT_EQUAL_STRING("ls /subdir/example", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("/subdir/example123", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/subdir/example456", (*it++).to_string().c_str());
+	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("/subdir/exa", complete_next.to_string().c_str());
+}
+
+/**
+ * Auto-complete partial filenames.
+ */
+static void test_completion16k() {
+	auto completion = commands.complete_command(shell, CommandLine("ls /subdir/example"));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(2, completion.help.size());
+	if (completion.help.size() == 2) {
+		auto it = completion.help.begin();
+		TEST_ASSERT_EQUAL_STRING("/subdir/example123", (*it++).to_string().c_str());
+		TEST_ASSERT_EQUAL_STRING("/subdir/example456", (*it++).to_string().c_str());
+	}
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("/subdir/example", complete_next.to_string().c_str());
+}
+
+/**
+ * Auto-complete partial filenames.
+ */
+static void test_completion16l() {
+	auto completion = commands.complete_command(shell, CommandLine("ls /subdir/example1"));
+
+	TEST_ASSERT_EQUAL_STRING("ls /subdir/example123", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("/subdir/example1", complete_next.to_string().c_str());
+}
+
+/**
+ * Auto-complete partial filenames.
+ */
+static void test_completion16m() {
+	auto completion = commands.complete_command(shell, CommandLine("ls /subdir/example123"));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("/subdir/example123", complete_next.to_string().c_str());
+}
+
+/**
+ * Auto-complete partial filenames.
+ */
+static void test_completion16n() {
+	auto completion = commands.complete_command(shell, CommandLine("ls /subdir/example123 "));
+
+	TEST_ASSERT_EQUAL_STRING("", completion.replacement.to_string().c_str());
+	TEST_ASSERT_EQUAL_INT(0, completion.help.size());
+	TEST_ASSERT_EQUAL_STRING("", complete_current.to_string().c_str());
+	TEST_ASSERT_EQUAL_STRING("", complete_next.to_string().c_str());
+}
 
 int main(int argc, char *argv[]) {
 	commands.add_command(0, 0, flash_string_vector{F("help")},
@@ -3083,17 +3548,20 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	},
-	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &current_arguments, const std::string &next_argument) -> std::vector<std::string> {
 		std::vector<std::string> potential_arguments;
 
-		if (arguments.size() == 0) {
+		complete_current = CommandLine({current_arguments});
+		complete_next = CommandLine({{next_argument}});
+
+		if (current_arguments.size() == 0) {
 			potential_arguments.emplace_back("aaaaa");
 			potential_arguments.emplace_back("bbb1");
 			potential_arguments.emplace_back("bbb2");
 			potential_arguments.emplace_back("cccc1c");
 			potential_arguments.emplace_back("cccc2c");
 			potential_arguments.emplace_back("cccc3c");
-		} else if (arguments.size() == 1) {
+		} else if (current_arguments.size() == 1) {
 			potential_arguments.emplace_back("aaAaa");
 			potential_arguments.emplace_back("bbB1");
 			potential_arguments.emplace_back("bbB2");
@@ -3115,17 +3583,20 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	},
-	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &current_arguments, const std::string &next_argument) -> std::vector<std::string> {
 		std::vector<std::string> potential_arguments;
 
-		if (arguments.size() == 0) {
+		complete_current = CommandLine({current_arguments});
+		complete_next = CommandLine({{next_argument}});
+
+		if (current_arguments.size() == 0) {
 			potential_arguments.emplace_back("aaaaa");
 			potential_arguments.emplace_back("bbb1");
 			potential_arguments.emplace_back("bbb2");
 			potential_arguments.emplace_back("cccc1c");
 			potential_arguments.emplace_back("cccc2c");
 			potential_arguments.emplace_back("cccc3c");
-		} else if (arguments.size() == 2) {
+		} else if (current_arguments.size() == 2) {
 			potential_arguments.emplace_back("aaAaa");
 			potential_arguments.emplace_back("bbB1");
 			potential_arguments.emplace_back("bbB2");
@@ -3147,17 +3618,20 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	},
-	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &current_arguments, const std::string &next_argument) -> std::vector<std::string> {
 		std::vector<std::string> potential_arguments;
 
-		if (arguments.size() == 1) {
+		complete_current = CommandLine({current_arguments});
+		complete_next = CommandLine({{next_argument}});
+
+		if (current_arguments.size() == 1) {
 			potential_arguments.emplace_back("aaaaa");
 			potential_arguments.emplace_back("bbb1");
 			potential_arguments.emplace_back("bbb2");
 			potential_arguments.emplace_back("cccc1c");
 			potential_arguments.emplace_back("cccc2c");
 			potential_arguments.emplace_back("cccc3c");
-		} else if (arguments.size() == 2) {
+		} else if (current_arguments.size() == 2) {
 			potential_arguments.emplace_back("aaAaa");
 			potential_arguments.emplace_back("bbB1");
 			potential_arguments.emplace_back("bbB2");
@@ -3179,7 +3653,10 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	},
-	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &current_arguments, const std::string &next_argument) -> std::vector<std::string> {
+		complete_current = CommandLine({current_arguments});
+		complete_next = CommandLine({{next_argument}});
+
 		return std::vector<std::string>{"test"};
 	});
 
@@ -3193,11 +3670,14 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	},
-	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
-		if (arguments.empty()) {
-			return std::vector<std::string>{""};
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &current_arguments, const std::string &next_argument) -> std::vector<std::string> {
+		complete_current = CommandLine({current_arguments});
+		complete_next = CommandLine({{next_argument}});
+
+		if (current_arguments.empty()) {
+			return {""};
 		} else {
-			return std::vector<std::string>{};
+			return {};
 		}
 	});
 
@@ -3211,11 +3691,14 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	},
-	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
-		if (arguments.empty()) {
-			return std::vector<std::string>{" "};
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &current_arguments, const std::string &next_argument) -> std::vector<std::string> {
+		complete_current = CommandLine({current_arguments});
+		complete_next = CommandLine({{next_argument}});
+
+		if (current_arguments.empty()) {
+			return {" "};
 		} else {
-			return std::vector<std::string>{};
+			return {};
 		}
 	});
 
@@ -3229,11 +3712,14 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	},
-	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
-		if (arguments.empty()) {
-			return std::vector<std::string>{"", " "};
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &current_arguments, const std::string &next_argument) -> std::vector<std::string> {
+		complete_current = CommandLine({current_arguments});
+		complete_next = CommandLine({{next_argument}});
+
+		if (current_arguments.empty()) {
+			return {"", " "};
 		} else {
-			return std::vector<std::string>{};
+			return {};
 		}
 	});
 
@@ -3247,11 +3733,14 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	},
-	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
-		if (arguments.empty()) {
-			return std::vector<std::string>{"hello world"};
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &current_arguments, const std::string &next_argument) -> std::vector<std::string> {
+		complete_current = CommandLine({current_arguments});
+		complete_next = CommandLine({{next_argument}});
+
+		if (current_arguments.empty()) {
+			return {"hello world"};
 		} else {
-			return std::vector<std::string>{};
+			return {};
 		}
 	});
 
@@ -3270,8 +3759,11 @@ int main(int argc, char *argv[]) {
 	commands.add_command(0, 0, flash_string_vector{F("yet"), F("wifi"), F("ssid")}, flash_string_vector{F("<name>")},
 			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
 	},
-	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments) -> std::vector<std::string> {
-		return std::vector<std::string>{"hello world"};
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &current_arguments, const std::string &next_argument) -> std::vector<std::string> {
+		complete_current = CommandLine({current_arguments});
+		complete_next = CommandLine({{next_argument}});
+
+		return {"hello world"};
 	});
 
 	commands.add_command(0, 0, flash_string_vector{F("digitalRead")}, flash_string_vector{F("<pin>")},
@@ -3312,6 +3804,24 @@ int main(int argc, char *argv[]) {
 
 	commands.add_command(0, 0, flash_string_vector{F("wet"), F("ota"), F("password")},
 			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+	});
+
+	commands.add_command(0, 0, flash_string_vector{F("ls")}, flash_string_vector{F("[filename]")},
+			[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &arguments __attribute__((unused))) {
+	},
+	[] (Shell &shell __attribute__((unused)), const std::vector<std::string> &current_arguments, const std::string &next_argument) -> std::vector<std::string> {
+		complete_current = CommandLine({current_arguments});
+		complete_next = CommandLine({{next_argument}});
+
+		if (current_arguments.empty()) {
+			if (next_argument == "/subdir" || next_argument.find("/subdir/") == 0) {
+				return {"/subdir/", "/subdir/aaa", "/subdir/example123", "/subdir/example456", "/subdir/zzz"};
+			} else {
+				return {"/", "/aaa", "/filename", "/subdir", "/zzz"};
+			}
+		} else {
+			return {};
+		}
 	});
 
 	UNITY_BEGIN();
@@ -3455,6 +3965,21 @@ int main(int argc, char *argv[]) {
 	RUN_TEST(test_completion15b);
 	RUN_TEST(test_completion15c);
 	RUN_TEST(test_completion15d);
+
+	RUN_TEST(test_completion16a);
+	RUN_TEST(test_completion16b);
+	RUN_TEST(test_completion16c);
+	RUN_TEST(test_completion16d);
+	RUN_TEST(test_completion16e);
+	RUN_TEST(test_completion16f);
+	RUN_TEST(test_completion16g);
+	RUN_TEST(test_completion16h);
+	RUN_TEST(test_completion16i);
+	RUN_TEST(test_completion16j);
+	RUN_TEST(test_completion16k);
+	RUN_TEST(test_completion16l);
+	RUN_TEST(test_completion16m);
+	RUN_TEST(test_completion16n);
 
 	return UNITY_END();
 }

@@ -120,13 +120,16 @@ public:
 	 *
 	 * @param[in] shell Shell instance that has a command line matching
 	 *                  this command.
-	 * @param[in] arguments Command line arguments prior to (but
-	 *                      excluding) the argument being completed.
+	 * @param[in] current_arguments Command line arguments prior to (but
+	 *                              excluding) the argument being
+	 *                              completed.
+	 * @param[in] next_argument Next argument (the one being completed).
 	 * @return Possible values for the next argument on the command
 	 *         line.
-	 * @since 0.1.0
+	 * @since 3.0.0
 	 */
-	using argument_completion_function = std::function<const std::vector<std::string>(Shell &shell, const std::vector<std::string> &arguments)>;
+	using argument_completion_function = std::function<const std::vector<std::string>(
+		Shell &shell, const std::vector<std::string> &current_arguments, const std::string &next_argument)>;
 
 	/**
 	 * Available command for execution on a Shell.

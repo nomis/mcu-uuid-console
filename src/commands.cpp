@@ -297,7 +297,7 @@ Commands::Completion Commands::complete_command(Shell &shell, const CommandLine 
 			}
 
 			auto potential_arguments = matching_command->arg_function_
-					? matching_command->arg_function_(shell, arguments)
+					? matching_command->arg_function_(shell, arguments, last_argument)
 							: std::vector<std::string>{};
 
 			// Remove arguments that can't match
