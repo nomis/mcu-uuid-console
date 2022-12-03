@@ -4,6 +4,12 @@ Change log
 Unreleased_
 -----------
 
+Fixed
+~~~~~
+
+* Iterators over available commands may return an unavailable command if
+  it is at the beginning of the commands in the current context.
+
 2.0.0_ |--| 2022-11-26
 ----------------------
 

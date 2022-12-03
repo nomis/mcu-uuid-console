@@ -370,8 +370,8 @@ public:
 
 	private:
 		const Shell &shell_; /*!< Shell that is accessing commands. @since 0.9.0 */
-		const command_iterator begin_; /*!< Beginning of command iterators. @since 0.9.0 */
-		const command_iterator end_; /*!< End of command iterators. @since 0.9.0 */
+		command_iterator begin_; /*!< Beginning of command iterators. @since 0.9.0 */
+		command_iterator end_; /*!< End of command iterators. @since 0.9.0 */
 	};
 
 	/**
@@ -1474,7 +1474,7 @@ private:
 		explicit BlockingData(blocking_function &&blocking_function);
 		~BlockingData() override = default;
 
-		blocking_function blocking_function_; /*!< Function execute on every loop_one(). @since 0.2.0 */
+		blocking_function blocking_function_; /*!< Function executed on every loop_one(). @since 0.2.0 */
 		bool consume_line_feed_ = true; /*!< Stream input should try to consume the first line feed following a carriage return. @since 0.2.0 */
 		bool stop_ = false; /*!< There is a stop pending for the shell. @since 0.2.0 */
 	};

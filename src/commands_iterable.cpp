@@ -45,6 +45,10 @@ Commands::AvailableCommand::AvailableCommand(const Command &command) : command_(
 Commands::AvailableCommands::AvailableCommands(const Shell &shell,
 		const command_iterator &begin, const command_iterator &end)
 		: shell_(shell), begin_(begin), end_(end) {
+	// Skip over unavailable commands at the beginning
+	while (begin_ != end_ && !shell_.has_flags(begin_->second.flags_, begin_->second.not_flags_)) {
+		++begin_;
+	}
 }
 
 Commands::AvailableCommands::const_iterator Commands::AvailableCommands::cbegin() const {
