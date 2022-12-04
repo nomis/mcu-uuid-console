@@ -4,6 +4,18 @@ Change log
 Unreleased_
 -----------
 
+Changed
+~~~~~~~
+
+* Remove ``StreamConsole`` and the need for virtual inheritance to
+  combine a custom ``Shell`` with ``StreamConsole``. All of the shells
+  operate on streams so it's an unnecessary complexity.
+
+  This allows a ``static_cast`` to be used on the ``shell`` parameter to
+  command functions instead of forcing the use of ``dynamic_cast``.
+  Applications can be compiled with ``-fno-rtti`` and still usefully
+  extend the ``Shell`` class.
+
 2.0.1_ |--| 2022-12-03
 ----------------------
 

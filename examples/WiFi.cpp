@@ -65,7 +65,7 @@ void setup() {
 	Serial.begin(115200);
 
 	std::shared_ptr<Shell> shell;
-	shell = std::make_shared<uuid::console::StreamConsole>(commands, Serial);
+	shell = std::make_shared<uuid::console::Shell>(Serial, commands);
 	shell->start();
 }
 

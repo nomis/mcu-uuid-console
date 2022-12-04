@@ -30,15 +30,11 @@ using ::uuid::console::CommandLine;
 using ::uuid::console::Commands;
 using ::uuid::console::Shell;
 
-class DummyShell: public Shell {
+class TestStream: public Stream {
 public:
-	DummyShell(unsigned int context = 0) : Shell(std::make_shared<Commands>(), context, 0) {};
-	~DummyShell() override = default;
-
-protected:
-	bool available_char() override { return true; }
-	int read_one_char() override { return '\n'; };
-	int peek_one_char() override { return '\n'; };
+	int available() override { return 1; }
+	int read() override { return '\n'; };
+	int peek() override { return '\n'; };
 	size_t write(uint8_t data __attribute__((unused))) override { return 1; }
 	size_t write(const uint8_t *buffer __attribute__((unused)), size_t size) override { return size; }
 };
@@ -53,7 +49,8 @@ uint64_t get_uptime_ms() {
 } // namespace uuid
 
 static Commands commands;
-static DummyShell shell;
+static TestStream stream;
+static Shell shell{stream, std::make_shared<Commands>()};
 static std::string run;
 static CommandLine complete_current;
 static CommandLine complete_next;

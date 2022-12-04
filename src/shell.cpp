@@ -1,6 +1,6 @@
 /*
  * uuid-console - Microcontroller console shell
- * Copyright 2019,2021  Simon Arlott
+ * Copyright 2019,2021-2022  Simon Arlott
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,8 +46,8 @@ namespace uuid {
 namespace console {
 
 // cppcheck-suppress passedByValue
-Shell::Shell(std::shared_ptr<Commands> commands, unsigned int context, unsigned int flags)
-		: commands_(std::move(commands)), flags_(flags) {
+Shell::Shell(Stream &stream, std::shared_ptr<Commands> commands, unsigned int context, unsigned int flags)
+		: stream_(stream), commands_(std::move(commands)), flags_(flags) {
 	enter_context(context);
 }
 
@@ -127,7 +127,7 @@ void Shell::loop_one() {
 }
 
 void Shell::loop_normal() {
-	const int input = read_one_char();
+	const int input = stream_.read();
 
 	if (input < 0) {
 		check_idle_timeout();
@@ -214,7 +214,7 @@ void Shell::loop_normal() {
 
 	// This is a hack to let TelnetStream know that command
 	// execution is complete and that output can be flushed.
-	available_char();
+	stream_.available();
 
 	idle_time_ = uuid::get_uptime_ms();
 }
@@ -225,7 +225,7 @@ Shell::PasswordData::PasswordData(const __FlashStringHelper *password_prompt, pa
 }
 
 void Shell::loop_password() {
-	const int input = read_one_char();
+	const int input = stream_.read();
 
 	if (input < 0) {
 		check_idle_timeout();
@@ -292,7 +292,7 @@ void Shell::loop_password() {
 
 	// This is a hack to let TelnetStream know that command
 	// execution is complete and that output can be flushed.
-	available_char();
+	stream_.available();
 
 	idle_time_ = uuid::get_uptime_ms();
 }

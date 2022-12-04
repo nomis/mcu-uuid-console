@@ -29,7 +29,6 @@
 using ::uuid::flash_string_vector;
 using ::uuid::console::Commands;
 using ::uuid::console::Shell;
-using ::uuid::console::StreamConsole;
 
 class TestStream: public Stream {
 public:
@@ -115,20 +114,20 @@ uint64_t get_uptime_ms() {
 
 } // namespace uuid
 
-class TestConsole;
+class TestShell;
 
 static std::shared_ptr<Commands> commands = std::make_shared<Commands>();
 static Shell::blocking_function test_fn;
-static std::function<void(TestConsole &shell)> eot_fn;
+static std::function<void(TestShell &shell)> eot_fn;
 
-class TestConsole: public StreamConsole {
+class TestShell: public Shell {
 public:
-	TestConsole(std::shared_ptr<Commands> commands, Stream &stream)
-			: uuid::console::Shell(std::move(commands)), StreamConsole(stream) {
+	TestShell(Stream &stream, std::shared_ptr<Commands> commands)
+			: uuid::console::Shell(stream, std::move(commands)) {
 
 	}
 
-	using StreamConsole::invoke_command;
+	using Shell::invoke_command;
 
 protected:
 	void end_of_transmission() override {
@@ -138,10 +137,10 @@ protected:
 
 static size_t recursion_count = 0;
 
-class RecursionConsole: public StreamConsole {
+class RecursionShell: public Shell {
 public:
-	RecursionConsole(std::shared_ptr<Commands> commands, Stream &stream, int level)
-			: uuid::console::Shell(std::move(commands)), StreamConsole(stream), level_(level) {
+	RecursionShell(Stream &stream, std::shared_ptr<Commands> commands, int level)
+			: uuid::console::Shell(stream, std::move(commands)), level_(level) {
 
 	}
 
@@ -164,13 +163,13 @@ protected:
 static void test_blocking_cr(BlockingTestMode mode, bool stream_supports_peek, bool with_data = false) {
 	TestStream stream{stream_supports_peek};
 	size_t executions = 0;
-	auto console = std::make_shared<StreamConsole>(commands, stream);
+	auto shell = std::make_shared<Shell>(stream, commands);
 
-	console->start();
+	shell->start();
 
 	TEST_ASSERT_EQUAL_STRING("$ ", stream.output().c_str());
 
-	console->loop_one();
+	shell->loop_one();
 
 	stream << "test\r";
 	if (with_data) {
@@ -251,13 +250,13 @@ static void test_blocking_cr(BlockingTestMode mode, bool stream_supports_peek, b
 	}
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING("test\r\n", stream.output().c_str());
 
 	if (!with_data) {
-		console->loop_one();
+		shell->loop_one();
 		TEST_ASSERT_EQUAL_STRING("", stream.output().c_str());
 	}
 
@@ -282,7 +281,7 @@ static void test_blocking_cr(BlockingTestMode mode, bool stream_supports_peek, b
 		TEST_ASSERT_FALSE(stop);
 		return stop;
 	};
-	console->loop_one();
+	shell->loop_one();
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING("", stream.output().c_str());
 
@@ -297,7 +296,7 @@ static void test_blocking_cr(BlockingTestMode mode, bool stream_supports_peek, b
 		TEST_ASSERT_FALSE(stop);
 		return stop;
 	};
-	console->loop_one();
+	shell->loop_one();
 	TEST_ASSERT_EQUAL_STRING("BCD\rnoop\r", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING("", stream.output().c_str());
 
@@ -317,7 +316,7 @@ static void test_blocking_cr(BlockingTestMode mode, bool stream_supports_peek, b
 		TEST_ASSERT_FALSE(stop);
 		return true;
 	};
-	console->loop_one();
+	shell->loop_one();
 	TEST_ASSERT_EQUAL_STRING("noop\r", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING("$ ", stream.output().c_str());
 
@@ -328,16 +327,16 @@ static void test_blocking_cr(BlockingTestMode mode, bool stream_supports_peek, b
 	};
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING("noop\r\n$ ", stream.output().c_str());
 
-	console->loop_one();
+	shell->loop_one();
 	TEST_ASSERT_EQUAL_STRING("", stream.output().c_str());
 
-	console->stop();
-	TEST_ASSERT_FALSE(console->running());
+	shell->stop();
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 static void test_blocking_cr_available_peek() {
@@ -394,13 +393,13 @@ static void test_blocking_cr_read_no_peek_with_data() {
 static void test_blocking_crlf(BlockingTestMode mode, bool stream_supports_peek, bool with_data = false) {
 	TestStream stream{stream_supports_peek};
 	size_t executions = 0;
-	auto console = std::make_shared<StreamConsole>(commands, stream);
+	auto shell = std::make_shared<Shell>(stream, commands);
 
-	console->start();
+	shell->start();
 
 	TEST_ASSERT_EQUAL_STRING("$ ", stream.output().c_str());
 
-	console->loop_one();
+	shell->loop_one();
 
 	stream << "test\r\n";
 	if (with_data) {
@@ -524,7 +523,7 @@ static void test_blocking_crlf(BlockingTestMode mode, bool stream_supports_peek,
 	}
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING("test\r\n", stream.output().c_str());
@@ -550,7 +549,7 @@ static void test_blocking_crlf(BlockingTestMode mode, bool stream_supports_peek,
 		TEST_ASSERT_FALSE(stop);
 		return stop;
 	};
-	console->loop_one();
+	shell->loop_one();
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING("", stream.output().c_str());
 
@@ -565,7 +564,7 @@ static void test_blocking_crlf(BlockingTestMode mode, bool stream_supports_peek,
 		TEST_ASSERT_FALSE(stop);
 		return stop;
 	};
-	console->loop_one();
+	shell->loop_one();
 	TEST_ASSERT_EQUAL_STRING("BCD\r\nnoop\r\n", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING("", stream.output().c_str());
 
@@ -585,7 +584,7 @@ static void test_blocking_crlf(BlockingTestMode mode, bool stream_supports_peek,
 		TEST_ASSERT_FALSE(stop);
 		return true;
 	};
-	console->loop_one();
+	shell->loop_one();
 	TEST_ASSERT_EQUAL_STRING("\nnoop\r\n", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING("$ ", stream.output().c_str());
 
@@ -596,16 +595,16 @@ static void test_blocking_crlf(BlockingTestMode mode, bool stream_supports_peek,
 	};
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING("noop\r\n$ ", stream.output().c_str());
 
-	console->loop_one();
+	shell->loop_one();
 	TEST_ASSERT_EQUAL_STRING("", stream.output().c_str());
 
-	console->stop();
-	TEST_ASSERT_FALSE(console->running());
+	shell->stop();
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 static void test_blocking_crlf_available_peek() {
@@ -662,13 +661,13 @@ static void test_blocking_crlf_read_no_peek_with_data() {
 static void test_blocking_lf(BlockingTestMode mode, bool stream_supports_peek, bool with_data = false) {
 	TestStream stream{stream_supports_peek};
 	size_t executions = 0;
-	auto console = std::make_shared<StreamConsole>(commands, stream);
+	auto shell = std::make_shared<Shell>(stream, commands);
 
-	console->start();
+	shell->start();
 
 	TEST_ASSERT_EQUAL_STRING("$ ", stream.output().c_str());
 
-	console->loop_one();
+	shell->loop_one();
 
 	stream << "test\n";
 	if (with_data) {
@@ -749,13 +748,13 @@ static void test_blocking_lf(BlockingTestMode mode, bool stream_supports_peek, b
 	}
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING("test\r\n", stream.output().c_str());
 
 	if (!with_data) {
-		console->loop_one();
+		shell->loop_one();
 		TEST_ASSERT_EQUAL_STRING("", stream.output().c_str());
 	}
 
@@ -780,7 +779,7 @@ static void test_blocking_lf(BlockingTestMode mode, bool stream_supports_peek, b
 		TEST_ASSERT_FALSE(stop);
 		return stop;
 	};
-	console->loop_one();
+	shell->loop_one();
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING("", stream.output().c_str());
 
@@ -795,7 +794,7 @@ static void test_blocking_lf(BlockingTestMode mode, bool stream_supports_peek, b
 		TEST_ASSERT_FALSE(stop);
 		return stop;
 	};
-	console->loop_one();
+	shell->loop_one();
 	TEST_ASSERT_EQUAL_STRING("BCD\nnoop\n", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING("", stream.output().c_str());
 
@@ -815,7 +814,7 @@ static void test_blocking_lf(BlockingTestMode mode, bool stream_supports_peek, b
 		TEST_ASSERT_FALSE(stop);
 		return true;
 	};
-	console->loop_one();
+	shell->loop_one();
 	TEST_ASSERT_EQUAL_STRING("noop\n", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING("$ ", stream.output().c_str());
 
@@ -826,16 +825,16 @@ static void test_blocking_lf(BlockingTestMode mode, bool stream_supports_peek, b
 	};
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING("noop\r\n$ ", stream.output().c_str());
 
-	console->loop_one();
+	shell->loop_one();
 	TEST_ASSERT_EQUAL_STRING("", stream.output().c_str());
 
-	console->stop();
-	TEST_ASSERT_FALSE(console->running());
+	shell->stop();
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 static void test_blocking_lf_available_peek() {
@@ -892,13 +891,13 @@ static void test_blocking_lf_read_no_peek_with_data() {
 static void test_blocking_stop() {
 	TestStream stream{true};
 	size_t executions = 0;
-	auto console = std::make_shared<StreamConsole>(commands, stream);
+	auto shell = std::make_shared<Shell>(stream, commands);
 
-	console->start();
+	shell->start();
 
 	TEST_ASSERT_EQUAL_STRING("$ ", stream.output().c_str());
 
-	console->loop_one();
+	shell->loop_one();
 
 	stream << "test\n";
 
@@ -910,14 +909,14 @@ static void test_blocking_stop() {
 	};
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING("test\r\n", stream.output().c_str());
 
-	TEST_ASSERT_TRUE(console->running());
-	console->stop();
-	TEST_ASSERT_TRUE(console->running());
+	TEST_ASSERT_TRUE(shell->running());
+	shell->stop();
+	TEST_ASSERT_TRUE(shell->running());
 
 	test_fn = [executions, &stream] (Shell &shell, bool stop) mutable -> bool {
 		TEST_ASSERT_EQUAL(1, ++executions);
@@ -925,8 +924,8 @@ static void test_blocking_stop() {
 		TEST_ASSERT_TRUE(shell.running());
 		return false;
 	};
-	console->loop_one();
-	TEST_ASSERT_TRUE(console->running());
+	shell->loop_one();
+	TEST_ASSERT_TRUE(shell->running());
 
 	test_fn = [executions, &stream] (Shell &shell, bool stop) mutable -> bool {
 		TEST_ASSERT_EQUAL(1, ++executions);
@@ -934,10 +933,10 @@ static void test_blocking_stop() {
 		TEST_ASSERT_TRUE(shell.running());
 		return false;
 	};
-	console->loop_one();
-	TEST_ASSERT_TRUE(console->running());
-	console->stop();
-	TEST_ASSERT_TRUE(console->running());
+	shell->loop_one();
+	TEST_ASSERT_TRUE(shell->running());
+	shell->stop();
+	TEST_ASSERT_TRUE(shell->running());
 
 	test_fn = [executions, &stream] (Shell &shell, bool stop) mutable -> bool {
 		TEST_ASSERT_EQUAL(1, ++executions);
@@ -945,8 +944,8 @@ static void test_blocking_stop() {
 		TEST_ASSERT_TRUE(shell.running());
 		return false;
 	};
-	console->loop_one();
-	TEST_ASSERT_TRUE(console->running());
+	shell->loop_one();
+	TEST_ASSERT_TRUE(shell->running());
 
 	test_fn = [executions, &stream] (Shell &shell, bool stop) mutable -> bool {
 		TEST_ASSERT_EQUAL(1, ++executions);
@@ -954,14 +953,14 @@ static void test_blocking_stop() {
 		TEST_ASSERT_TRUE(shell.running());
 		return true;
 	};
-	console->loop_one();
-	TEST_ASSERT_FALSE(console->running());
+	shell->loop_one();
+	TEST_ASSERT_FALSE(shell->running());
 
 	test_fn = [executions, &stream] (Shell &shell, bool stop) mutable -> bool {
 		TEST_FAIL();
 		return true;
 	};
-	console->loop_one();
+	shell->loop_one();
 }
 
 /**
@@ -970,19 +969,19 @@ static void test_blocking_stop() {
 static void test_no_stream() {
 	TestStream stream{true};
 	size_t executions = 0;
-	auto console = std::make_shared<StreamConsole>(commands, stream);
+	auto shell = std::make_shared<Shell>(stream, commands);
 
-	console->start();
+	shell->start();
 
 	TEST_ASSERT_EQUAL_STRING("$ ", stream.output().c_str());
 
-	console->loop_one();
+	shell->loop_one();
 
 	stream << "test\n";
 
-	TEST_ASSERT_FALSE(console->available());
-	TEST_ASSERT_EQUAL_INT(-1, console->read());
-	TEST_ASSERT_EQUAL_INT(-1, console->peek());
+	TEST_ASSERT_FALSE(shell->available());
+	TEST_ASSERT_EQUAL_INT(-1, shell->read());
+	TEST_ASSERT_EQUAL_INT(-1, shell->peek());
 
 	test_fn = [executions, &stream] (Shell &shell, bool stop) mutable -> bool {
 		TEST_ASSERT_EQUAL(1, ++executions);
@@ -991,36 +990,36 @@ static void test_no_stream() {
 	};
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING("test\r\n", stream.output().c_str());
 
 	stream << "more";
 
-	TEST_ASSERT_TRUE(console->available());
-	TEST_ASSERT_EQUAL_INT('m', console->read());
-	TEST_ASSERT_TRUE(console->available());
-	TEST_ASSERT_EQUAL_INT('o', console->peek());
-	TEST_ASSERT_TRUE(console->available());
-	TEST_ASSERT_EQUAL_INT('o', console->read());
-	TEST_ASSERT_TRUE(console->available());
-	TEST_ASSERT_EQUAL_INT('r', console->peek());
-	TEST_ASSERT_TRUE(console->available());
+	TEST_ASSERT_TRUE(shell->available());
+	TEST_ASSERT_EQUAL_INT('m', shell->read());
+	TEST_ASSERT_TRUE(shell->available());
+	TEST_ASSERT_EQUAL_INT('o', shell->peek());
+	TEST_ASSERT_TRUE(shell->available());
+	TEST_ASSERT_EQUAL_INT('o', shell->read());
+	TEST_ASSERT_TRUE(shell->available());
+	TEST_ASSERT_EQUAL_INT('r', shell->peek());
+	TEST_ASSERT_TRUE(shell->available());
 
 	test_fn = [executions, &stream] (Shell &shell, bool stop) mutable -> bool {
 		TEST_ASSERT_EQUAL(1, ++executions);
 		TEST_ASSERT_FALSE(stop);
 		return true;
 	};
-	console->loop_one();
+	shell->loop_one();
 
-	TEST_ASSERT_FALSE(console->available());
-	TEST_ASSERT_EQUAL_INT(-1, console->read());
-	TEST_ASSERT_EQUAL_INT(-1, console->peek());
+	TEST_ASSERT_FALSE(shell->available());
+	TEST_ASSERT_EQUAL_INT(-1, shell->read());
+	TEST_ASSERT_EQUAL_INT(-1, shell->peek());
 
-	console->stop();
-	TEST_ASSERT_FALSE(console->running());
+	shell->stop();
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1028,13 +1027,13 @@ static void test_no_stream() {
  */
 static void test_help() {
 	TestStream stream{true};
-	auto console = std::make_shared<StreamConsole>(commands, stream);
+	auto shell = std::make_shared<Shell>(stream, commands);
 
-	console->start();
+	shell->start();
 	stream << "help\n";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
@@ -1047,8 +1046,8 @@ static void test_help() {
 			"help\r\n"
 			"$ ", stream.output().c_str());
 
-	console->stop();
-	TEST_ASSERT_FALSE(console->running());
+	shell->stop();
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1056,17 +1055,17 @@ static void test_help() {
  */
 static void test_end_of_transmission1() {
 	TestStream stream{true};
-	auto console = std::make_shared<TestConsole>(commands, stream);
+	auto shell = std::make_shared<TestShell>(stream, commands);
 
-	eot_fn = [] (TestConsole &shell) {
+	eot_fn = [] (TestShell &shell) {
 		shell.invoke_command("noop");
 	};
 
-	console->start();
+	shell->start();
 	stream << "\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
@@ -1076,7 +1075,7 @@ static void test_end_of_transmission1() {
 	stream << "\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
@@ -1086,7 +1085,7 @@ static void test_end_of_transmission1() {
 	stream << "noop\r\n";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
@@ -1096,7 +1095,7 @@ static void test_end_of_transmission1() {
 	stream << "\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
@@ -1106,7 +1105,7 @@ static void test_end_of_transmission1() {
 	stream << "noop\r\n";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
@@ -1116,7 +1115,7 @@ static void test_end_of_transmission1() {
 	stream << "\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
@@ -1126,7 +1125,7 @@ static void test_end_of_transmission1() {
 	stream << "\r\n";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
@@ -1136,15 +1135,15 @@ static void test_end_of_transmission1() {
 	stream << "\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
 			"noop\r\n"
 			"$ ", stream.output().c_str());
 
-	console->stop();
-	TEST_ASSERT_FALSE(console->running());
+	shell->stop();
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1152,23 +1151,23 @@ static void test_end_of_transmission1() {
  */
 static void test_end_of_transmission2a() {
 	TestStream stream{true};
-	auto console = std::make_shared<TestConsole>(commands, stream);
+	auto shell = std::make_shared<TestShell>(stream, commands);
 
-	eot_fn = [] (TestConsole &shell) {
+	eot_fn = [] (TestShell &shell) {
 		shell.invoke_command("exit");
 	};
 
-	console->start();
+	shell->start();
 	stream << "\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
 			"$ exit\r\n", stream.output().c_str());
 
-	TEST_ASSERT_FALSE(console->running());
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1176,24 +1175,24 @@ static void test_end_of_transmission2a() {
  */
 static void test_end_of_transmission2b() {
 	TestStream stream{true};
-	auto console = std::make_shared<TestConsole>(commands, stream);
+	auto shell = std::make_shared<TestShell>(stream, commands);
 
-	eot_fn = [] (TestConsole &shell) {
+	eot_fn = [] (TestShell &shell) {
 		shell.invoke_command("exit");
 	};
 
-	console->start();
+	shell->start();
 	stream << "noop\r\n\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
 			"$ noop\r\n"
 			"$ exit\r\n", stream.output().c_str());
 
-	TEST_ASSERT_FALSE(console->running());
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1201,17 +1200,17 @@ static void test_end_of_transmission2b() {
  */
 static void test_end_of_transmission2c() {
 	TestStream stream{true};
-	auto console = std::make_shared<TestConsole>(commands, stream);
+	auto shell = std::make_shared<TestShell>(stream, commands);
 
-	eot_fn = [] (TestConsole &shell) {
+	eot_fn = [] (TestShell &shell) {
 		shell.invoke_command("exit");
 	};
 
-	console->start();
+	shell->start();
 	stream << "noop\r\n\r\n\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
@@ -1219,7 +1218,7 @@ static void test_end_of_transmission2c() {
 			"$ \r\n"
 			"$ exit\r\n", stream.output().c_str());
 
-	TEST_ASSERT_FALSE(console->running());
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1227,24 +1226,24 @@ static void test_end_of_transmission2c() {
  */
 static void test_end_of_transmission2d() {
 	TestStream stream{true};
-	auto console = std::make_shared<TestConsole>(commands, stream);
+	auto shell = std::make_shared<TestShell>(stream, commands);
 
-	eot_fn = [] (TestConsole &shell) {
+	eot_fn = [] (TestShell &shell) {
 		shell.invoke_command("exit");
 	};
 
-	console->start();
+	shell->start();
 	stream << "noop\x03\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
 			"$ noop\r\n"
 			"$ exit\r\n", stream.output().c_str());
 
-	TEST_ASSERT_FALSE(console->running());
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1252,23 +1251,23 @@ static void test_end_of_transmission2d() {
  */
 static void test_end_of_transmission3a() {
 	TestStream stream{true};
-	auto console = std::make_shared<TestConsole>(commands, stream);
+	auto shell = std::make_shared<TestShell>(stream, commands);
 
-	eot_fn = [] (TestConsole &shell) {
+	eot_fn = [] (TestShell &shell) {
 		shell.stop();
 	};
 
-	console->start();
+	shell->start();
 	stream << "\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
 			"$ ", stream.output().c_str());
 
-	TEST_ASSERT_FALSE(console->running());
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1276,24 +1275,24 @@ static void test_end_of_transmission3a() {
  */
 static void test_end_of_transmission3b() {
 	TestStream stream{true};
-	auto console = std::make_shared<TestConsole>(commands, stream);
+	auto shell = std::make_shared<TestShell>(stream, commands);
 
-	eot_fn = [] (TestConsole &shell) {
+	eot_fn = [] (TestShell &shell) {
 		shell.println();
 		shell.stop();
 	};
 
-	console->start();
+	shell->start();
 	stream << "\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
 			"$ \r\n", stream.output().c_str());
 
-	TEST_ASSERT_FALSE(console->running());
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1301,25 +1300,25 @@ static void test_end_of_transmission3b() {
  */
 static void test_end_of_transmission4() {
 	TestStream stream{true};
-	auto console = std::make_shared<TestConsole>(commands, stream);
+	auto shell = std::make_shared<TestShell>(stream, commands);
 
-	eot_fn = [] (TestConsole &shell) {
+	eot_fn = [] (TestShell &shell) {
 		shell.stop();
 	};
 
-	console->start();
+	shell->start();
 	stream << "noop\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
 			"$ noop", stream.output().c_str());
 
-	TEST_ASSERT_TRUE(console->running());
-	console->stop();
-	TEST_ASSERT_FALSE(console->running());
+	TEST_ASSERT_TRUE(shell->running());
+	shell->stop();
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1327,17 +1326,17 @@ static void test_end_of_transmission4() {
  */
 static void test_end_of_transmission5a() {
 	TestStream stream{true};
-	auto console = std::make_shared<TestConsole>(commands, stream);
+	auto shell = std::make_shared<TestShell>(stream, commands);
 
-	eot_fn = [] (TestConsole &shell) {
+	eot_fn = [] (TestShell &shell) {
 		shell.invoke_command("noop");
 	};
 
-	console->start();
+	shell->start();
 	stream << "noop\x15\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
@@ -1345,8 +1344,8 @@ static void test_end_of_transmission5a() {
 			"$ noop\r\n"
 			"$ ", stream.output().c_str());
 
-	console->stop();
-	TEST_ASSERT_FALSE(console->running());
+	shell->stop();
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1354,24 +1353,24 @@ static void test_end_of_transmission5a() {
  */
 static void test_end_of_transmission5b() {
 	TestStream stream{true};
-	auto console = std::make_shared<TestConsole>(commands, stream);
+	auto shell = std::make_shared<TestShell>(stream, commands);
 
-	eot_fn = [] (TestConsole &shell) {
+	eot_fn = [] (TestShell &shell) {
 		shell.invoke_command("exit");
 	};
 
-	console->start();
+	shell->start();
 	stream << "noop\x15\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
 			"$ noop\x1B[0G\x1B[K"
 			"$ exit\r\n", stream.output().c_str());
 
-	TEST_ASSERT_FALSE(console->running());
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1379,24 +1378,24 @@ static void test_end_of_transmission5b() {
  */
 static void test_end_of_transmission5c() {
 	TestStream stream{true};
-	auto console = std::make_shared<TestConsole>(commands, stream);
+	auto shell = std::make_shared<TestShell>(stream, commands);
 
-	eot_fn = [] (TestConsole &shell) {
+	eot_fn = [] (TestShell &shell) {
 		shell.stop();
 	};
 
-	console->start();
+	shell->start();
 	stream << "noop\x15\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
 			"$ noop\x1B[0G\x1B[K"
 			"$ ", stream.output().c_str());
 
-	TEST_ASSERT_FALSE(console->running());
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1404,25 +1403,25 @@ static void test_end_of_transmission5c() {
  */
 static void test_end_of_transmission5d() {
 	TestStream stream{true};
-	auto console = std::make_shared<TestConsole>(commands, stream);
+	auto shell = std::make_shared<TestShell>(stream, commands);
 
-	eot_fn = [] (TestConsole &shell) {
+	eot_fn = [] (TestShell &shell) {
 		shell.println();
 		shell.stop();
 	};
 
-	console->start();
+	shell->start();
 	stream << "noop\x15\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
 			"$ noop\x1B[0G\x1B[K"
 			"$ \r\n", stream.output().c_str());
 
-	TEST_ASSERT_FALSE(console->running());
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1430,17 +1429,17 @@ static void test_end_of_transmission5d() {
  */
 static void test_end_of_transmission5e() {
 	TestStream stream{true};
-	auto console = std::make_shared<TestConsole>(commands, stream);
+	auto shell = std::make_shared<TestShell>(stream, commands);
 
-	eot_fn = [] (TestConsole &shell) {
+	eot_fn = [] (TestShell &shell) {
 		shell.invoke_command("noop");
 	};
 
-	console->start();
+	shell->start();
 	stream << "noop\x17\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
@@ -1448,8 +1447,8 @@ static void test_end_of_transmission5e() {
 			"$ noop\r\n"
 			"$ ", stream.output().c_str());
 
-	console->stop();
-	TEST_ASSERT_FALSE(console->running());
+	shell->stop();
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1457,24 +1456,24 @@ static void test_end_of_transmission5e() {
  */
 static void test_end_of_transmission5f() {
 	TestStream stream{true};
-	auto console = std::make_shared<TestConsole>(commands, stream);
+	auto shell = std::make_shared<TestShell>(stream, commands);
 
-	eot_fn = [] (TestConsole &shell) {
+	eot_fn = [] (TestShell &shell) {
 		shell.invoke_command("exit");
 	};
 
-	console->start();
+	shell->start();
 	stream << "noop\x17\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
 			"$ noop\x1B[0G\x1B[K"
 			"$ exit\r\n", stream.output().c_str());
 
-	TEST_ASSERT_FALSE(console->running());
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1482,24 +1481,24 @@ static void test_end_of_transmission5f() {
  */
 static void test_end_of_transmission5g() {
 	TestStream stream{true};
-	auto console = std::make_shared<TestConsole>(commands, stream);
+	auto shell = std::make_shared<TestShell>(stream, commands);
 
-	eot_fn = [] (TestConsole &shell) {
+	eot_fn = [] (TestShell &shell) {
 		shell.stop();
 	};
 
-	console->start();
+	shell->start();
 	stream << "noop\x17\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
 			"$ noop\x1B[0G\x1B[K"
 			"$ ", stream.output().c_str());
 
-	TEST_ASSERT_FALSE(console->running());
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1507,25 +1506,25 @@ static void test_end_of_transmission5g() {
  */
 static void test_end_of_transmission5h() {
 	TestStream stream{true};
-	auto console = std::make_shared<TestConsole>(commands, stream);
+	auto shell = std::make_shared<TestShell>(stream, commands);
 
-	eot_fn = [] (TestConsole &shell) {
+	eot_fn = [] (TestShell &shell) {
 		shell.println();
 		shell.stop();
 	};
 
-	console->start();
+	shell->start();
 	stream << "noop\x17\x04";
 
 	while (!stream.empty()) {
-		console->loop_one();
+		shell->loop_one();
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
 			"$ noop\x1B[0G\x1B[K"
 			"$ \r\n", stream.output().c_str());
 
-	TEST_ASSERT_FALSE(console->running());
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1534,9 +1533,9 @@ static void test_end_of_transmission5h() {
 static void test_recursion1() {
 	TestStream stream{true};
 	recursion_count = 0;
-	auto console = std::make_shared<RecursionConsole>(commands, stream, 0);
+	auto shell = std::make_shared<RecursionShell>(stream, commands, 0);
 
-	console->start();
+	shell->start();
 	stream << "sh\r\n"; /* In 1 */
 	stream << "exit\r\n"; /* Out 1 */
 	stream << "sh\r\nsh\r\n"; /* In 2 */
@@ -1673,7 +1672,7 @@ static void test_recursion1() {
 			"$ exit\r\n"
 			"Recursion console 0 stopped (level 0)\r\n", stream.output().c_str());
 
-	TEST_ASSERT_FALSE(console->running());
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 /**
@@ -1682,9 +1681,9 @@ static void test_recursion1() {
 static void test_recursion2() {
 	TestStream stream{true};
 	recursion_count = 0;
-	auto console = std::make_shared<RecursionConsole>(commands, stream, 0);
+	auto shell = std::make_shared<RecursionShell>(stream, commands, 0);
 
-	console->start();
+	shell->start();
 	stream << "sh\r\nsh\r\nsh\r\nsh\r\nsh\r\nsh\r\nsh\r\nsh\r\nsh\r\nsh\r\n"; /* In 10 */
 
 	while (!stream.empty()) {
@@ -1715,11 +1714,11 @@ static void test_recursion2() {
 			"Recursion console 10 started (level 10)\r\n"
 			"$ ", stream.output().c_str());
 
-	console->stop();
-	TEST_ASSERT_TRUE(console->running());
+	shell->stop();
+	TEST_ASSERT_TRUE(shell->running());
 
 	size_t maximum_iterations = 100;
-	while (console->running() && maximum_iterations-- != 0) {
+	while (shell->running() && maximum_iterations-- != 0) {
 		Shell::loop_all(); /* This is unsafe if any of the earlier tests failed */
 	}
 
@@ -1737,7 +1736,7 @@ static void test_recursion2() {
 			"Recursion console 1 stopped (level 1)\r\n"
 			"Recursion console 0 stopped (level 0)\r\n", stream.output().c_str());
 
-	TEST_ASSERT_FALSE(console->running());
+	TEST_ASSERT_FALSE(shell->running());
 }
 
 int main(int argc, char *argv[]) {
@@ -1753,13 +1752,13 @@ int main(int argc, char *argv[]) {
 	});
 	commands->add_command(0, 0, flash_string_vector{F("sh")},
 			[] (Shell &shell, const std::vector<std::string> &arguments __attribute__((unused))) {
-		auto console = std::make_shared<RecursionConsole>(commands, shell, dynamic_cast<RecursionConsole&>(shell).level_ + 1);
-		console->start();
-		shell.block_with([console] (Shell &shell, bool stop) -> bool {
+		auto rshell = std::make_shared<RecursionShell>(shell, commands, static_cast<RecursionShell&>(shell).level_ + 1);
+		rshell->start();
+		shell.block_with([rshell] (Shell &shell, bool stop) -> bool {
 			if (stop) {
-				console->stop();
+				rshell->stop();
 			}
-			return !console->running();
+			return !rshell->running();
 		});
 	});
 	commands->add_command(0, 0, flash_string_vector{F("exit")},

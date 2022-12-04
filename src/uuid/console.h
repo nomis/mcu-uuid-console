@@ -767,10 +767,6 @@ private:
  *
  * Must be constructed within a std::shared_ptr.
  *
- * Requires a derived class to provide input/output. Derived classes
- * should use virtual inheritance to allow the behaviour to be further
- * extended.
- *
  * @since 0.1.0
  */
 class Shell: public std::enable_shared_from_this<Shell>, public uuid::log::Handler, public ::Stream {
@@ -808,6 +804,24 @@ public:
 	 * @since 0.2.0
 	 */
 	using blocking_function = std::function<bool(Shell &shell, bool stop)>;
+
+	/**
+	 * Create a new Shell operating on a Stream with the given commands,
+	 * default context and initial flags.
+	 *
+	 * The default context is put on the stack and cannot be removed.
+	 *
+	 * The Stream must remain valid until the Shell has been destroyed.
+	 * Monitor the Shell using a std::weak_ptr and destroy the Stream
+	 * only after it has expired.
+	 *
+	 * @param[in] stream Stream used for the input/output of this shell.
+	 * @param[in] commands Commands available for execution in this shell.
+	 * @param[in] context Default context for the shell.
+	 * @param[in] flags Initial flags for the shell.
+	 * @since 3.0.0
+	 */
+	Shell(Stream &stream, std::shared_ptr<Commands> commands, unsigned int context = 0, unsigned int flags = 0);
 
 	~Shell() = default;
 
@@ -1154,18 +1168,18 @@ public:
 	 *
 	 * @param[in] data Data to be output.
 	 * @return The number of bytes that were output.
-	 * @since 0.1.0
+	 * @since 3.0.0
 	 */
-	size_t write(uint8_t data) override = 0;
+	size_t write(uint8_t data) final override;
 	/**
 	 * Write an array of bytes to the output stream.
 	 *
 	 * @param[in] buffer Buffer to be output.
 	 * @param[in] size Length of the buffer.
 	 * @return The number of bytes that were output.
-	 * @since 0.1.0
+	 * @since 3.0.0
 	 */
-	size_t write(const uint8_t *buffer, size_t size) override = 0;
+	size_t write(const uint8_t *buffer, size_t size) final override;
 	/**
 	 * Does nothing.
 	 *
@@ -1174,9 +1188,9 @@ public:
 	 * output function. Later versions move it to Print as an empty
 	 * virtual function so this is here for backward compatibility.
 	 *
-	 * @since 0.2.0
+	 * @since 3.0.0
 	 */
-	void flush() override;
+	void flush() final override;
 
 	using ::Print::print; /*!< Include standard Arduino print() functions. */
 	/**
@@ -1252,30 +1266,6 @@ public:
 	void print_all_available_commands();
 
 protected:
-	/**
-	 * Default constructor used by intermediate derived classes for
-	 * multiple inheritance.
-	 *
-	 * This does not initialise the shell completely so the outer
-	 * derived class must call the public constructor or there will be
-	 * no commands. Does not put any default context on the stack.
-	 *
-	 * @since 0.1.0
-	 */
-	Shell() = default;
-	/**
-	 * Create a new Shell with the given commands, default context and
-	 * initial flags.
-	 *
-	 * The default context is put on the stack and cannot be removed.
-	 *
-	 * @param[in] commands Commands available for execution in this shell.
-	 * @param[in] context Default context for the shell.
-	 * @param[in] flags Initial flags for the shell.
-	 * @since 0.1.0
-	 */
-	Shell(std::shared_ptr<Commands> commands, unsigned int context = 0, unsigned int flags = 0);
-
 	/**
 	 * Output ANSI escape sequence to erase the current line.
 	 *
@@ -1549,29 +1539,6 @@ private:
 	void loop_blocking();
 
 	/**
-	 * Check for at least one character of available input.
-	 *
-	 * @return True if a character is available, otherwise false.
-	 * @since 0.2.0
-	 */
-	virtual bool available_char() = 0;
-	/**
-	 * Read one character from the available input.
-	 *
-	 * @return An unsigned char if input is available, otherwise -1.
-	 * @since 0.1.0
-	 */
-	virtual int read_one_char() = 0;
-	/**
-	 * Read one character from the available input without advancing to
-	 * the next one.
-	 *
-	 * @return An unsigned char if input is available, otherwise -1.
-	 * @since 0.2.0
-	 */
-	virtual int peek_one_char() = 0;
-
-	/**
 	 * Output a prompt on the shell.
 	 *
 	 * Based on the current mode this will output the appropriate text,
@@ -1645,6 +1612,7 @@ private:
 	 */
 	size_t vprintf(const __FlashStringHelper *format, va_list ap);
 
+	Stream &stream_; /*!< Stream used for the input/output of this shell. @since 3.0.0 */
 	std::shared_ptr<Commands> commands_; /*!< Commands available for execution in this shell. @since 0.1.0 */
 	std::deque<unsigned int> context_; /*!< Context stack for this shell. Affects which commands are available. Should never be empty. @since 0.1.0 */
 	unsigned int flags_ = 0; /*!< Current flags for this shell. Affects which commands are available. @since 0.1.0 */
@@ -1840,99 +1808,6 @@ private:
 struct Commands::Completion {
 	std::list<CommandLine> help; /*!< Suggestions for matching commands. @since 0.1.0 */
 	CommandLine replacement; /*!< Replacement matching full or partial command line. @since 0.1.0 */
-};
-
-/**
- * A command shell console using a Stream for input/output.
- *
- * Must be constructed within a std::shared_ptr.
- *
- * Derived classes must call the public Shell(std::shared_ptr<Commands>, unsigned int, unsigned int)
- * constructor explicitly.
- *
- * @since 0.1.0
- */
-class StreamConsole: virtual public Shell {
-public:
-	/**
-	 * Create a new StreamConsole shell with the given commands,
-	 * default context and initial flags.
-	 *
-	 * The default context is put on the stack and cannot be removed.
-	 *
-	 * Derived classes must not use this constructor. They must call both the
-	 * public Shell(std::shared_ptr<Commands>, unsigned int, unsigned int) and
-	 * StreamConsole(Stream&) constructors explicitly.
-	 *
-	 * @param[in] commands Commands available for execution in this shell.
-	 * @param[in] stream Stream used for the input/output of this shell.
-	 * @param[in] context Default context for the shell.
-	 * @param[in] flags Initial flags for the shell.
-	 * @since 0.1.0
-	 */
-	StreamConsole(std::shared_ptr<Commands> commands, Stream &stream, unsigned int context = 0, unsigned int flags = 0);
-	~StreamConsole() override = default;
-
-	/**
-	 * Write one byte to the output stream.
-	 *
-	 * @param[in] data Data to be output.
-	 * @return The number of bytes that were output.
-	 * @since 0.1.0
-	 */
-	size_t write(uint8_t data) override;
-	/**
-	 * Write an array of bytes to the output stream.
-	 *
-	 * @param[in] buffer Buffer to be output.
-	 * @param[in] size Length of the buffer.
-	 * @return The number of bytes that were output.
-	 * @since 0.1.0
-	 */
-	size_t write(const uint8_t *buffer, size_t size) override;
-
-protected:
-	/**
-	 * Constructor used by intermediate derived classes for multiple
-	 * inheritance.
-	 *
-	 * This does not initialise the shell completely so the outer
-	 * derived class must call the public Shell(std::shared_ptr<Commands>, unsigned int, unsigned int)
-	 * constructor or there will be
-	 * no commands. Does not put any default context on the stack.
-	 *
-	 * @since 0.1.0
-	 */
-	explicit StreamConsole(Stream &stream);
-
-private:
-	StreamConsole(const StreamConsole&) = delete;
-	StreamConsole& operator=(const StreamConsole&) = delete;
-
-	/**
-	 * Check for at least one character of available input.
-	 *
-	 * @return True if a character is available, otherwise false.
-	 * @since 0.2.0
-	 */
-	bool available_char() override;
-	/**
-	 * Read one character from the available input.
-	 *
-	 * @return An unsigned char if input is available, otherwise -1.
-	 * @since 0.1.0
-	 */
-	int read_one_char() override;
-	/**
-	 * Read one character from the available input without advancing to
-	 * the next one.
-	 *
-	 * @return An unsigned char if input is available, otherwise -1.
-	 * @since 0.2.0
-	 */
-	int peek_one_char() override;
-
-	Stream &stream_; /*!< Stream used for the input/output of this shell. @since 0.1.0 */
 };
 
 } // namespace console

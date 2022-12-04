@@ -8,8 +8,8 @@ Usage
 Create a |std::shared_ptr<uuid::console::Commands>|_ and populate it
 with the commands to be available on the shell.
 
-Create a |std::shared_ptr<uuid::console::StreamConsole>|_ referencing
-the |Serial|_ stream and the commands list. Call |start()|_ on the
+Create a |std::shared_ptr<uuid::console::Shell>|_ referencing the
+|Serial|_ stream and the commands list. Call |start()|_ on the
 instance and then |uuid::console::Shell::loop_all()|_ regularly. (The
 static set of all shells will retain a copy of the |shared_ptr|_ until
 the shell is stopped.)
@@ -39,8 +39,8 @@ Output
 .. |std::shared_ptr<uuid::console::Commands>| replace:: ``std::shared_ptr<uuid::console::Commands>``
 .. _std::shared_ptr<uuid::console::Commands>: https://mcu-doxygen.uuid.uk/classuuid_1_1console_1_1Commands.html
 
-.. |std::shared_ptr<uuid::console::StreamConsole>| replace:: ``std::shared_ptr<uuid::console::StreamConsole>``
-.. _std::shared_ptr<uuid::console::StreamConsole>: https://mcu-doxygen.uuid.uk/classuuid_1_1console_1_1StreamConsole.html
+.. |std::shared_ptr<uuid::console::Shell>| replace:: ``std::shared_ptr<uuid::console::Shell>``
+.. _std::shared_ptr<uuid::console::Shell>: https://mcu-doxygen.uuid.uk/classuuid_1_1console_1_1Shell.html
 
 .. |Serial| replace:: ``Serial``
 .. _Serial: https://www.arduino.cc/reference/en/language/functions/communication/serial/
@@ -53,4 +53,3 @@ Output
 
 .. |shared_ptr| replace:: ``shared_ptr``
 .. _shared_ptr: https://en.cppreference.com/w/cpp/memory/shared_ptr
-
