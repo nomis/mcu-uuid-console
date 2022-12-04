@@ -4,6 +4,11 @@ Change log
 Unreleased_
 -----------
 
+3.0.0_ |--| 2022-12-04
+----------------------
+
+Remove ``StreamConsole`` and the need for virtual inheritance.
+
 Changed
 ~~~~~~~
 
@@ -332,7 +337,8 @@ Added
 
 .. |--| unicode:: U+2013 .. EN DASH
 
-.. _Unreleased: https://github.com/nomis/mcu-uuid-console/compare/2.0.1...HEAD
+.. _Unreleased: https://github.com/nomis/mcu-uuid-console/compare/3.0.0...HEAD
+.. _3.0.0: https://github.com/nomis/mcu-uuid-console/compare/2.0.1...3.0.0
 .. _2.0.1: https://github.com/nomis/mcu-uuid-console/compare/2.0.0...2.0.1
 .. _2.0.0: https://github.com/nomis/mcu-uuid-console/compare/1.0.1...2.0.0
 .. _1.0.1: https://github.com/nomis/mcu-uuid-console/compare/1.0.0...1.0.1
