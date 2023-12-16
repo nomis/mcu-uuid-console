@@ -1340,7 +1340,7 @@ static void test_end_of_transmission5a() {
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
-			"$ noop\x1B[0G\x1B[K"
+			"$ noop\x1B[G\x1B[K"
 			"$ noop\r\n"
 			"$ ", stream.output().c_str());
 
@@ -1367,7 +1367,7 @@ static void test_end_of_transmission5b() {
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
-			"$ noop\x1B[0G\x1B[K"
+			"$ noop\x1B[G\x1B[K"
 			"$ exit\r\n", stream.output().c_str());
 
 	TEST_ASSERT_FALSE(shell->running());
@@ -1392,7 +1392,7 @@ static void test_end_of_transmission5c() {
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
-			"$ noop\x1B[0G\x1B[K"
+			"$ noop\x1B[G\x1B[K"
 			"$ ", stream.output().c_str());
 
 	TEST_ASSERT_FALSE(shell->running());
@@ -1418,7 +1418,7 @@ static void test_end_of_transmission5d() {
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
-			"$ noop\x1B[0G\x1B[K"
+			"$ noop\x1B[G\x1B[K"
 			"$ \r\n", stream.output().c_str());
 
 	TEST_ASSERT_FALSE(shell->running());
@@ -1443,7 +1443,7 @@ static void test_end_of_transmission5e() {
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
-			"$ noop\x1B[0G\x1B[K"
+			"$ noop\x1B[G\x1B[K"
 			"$ noop\r\n"
 			"$ ", stream.output().c_str());
 
@@ -1470,7 +1470,7 @@ static void test_end_of_transmission5f() {
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
-			"$ noop\x1B[0G\x1B[K"
+			"$ noop\x1B[G\x1B[K"
 			"$ exit\r\n", stream.output().c_str());
 
 	TEST_ASSERT_FALSE(shell->running());
@@ -1495,7 +1495,7 @@ static void test_end_of_transmission5g() {
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
-			"$ noop\x1B[0G\x1B[K"
+			"$ noop\x1B[G\x1B[K"
 			"$ ", stream.output().c_str());
 
 	TEST_ASSERT_FALSE(shell->running());
@@ -1521,7 +1521,7 @@ static void test_end_of_transmission5h() {
 	}
 	TEST_ASSERT_EQUAL_STRING("", stream.input().c_str());
 	TEST_ASSERT_EQUAL_STRING(
-			"$ noop\x1B[0G\x1B[K"
+			"$ noop\x1B[G\x1B[K"
 			"$ \r\n", stream.output().c_str());
 
 	TEST_ASSERT_FALSE(shell->running());

@@ -4,6 +4,12 @@ Change log
 Unreleased_
 -----------
 
+Fixed
+~~~~~
+
+* Erasing the current line moved the cursor to an ANSI column position
+  of 0, which doesn't exist. Use the default column number 1 instead.
+
 3.0.0_ |--| 2022-12-04
 ----------------------
 
