@@ -28,7 +28,7 @@
 #include <utility>
 #include <vector>
 
-#ifndef __cpp_lib_make_unique
+#if !defined(__cpp_lib_make_unique) && !defined(DOXYGEN)
 namespace std {
 
 template<typename _Tp, typename... _Args>
