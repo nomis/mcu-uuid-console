@@ -43,7 +43,7 @@ Output
 .. _std::shared_ptr<uuid::console::Shell>: https://mcu-doxygen.uuid.uk/classuuid_1_1console_1_1Shell.html
 
 .. |Serial| replace:: ``Serial``
-.. _Serial: https://www.arduino.cc/reference/en/language/functions/communication/serial/
+.. _Serial: https://www.arduino.cc/reference/en/language/functions/communication/Serial/
 
 .. |start()| replace:: ``start()``
 .. _start(): https://mcu-doxygen.uuid.uk/classuuid_1_1console_1_1Shell.html#a1d4509d78ab0a55a972c5b8133be75df
