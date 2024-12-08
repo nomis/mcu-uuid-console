@@ -39,7 +39,7 @@ Logging
 
 Acts as a `log handler <https://mcu-uuid-log.readthedocs.io/>`_ in order
 to output log messages without interrupting the entry of commands at a
-prompt.
+prompt. The log level can be configured independently for each shell.
 
 Session
 -------
